@@ -1,5 +1,33 @@
 ﻿@charset "UTF-8";
 
+/* Animação de entrada da tela de login */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(24px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+body {
+    animation: fadeInUp 0.6s ease both;
+}
+
+/*Transição para quando acessar o site*/
+@keyframes fadeOutDown {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(24px);
+    }
+}
+
 /* Regras para telas pequenas: quando a largura for menor que 600px */
 @media (max-width: 600px) {
     .modal {
@@ -254,7 +282,7 @@ main {
     display: flex;
     flex-direction: column;
     width: 90%;
-    max-width: 800px;
+    max-width: 1800px;
     height: 70%;
     margin: 20px auto;
     padding: 20px;
@@ -337,7 +365,7 @@ footer {
     top: 0;
     left: 0;
     width: 100%;
-    height: 100%;
+    height: 146%;
     background-color: rgba(0, 0, 0, 0.5);
     display: none;
     justify-content: center;
@@ -385,6 +413,108 @@ footer {
     color: rgba(0, 0, 0, 0.545);
 }
 
+/*Modal dos Membros da Banda*/
+
+.membros a {
+    /* Link dentro do modal de perfil */
+    text-decoration: none;
+    color: rgba(0, 0, 0, 0.5);
+}
+
+.membros a:hover {
+    /* Efeito no link do modal */
+    color: rgba(0, 0, 0, 0.704);
+    transform: scale(1, 0);
+    transition: 0.5s;
+}
+
+.membros {
+    /* Fundo escuro que cobre a tela quando o modal está aberto */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    max-width: 1800px;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.membros.ativo {
+    /* Mostra o modal quando ele ativa a classe ativo */
+    opacity: 1;
+}
+
+.conteudo-membros {
+    /* Caixa branca dentro do modal */
+    background-color: white;
+    color: #000000a6;
+    padding: 20px;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 1800px;
+    height: 70%;
+    text-align: center;
+    position: relative;
+    transform: scale(0.8);
+    transition: transform 0.3s ease;
+}
+
+.lista-membros {
+  list-style: disc;
+  text-align: left;          /* Corrige o alinhamento */
+  margin: 20px auto;
+  margin-right: 30px;
+  padding-left: 45px;
+  width: 90%;
+  max-width: 1800px;
+  max-height: 80vh;
+  overflow: auto;
+}
+
+.lista-membros li {
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+.lista-membros strong {
+  color: #222;
+}
+
+.lista-membros span {
+  color: #666;
+  font-size: 0.95em;
+}
+
+.membros.ativo .membros-perfil {
+    /* Faz a caixa crescer quando o modal abre */
+    transform: scale(1);
+}
+.conteudo-membros ul{
+    text-align: center;
+    font-size: x-large;
+}
+
+.fecharMembros {
+    /* Botão de fechar dentro do modal */
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    cursor: pointer;
+    font-size: 24px;
+    color: #333;
+    font-weight: bold;
+}
+
+.fecharMembros:hover {
+    /* Mudança de cor quando está em cima do X de fechar */
+    color: rgba(0, 0, 0, 0.545);
+}
+
 #back-to-top {
     /* Botão para voltar para cima da página */
     position: fixed;
@@ -419,4 +549,31 @@ footer {
         height: 45px;
         font-size: 18px;
     }
+}
+
+.somente-admin{
+    border-bottom: 1.5px solid black;
+}
+
+.somente-admin a{
+    background: transparent;
+    border: 1px solid #aaaaaaa8;
+    text-decoration: none;
+    border-radius: 12px;
+    padding: 4px;
+    margin-left: 10px;
+    color: inherit;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;    
+}
+
+.somente-admin a:hover{
+    border-radius: 10px;
+    border: none;
+    transform: 1.5s;
+    transition: 0.5s;
+    background-color: #333131;
+    text-decoration: none;
+    color: white;
+    padding: 5px;
 }

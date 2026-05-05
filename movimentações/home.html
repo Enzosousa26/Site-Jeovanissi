@@ -22,24 +22,60 @@
 </head>
 <body>
     <!-- Corpo da página: tudo que aparece para o usuário -->
-     <div class="voltar-tela-login">
+    <div class="voltar-tela-login">
         <br>
         <a href="../index.html"><-</a>
     </div>
-    
+ 
     <header class="topbar">
         <h4 id="mudar-perfil">Perfil: </h4>
         <!-- Cabeçalho do site com título e menu -->
         <h1>Inicio do Site Teste</h1>
         <nav class="topnav">
             <!-- Menu de navegação para ir para outras páginas -->
-            <a href="../movimentações/home.html" aria-label="Página inicial">Home</a>
-            <a href="../movimentações/sobre.html" aria-label="Página sobre nós">Sobre</a>
-            <a href="../movimentações/contato.html" aria-label="Página de contato">Contato</a>
+            <a href="../movimentações/home.html" aria-label="Página inicial">Inicio</a>
+            <a href="../movimentações/musicas.html" aria-label="Página sobre nós">Musicas</a>
+            <a href="../movimentações/escalas.html" aria-label="Página de contato">Escalas</a>
         </nav>
     </header>
-
+ 
     <main>
+        <!-- SEÇÃO EXCLUSIVA DE ADMIN: some automaticamente para membros -->
+        <section class="somente-admin">
+            <h3>Gerenciamento Jeova Nissi</h3>
+            <a href="#"class="somente-admin" onclick="exibirMembros()">Ver Membros Da Banda</a>
+            <a href="#"class="somente-admin" onclick="alert('Exportar Dados')">Ver Relatorios</a>
+            <a href="#"class="somente-admin" onclick="alert('Exportar Dados')">Gerenciar Escalas</a>
+            <p>Esta área é apenas para administradores.</p>
+        </section>
+
+        <div id="membros" class="membros" role="dialog" aria-modal="true">
+            <!-- Caixa modal que aparece sobre a página -->
+            <div class="conteudo-membros">
+                <span class="fecharMembros" onclick="fecharExibirMembros()" aria-label="Fechar modal">X</span>
+                <!-- Botão de fechar o modal -->
+                <h2>Membros Jeova Nissi</h2>
+                <ul class="lista-membros">
+                    <li><strong><a href="#">Aminadabe / Binho</a></strong> <span>(Líder Geral)</span></li>
+                    <li><strong><a href="#">Patrick</a></strong> <span>(Líder Instrumental)</span></li>
+                    <li><strong><a href="#">Moises</a></strong> <span>(Líder Vocal)</span></li>
+                    <li><strong><a href="#">Alesio</a></strong> <span>(Vocalista)</span></li>
+                    <li><strong><a href="#">Douglas</a></strong> <span>(Baterista / Baixista)</span></li>
+                    <li><strong><a href="#">Edilane</a></strong> <span>(Vocalista)</span></li>
+                    <li><strong><a href="#">Enzo</a></strong> <span>(Baterista)</span></li>
+                    <li><strong><a href="#">Joao</a></strong> <span>(Instrumental)</span></li>
+                    <li><strong><a href="#">Larrisa</a></strong> <span>(Vocalista)</span></li>
+                    <li><strong><a href="#">Miguel</a></strong> <span>(Instrumental)</span></li>
+                    <li><strong><a href="#">Nicole</a></strong> <span>(Vocalista / Mídia)</span></li>
+                    <li><strong><a href="#">Vanessa</a></strong> <span>(Vocalista)</span></li>
+                    <li><strong><a href="#">Vitoria</a></strong> <span>(Vocalista)</span></li>
+                    <li><strong><a href="#">Wagao</a></strong> <span>(Baixista)</span></li>
+                    <li><strong><a href="#">Eliane</a></strong> <span>(Vocalista)</span></li>
+                    <li><strong><a href="#">Erika</a></strong> <span>(Vocalista)</span></li>
+                </ul>
+            </div>
+        </div>
+
         <!-- Área principal do conteúdo da página -->
         <section>
             <!-- Primeira seção com boas-vindas -->
@@ -47,7 +83,7 @@
             <p>Este é um exemplo de site simples para demonstrar a estrutura básica de um documento HTML.</p>
             <p>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Fugiat veniam asperiores ratione dolorum maiores dolore perferendis libero, ad molestiae hic quaerat placeat sunt saepe numquam. Suscipit cupiditate doloremque ratione modi!</p>
         </section>
-
+ 
         <section>
             <!-- Segunda seção com destaque de conteúdo -->
             <h3>Seção de Destaque</h3>
@@ -59,14 +95,15 @@
             <p>Este é o subtítulo da seção de destaque.</p>
         </section>
     </main>
+ 
     <footer>
         <!-- Rodapé da página com aviso de copyright -->
         <p>&copy; 2026 Meu Site Teste. Todos os direitos reservados.</p>
     </footer>
-
+ 
     <button id="back-to-top" aria-label="Voltar ao topo">↑</button>
     <!-- Botão que aparece para subir a página para o topo -->
-
+ 
     <script src="../script.js"></script>
     <!-- Aqui o JavaScript é carregado para fazer coisas dinâmicas funcionar -->
 </body>
