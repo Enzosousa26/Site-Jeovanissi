@@ -8,14 +8,24 @@
 </head>
 <body>
     <div class="tela-login">
-        <h2>Seja bem vindo ao meu site</h2>
-        <h3>Estou aprendendo ainda, então se tiver algum erro vc ja sabe!😂</h3>
+        <h2>Ministerio de louvor - JEOVA NISSI</h2>
         <div class="login-container">
-            <h2>Quer conhecer meu site?</h2>
+            <h2>"O Senhor é a nossa bandeira"</h2>
             <p>Faça login para prosseguir</p>
-            <input type="text">
+            <input type="text" placeholder="Coloque aqui seu Acesso">
             <br>
-            <input type="password">
+            <div style="position: relative; display: inline-block;">
+                <input type="password" id="senha-input" placeholder="Digite sua Senha">
+                <span onclick="toggleSenha()" style="
+                    position: absolute;
+                    right: 10px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    cursor: pointer;
+                    font-size: 9px;
+                    user-select: none;
+                " class="exibir-senha">Exibir Senha</span>
+            </div>
             <br>
             <br>
             <button id="login-btn" onclick="verificarUsuario()">ENTRAR</button>
@@ -26,10 +36,10 @@
         <!-- Rodapé da página com aviso de copyright -->
         <p>&copy; 2026 Meu Site Teste. Todos os direitos reservados.</p>
     </footer>
-
+ 
     <button id="back-to-top" aria-label="Voltar ao topo">↑</button>
     <!-- Botão que aparece para subir a página para o topo -->
-
+ 
     <script src="./script.js"></script>
     <!-- Aqui o JavaScript é carregado para fazer coisas dinâmicas funcionar -->
 </body>

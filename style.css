@@ -1,5 +1,5 @@
 ﻿@charset "UTF-8";
-
+ 
 /* Animação de entrada da tela de login */
 @keyframes fadeInUp {
     from {
@@ -11,11 +11,11 @@
         transform: translateY(0);
     }
 }
-
+ 
 body {
     animation: fadeInUp 0.6s ease both;
 }
-
+ 
 /*Transição para quando acessar o site*/
 @keyframes fadeOutDown {
     from {
@@ -27,7 +27,7 @@ body {
         transform: translateY(24px);
     }
 }
-
+ 
 /* Regras para telas pequenas: quando a largura for menor que 600px */
 @media (max-width: 600px) {
     .modal {
@@ -36,7 +36,7 @@ body {
         text-align: center;
     }
 }
-
+ 
 @media (max-width: 600px) {
     .conteudo-perfil {
         /* Conteúdo do modal ocupa quase toda a largura no celular */
@@ -44,7 +44,7 @@ body {
         padding: 15px;
     }
 }
-
+ 
 @media (max-width: 600px) {
     header::before {
         /* Ajuste extra em telas pequenas, se houver pseudo-elemento */
@@ -53,7 +53,7 @@ body {
         margin-bottom: 10px;
     }
 }
-
+ 
 body {
     /* Estilo básico de todo o corpo da página */
     background-color: antiquewhite;
@@ -62,7 +62,7 @@ body {
     margin: 0;
     padding: 0;
 }
-
+ 
 /* Mais regras para telas menores que 700px */
 @media (max-width: 700px) {
     header {
@@ -73,7 +73,7 @@ body {
         text-align: center;
         gap: 12px;
     }
-
+ 
     .topnav {
         /* Menu ocupa toda a largura em telas pequenas */
         width: 100%;
@@ -81,7 +81,7 @@ body {
         gap: 10px;
         padding-top: 6px;
     }
-
+ 
     .topnav a {
         /* Links do menu ficam maiores e centralizados */
         flex: 1 1 auto;
@@ -89,14 +89,14 @@ body {
         max-width: 180px;
         text-align: center;
     }
-
+ 
     main {
         /* O conteúdo principal usa mais espaço lateral */
         width: 95%;
         margin: 18px auto;
     }
 }
-
+ 
 .tela-login{
      /* Estilo do cabeçalho com fundo escuro e layout flexível */
     background-color: #111;
@@ -111,7 +111,7 @@ body {
     gap: 18px;
     flex-wrap: wrap;
 }
-
+ 
 .login-container{
     /* Caixa branca no centro da página */
     background-color: white;
@@ -129,7 +129,7 @@ body {
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
-
+ 
 .login-container input{
     width: 350px;
     height: 21px;
@@ -138,7 +138,7 @@ body {
     align-content: center;
     border-radius: 10px;
 }
-
+ 
 .login-container button {
     width: 350px;
     height: 30px;
@@ -149,29 +149,29 @@ body {
     cursor: pointer;
     font-size: 16px;
 }
-
+ 
 .login-container button:hover {
     background-color: #333;
 }
-
+ 
 /* Responsividade para a tela de login */
 @media (max-width: 768px) {
     .tela-login {
         padding: 10px;
         font-size: 14px;
     }
-
+ 
     .login-container {
         width: 95%;
         padding: 15px;
         margin: 10px auto;
     }
-
+ 
     .login-container input {
         width: 100%;
         max-width: 300px;
     }
-
+ 
     .login-container button {
         width: 100%;
         max-width: 200px;
@@ -179,38 +179,38 @@ body {
         font-size: 16px;
     }
 }
-
+ 
 @media (max-width: 480px) {
     .tela-login h2 {
         font-size: 18px;
     }
-
+ 
     .tela-login h3 {
         font-size: 14px;
     }
-
+ 
     .login-container h2 {
         font-size: 16px;
     }
-
+ 
     .login-container p {
         font-size: 14px;
     }
-
+ 
     .login-container {
         padding: 10px;
     }
-
+ 
     .login-container input {
         height: 30px;
         font-size: 16px;
     }
 }
-
+ 
 .voltar-tela-login{
     background-color: #111;
 }
-
+ 
 .voltar-tela-login a{
     /* Estilo dos links do menu */
     text-decoration: none;
@@ -225,12 +225,12 @@ body {
     padding: 6px;
     border-radius: 10px;
 }
-
+ 
 .voltar-tela-login a:hover{
     /* Quando o mouse passa em cima do link */
     background: rgba(255, 255, 255, 0.166);
 }
-
+ 
 header {
     /* Estilo do cabeçalho com fundo escuro e layout flexível */
     background-color: #111;
@@ -244,7 +244,7 @@ header {
     gap: 18px;
     flex-wrap: wrap;
 }
-
+ 
 .topnav {
     /* Estilo do menu de navegação */
     display: flex;
@@ -252,7 +252,7 @@ header {
     flex-wrap: wrap;
     justify-content: center;
 }
-
+ 
 .topnav a {
     /* Estilo dos links do menu */
     color: white;
@@ -262,19 +262,19 @@ header {
     background: rgba(255, 255, 255, 0.05);
     transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
-
+ 
 .topnav a:hover {
     /* Quando o mouse passa em cima do link */
     background: rgba(255, 255, 255, 0.06);
 }
-
+ 
 .topnav a.active {
     /* Estilo do link da página atual */
     background: rgba(255, 255, 255, 0.2);
     box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.28), 0 12px 30px rgba(0, 0, 0, 0.16);
     transform: translateY(-3px);
 }
-
+ 
 main {
     /* Caixa branca no centro da página */
     background-color: white;
@@ -289,14 +289,14 @@ main {
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
-
+ 
 main p {
     /* Texto dentro do conteúdo principal */
     font-size: 18px;
     color: #333;
     text-align: center;
 }
-
+ 
 footer {
     /* Rodapé simples */
     color: black;
@@ -306,7 +306,7 @@ footer {
     height: 50px;
     border-radius: 5px 5px 0px 0px;
 }
-
+ 
 .modal {
     /* Caixa do modal com ícone e texto */
     display: flex;
@@ -315,20 +315,20 @@ footer {
     gap: 10px;
     padding: 2px;
 }
-
+ 
 .modal h1 {
     /* Ícone grande dentro do modal */
     font-size: 22px;
     color: rgba(0, 0, 0, 0.704);
 }
-
+ 
 .modal p {
     /* Texto do modal */
     font-size: 18px;
     color: rgba(0, 0, 0, 0.704);
     margin: 0;
 }
-
+ 
 .modal a {
     /* Link do modal com estilo de botão */
     text-decoration: none;
@@ -337,7 +337,7 @@ footer {
     border-radius: 70%;
     width: 50px;
 }
-
+ 
 .modal a:hover {
     /* Efeito quando passa o mouse no botão do modal */
     background-color: rgba(108, 123, 145, 0.904);
@@ -345,20 +345,20 @@ footer {
     transition: 0.5s;
     color: black;
 }
-
+ 
 .perfil a {
     /* Link dentro do modal de perfil */
     text-decoration: none;
     color: rgba(0, 0, 0, 0.5);
 }
-
+ 
 .perfil a:hover {
     /* Efeito no link do modal */
     color: rgba(0, 0, 0, 0.704);
     transform: scale(1, 0);
     transition: 0.5s;
 }
-
+ 
 .perfil {
     /* Fundo escuro que cobre a tela quando o modal está aberto */
     position: fixed;
@@ -373,12 +373,12 @@ footer {
     opacity: 0;
     transition: opacity 0.3s ease;
 }
-
+ 
 .perfil.ativo {
     /* Mostra o modal quando ele ativa a classe ativo */
     opacity: 1;
 }
-
+ 
 .conteudo-perfil {
     /* Caixa branca dentro do modal */
     background-color: white;
@@ -391,12 +391,12 @@ footer {
     transform: scale(0.8);
     transition: transform 0.3s ease;
 }
-
+ 
 .perfil.ativo .conteudo-perfil {
     /* Faz a caixa crescer quando o modal abre */
     transform: scale(1);
 }
-
+ 
 .fechar {
     /* Botão de fechar dentro do modal */
     position: absolute;
@@ -407,27 +407,27 @@ footer {
     color: #333;
     font-weight: bold;
 }
-
+ 
 .fechar:hover {
     /* Mudança de cor quando está em cima do X de fechar */
     color: rgba(0, 0, 0, 0.545);
 }
-
+ 
 /*Modal dos Membros da Banda*/
-
+ 
 .membros a {
     /* Link dentro do modal de perfil */
     text-decoration: none;
     color: rgba(0, 0, 0, 0.5);
 }
-
+ 
 .membros a:hover {
     /* Efeito no link do modal */
     color: rgba(0, 0, 0, 0.704);
     transform: scale(1, 0);
     transition: 0.5s;
 }
-
+ 
 .membros {
     /* Fundo escuro que cobre a tela quando o modal está aberto */
     position: fixed;
@@ -443,12 +443,12 @@ footer {
     opacity: 0;
     transition: opacity 0.3s ease;
 }
-
+ 
 .membros.ativo {
     /* Mostra o modal quando ele ativa a classe ativo */
     opacity: 1;
 }
-
+ 
 .conteudo-membros {
     /* Caixa branca dentro do modal */
     background-color: white;
@@ -457,16 +457,19 @@ footer {
     border-radius: 10px;
     width: 90%;
     max-width: 1800px;
-    height: 70%;
+    height: fit-content; /* MUDOU: se ajusta ao conteúdo */
+    max-height: 80vh;
     text-align: center;
     position: relative;
     transform: scale(0.8);
     transition: transform 0.3s ease;
+    box-sizing: border-box;
+    overflow: hidden;
 }
-
+ 
 .lista-membros {
   list-style: disc;
-  text-align: left;          /* Corrige o alinhamento */
+  text-align: left;
   margin: 20px auto;
   margin-right: 30px;
   padding-left: 45px;
@@ -475,21 +478,21 @@ footer {
   max-height: 80vh;
   overflow: auto;
 }
-
+ 
 .lista-membros li {
   margin-bottom: 8px;
   line-height: 1.5;
 }
-
+ 
 .lista-membros strong {
   color: #222;
 }
-
+ 
 .lista-membros span {
   color: #666;
   font-size: 0.95em;
 }
-
+ 
 .membros.ativo .membros-perfil {
     /* Faz a caixa crescer quando o modal abre */
     transform: scale(1);
@@ -498,7 +501,7 @@ footer {
     text-align: center;
     font-size: x-large;
 }
-
+ 
 .fecharMembros {
     /* Botão de fechar dentro do modal */
     position: absolute;
@@ -509,12 +512,12 @@ footer {
     color: #333;
     font-weight: bold;
 }
-
+ 
 .fecharMembros:hover {
     /* Mudança de cor quando está em cima do X de fechar */
     color: rgba(0, 0, 0, 0.545);
 }
-
+ 
 #back-to-top {
     /* Botão para voltar para cima da página */
     position: fixed;
@@ -533,13 +536,13 @@ footer {
     transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
     z-index: 1000;
 }
-
+ 
 #back-to-top.show {
     /* Mostra o botão quando a classe show é adicionada */
     opacity: 1;
     visibility: visible;
 }
-
+ 
 @media (max-width: 700px) {
     #back-to-top {
         /* Ajusta o botão em telas menores */
@@ -550,11 +553,11 @@ footer {
         font-size: 18px;
     }
 }
-
+ 
 .somente-admin{
     border-bottom: 1.5px solid black;
 }
-
+ 
 .somente-admin a{
     background: transparent;
     border: 1px solid #aaaaaaa8;
@@ -566,7 +569,7 @@ footer {
     cursor: pointer;
     transition: background 0.2s, border-color 0.2s;    
 }
-
+ 
 .somente-admin a:hover{
     border-radius: 10px;
     border: none;
@@ -576,4 +579,101 @@ footer {
     text-decoration: none;
     color: white;
     padding: 5px;
+}
+ 
+/* =====================================================
+   RESPONSIVIDADE DO MODAL DE MEMBROS DA BANDA
+   ===================================================== */
+@media (max-width: 700px) {
+    .membros {
+        max-width: 100%;
+        align-items: flex-end;
+    }
+ 
+    .conteudo-membros {
+        width: 100%;
+        height: 90vh;
+        border-radius: 14px 14px 0 0;
+        padding: 14px 10px;
+        overflow-y: auto;
+    }
+ 
+    .lista-membros {
+        width: 100%;
+        padding-left: 20px;
+        margin-right: 0;
+        margin: 12px auto;
+        max-height: 70vh;
+        font-size: 14px;
+    }
+ 
+    .lista-membros li {
+        margin-bottom: 10px;
+    }
+ 
+    .lista-membros span {
+        font-size: 0.85em;
+    }
+ 
+    .conteudo-membros ul {
+        font-size: medium;
+    }
+}
+ 
+@media (max-width: 480px) {
+    .conteudo-membros {
+        height: 92vh;
+        padding: 10px 8px;
+    }
+ 
+    .lista-membros {
+        padding-left: 14px;
+        font-size: 13px;
+        max-height: 68vh;
+    }
+ 
+    .lista-membros strong {
+        font-size: 0.95em;
+    }
+ 
+    .lista-membros span {
+        font-size: 0.8em;
+    }
+ 
+    .conteudo-membros ul {
+        font-size: small;
+    }
+}
+
+.repertorio-geral{
+    text-align: left;
+    
+    
+}
+
+.repertorio-geral a{
+    text-decoration: none;
+    color: black;
+}
+
+.repertorio-geral a:hover{
+    text-decoration: none;
+    color: #666;
+}
+
+.repertorio-geral h4{
+    border: 1.5px solid #aaaaaa;
+    width: 15%;
+    border-radius: 5px;
+    padding: 2px;
+}
+
+@media (max-width: 768px) {
+    .repertorio-geral {
+        flex-direction: column;
+    }
+}
+
+.lista{
+    
 }

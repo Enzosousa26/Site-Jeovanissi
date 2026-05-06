@@ -24,7 +24,7 @@ if (loginBtn) {
     loginBtn.addEventListener('click', () => {
         // Lê os inputs no momento do clique
         let usuario = document.querySelector('input[type="text"]').value;
-        let senha = document.querySelector('input[type="password"]').value;
+        let senha = document.getElementById('senha-input').value;
  
         // Procura o usuário na lista
         const encontrado = usuarios.find(u => u.usuario === usuario && u.senha === senha);
@@ -217,3 +217,8 @@ window.addEventListener('load', () => {
         });
     }
 });
+
+function toggleSenha() {
+    const input = document.getElementById('senha-input');
+    input.type = input.type === 'password' ? 'text' : 'password';
+}
