@@ -666,7 +666,8 @@ footer {
 
 .repertorio-geral h4{
     border: 1.5px solid #aaaaaa;
-    width: 15%;
+    width: 40%;
+    text-align: center;
     border-radius: 5px;
     padding: 2px;
 }
