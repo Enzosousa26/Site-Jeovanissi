@@ -647,6 +647,9 @@ footer {
 
 .repertorio-geral{
     text-align: left;
+    display: flex;
+    gap: 20px;
+    columns: auto;
     
     
 }
@@ -672,8 +675,4 @@ footer {
     .repertorio-geral {
         flex-direction: column;
     }
-}
-
-.lista{
-    
 }
