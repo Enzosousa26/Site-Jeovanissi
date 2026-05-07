@@ -1,46 +1,38 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tela de Login</title>
+    <title>Login - Jeová Nissi</title>
     <link rel="stylesheet" href="./style.css">
 </head>
-<body>
-    <div class="tela-login">
-        <h2>Ministerio de louvor - JEOVA NISSI</h2>
-        <div class="login-container">
-            <h2>"O Senhor é a nossa bandeira"</h2>
-            <p>Faça login para prosseguir</p>
-            <input type="text" placeholder="Coloque aqui seu Acesso">
-            <br>
-            <div style="position: relative; display: inline-block;">
-                <input type="password" id="senha-input" placeholder="Digite sua Senha">
-                <span onclick="toggleSenha()" style="
-                    position: absolute;
-                    right: 10px;
-                    top: 50%;
-                    transform: translateY(-50%);
-                    cursor: pointer;
-                    font-size: 9px;
-                    user-select: none;
-                " class="exibir-senha">Exibir Senha</span>
+<body class="pagina-login">
+    <main class="tela-login">
+        <section class="login-hero">
+            <span>Ministério de Louvor</span>
+            <h1>Jeová Nissi</h1>
+            <p>O Senhor é a nossa bandeira.</p>
+        </section>
+
+        <section class="login-container">
+            <h2>Acesse sua área</h2>
+            <p>Entre para acompanhar repertórios, membros e escalas do ministério.</p>
+
+            <input type="text" placeholder="Coloque aqui seu acesso">
+
+            <div class="campo-senha">
+                <input type="password" id="senha-input" placeholder="Digite sua senha">
+                <button type="button" onclick="toggleSenha()" class="exibir-senha">Exibir</button>
             </div>
-            <br>
-            <br>
-            <button id="login-btn" onclick="verificarUsuario()">ENTRAR</button>
-            
-        </div>
-    </div>
+
+            <button id="login-btn" type="button">Entrar</button>
+        </section>
+    </main>
+
     <footer>
-        <!-- Rodapé da página com aviso de copyright -->
-        <p>&copy; 2026 Meu Site Teste. Todos os direitos reservados.</p>
+        <p>&copy; 2026 Ministério de Louvor Jeová Nissi. Todos os direitos reservados.</p>
     </footer>
- 
-    <button id="back-to-top" aria-label="Voltar ao topo">↑</button>
-    <!-- Botão que aparece para subir a página para o topo -->
- 
+
     <script src="./script.js"></script>
-    <!-- Aqui o JavaScript é carregado para fazer coisas dinâmicas funcionar -->
 </body>
 </html>

@@ -28,13 +28,13 @@
     </div>
  
     <header class="topbar">
-        <h4 id="mudar-perfil">Perfil: </h4>
+        <h4 id="mudar-perfil" class="mudar-perfil">Perfil: </h4>
         <!-- Cabeçalho do site com título e menu -->
-        <h1>Inicio do Site Teste</h1>
+        <h1>Ministério de Louvor - JEOVÁ NISSI</h1>
         <nav class="topnav">
             <!-- Menu de navegação para ir para outras páginas -->
             <a href="../movimentações/home.html" aria-label="Página inicial">Inicio</a>
-            <a href="../movimentações/musicas.html" aria-label="Página sobre nós">Musicas</a>
+            <a href="../movimentações/musicas.html" aria-label="Página de repertórios">Repertórios</a>
             <a href="../movimentações/escalas.html" aria-label="Página de contato">Escalas</a>
         </nav>
     </header>
@@ -42,11 +42,28 @@
     <main>
         <!-- SEÇÃO EXCLUSIVA DE ADMIN: some automaticamente para membros -->
         <section class="somente-admin">
-            <h3>Gerenciamento Jeova Nissi</h3>
-            <a href="#"class="somente-admin" onclick="exibirMembros()">Ver Membros Da Banda</a>
-            <a href="#"class="somente-admin" onclick="alert('Exportar Dados')">Ver Relatorios</a>
-            <a href="#"class="somente-admin" onclick="alert('Exportar Dados')">Gerenciar Escalas</a>
-            <p>Esta área é apenas para administradores.</p>
+            <div class="cabecalho-admin">
+                <div>
+                    <h3>Gerenciamento Jeova Nissi</h3>
+                    <p>Ferramentas exclusivas para organizar dados, relatórios e escalas.</p>
+                </div>
+                <span>Admin</span>
+            </div>
+            <div class="acoes-admin">
+                <a href="#" class="somente-admin" onclick="alert('Exportar Dados')">Ver Relatórios</a>
+                <a href="#" class="somente-admin" onclick="alert('Exportar Dados')">Gerenciar Escalas</a>
+            </div>
+        </section>
+
+        <section class="area-membros">
+            <div class="cabecalho-membros-home">
+                <div>
+                    <h3>Membros Jeova Nissi</h3>
+                    <p>Consulte os integrantes e suas funções na banda.</p>
+                </div>
+                <span>Banda</span>
+            </div>
+            <a href="#" onclick="exibirMembros()">Ver Membros Da Banda</a>
         </section>
 
         <div id="membros" class="membros" role="dialog" aria-modal="true">
@@ -55,44 +72,53 @@
                 <span class="fecharMembros" onclick="fecharExibirMembros()" aria-label="Fechar modal">X</span>
                 <!-- Botão de fechar o modal -->
                 <h2>Membros Jeova Nissi</h2>
-                <ul class="lista-membros">
-                    <li><strong><a href="#">Aminadabe / Binho</a></strong> <span>(Líder Geral)</span></li>
-                    <li><strong><a href="#">Patrick</a></strong> <span>(Líder Instrumental)</span></li>
-                    <li><strong><a href="#">Moises</a></strong> <span>(Líder Vocal)</span></li>
-                    <li><strong><a href="#">Alesio</a></strong> <span>(Vocalista)</span></li>
-                    <li><strong><a href="#">Douglas</a></strong> <span>(Baterista / Baixista)</span></li>
-                    <li><strong><a href="#">Edilane</a></strong> <span>(Vocalista)</span></li>
-                    <li><strong><a href="#">Enzo</a></strong> <span>(Baterista)</span></li>
-                    <li><strong><a href="#">Joao</a></strong> <span>(Instrumental)</span></li>
-                    <li><strong><a href="#">Larrisa</a></strong> <span>(Vocalista)</span></li>
-                    <li><strong><a href="#">Miguel</a></strong> <span>(Instrumental)</span></li>
-                    <li><strong><a href="#">Nicole</a></strong> <span>(Vocalista / Mídia)</span></li>
-                    <li><strong><a href="#">Vanessa</a></strong> <span>(Vocalista)</span></li>
-                    <li><strong><a href="#">Vitoria</a></strong> <span>(Vocalista)</span></li>
-                    <li><strong><a href="#">Wagao</a></strong> <span>(Baixista)</span></li>
-                    <li><strong><a href="#">Eliane</a></strong> <span>(Vocalista)</span></li>
-                    <li><strong><a href="#">Erika</a></strong> <span>(Vocalista)</span></li>
+                <button class="btn-add-membro somente-admin" onclick="abrirModalAdicionarMembro()">+ Adicionar membro</button>
+                <ul class="lista-membros" id="lista-membros">
+                    <!-- A lista de membros é montada pelo JavaScript -->
                 </ul>
             </div>
         </div>
 
+        <div id="modal-editar-membro" class="modal-membro" role="dialog" aria-modal="true">
+            <div class="conteudo-membro">
+                <button class="fechar-edicao" onclick="fecharModalEditarMembro()" aria-label="Fechar modal">✕</button>
+                <h3 id="titulo-modal-membro">Editar membro</h3>
+                <input type="text" id="input-nome-membro" placeholder="Nome do membro">
+                <input type="text" id="input-cargo-membro" placeholder="Cargo do membro">
+                <p class="erro-membro" id="erro-membro"></p>
+                <div class="botoes-membro">
+                    <button type="button" class="btn-cancelar-membro" onclick="fecharModalEditarMembro()">Cancelar</button>
+                    <button type="button" onclick="salvarEdicaoMembro()">Salvar</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Área principal do conteúdo da página -->
-        <section>
-            <!-- Primeira seção com boas-vindas -->
-            <h2>Conheça mais do Jeova Nissi!</h2>
-            <p>Este é um exemplo de site simples para demonstrar a estrutura básica de um documento HTML.</p>
-            <p>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Fugiat veniam asperiores ratione dolorum maiores dolore perferendis libero, ad molestiae hic quaerat placeat sunt saepe numquam. Suscipit cupiditate doloremque ratione modi!</p>
+        <section class="home-hero">
+            <span>Ministério de Louvor</span>
+            <h2>Jeová Nissi</h2>
+            <p>Somos uma equipe chamada para servir a igreja com adoração, unidade e excelência, lembrando que o Senhor é a nossa bandeira.</p>
+            <div class="atalhos-home">
+                <a href="../movimentações/musicas.html">Ver repertório</a>
+                <a href="../movimentações/escalas.html">Ver escalas</a>
+            </div>
         </section>
- 
-        <section>
-            <!-- Segunda seção com destaque de conteúdo -->
-            <h3>Seção de Destaque</h3>
-            <p>Esta seção pode ser usada para destacar informações importantes ou promoções.</p>
-            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Doloremque, eum placeat! Nemo voluptates quis nam eos facere nulla, distinctio asperiores? Ratione, aut non voluptatibus nulla ut numquam corrupti ad voluptatum!</p>
-            <h2>Título Principal</h2>
-            <p>Este é o título principal da seção de destaque.</p>
-            <h3>Subtítulo</h3>
-            <p>Este é o subtítulo da seção de destaque.</p>
+
+        <section class="home-grid">
+            <article>
+                <h3>Nosso propósito</h3>
+                <p>Conduzir momentos de louvor que aproximem pessoas de Deus e fortaleçam a fé da igreja em cada culto, ensaio e ministração.</p>
+            </article>
+
+            <article>
+                <h3>Como servimos</h3>
+                <p>Organizamos repertórios, escalas e responsabilidades para que cada integrante possa servir com clareza, compromisso e coração disponível.</p>
+            </article>
+
+            <article>
+                <h3>Nossa identidade</h3>
+                <p>Jeová Nissi significa que Deus é a nossa bandeira. Por isso, tudo que fazemos aponta para Ele: nossa música, nossa entrega e nossa comunhão.</p>
+            </article>
         </section>
     </main>
  

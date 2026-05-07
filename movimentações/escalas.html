@@ -1,71 +1,73 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <!-- Cabeçalho da página de contato -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Página de contato do Site Teste, entre em contato conosco para dúvidas e suporte.">
-    <title>Site Teste - Contato</title>
+    <meta name="description" content="Escalas do Ministério de Louvor Jeová Nissi.">
+    <title>Escalas - Jeová Nissi</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <!-- Puxa a fonte Inter do Google -->
     <link rel="stylesheet" href="../style.css">
-    <!-- Usa o CSS geral do site -->
     <link rel="icon" href="../favicon-32x32.png" type="image/png">
-    <!-- Ícone visível na aba do navegador -->
 </head>
 <body>
-    <!-- Corpo da página: tudo que aparece para o usuário -->
     <div class="voltar-tela-login">
         <br>
         <a href="../index.html"><-</a>
     </div>
-        
+
     <header class="topbar">
         <h4>Perfil: Admin</h4>
-        <!-- Cabeçalho com título e menu de navegação -->
-        <h1>Suporte para Contato</h1>
+        <h1>Escalas - JEOVA NISSI</h1>
         <nav class="topnav">
             <a href="../movimentações/home.html" aria-label="Página inicial">Home</a>
-            <a href="../movimentações/musicas.html" aria-label="Página sobre nós">Musicas</a>
-            <a href="../movimentações/escalas.html" aria-label="Página de contato">Escalas</a>
+            <a href="../movimentações/musicas.html" aria-label="Página de repertórios">Repertórios</a>
+            <a href="../movimentações/escalas.html" aria-label="Página de escalas">Escalas</a>
         </nav>
     </header>
 
     <main>
-        <!-- Conteúdo principal da página de contato -->
-        <h2>Aqui esta algumas coisas que podem te ajudar</h2>
-        <p>Se você tiver alguma dúvida ou precisar de ajuda, não hesite em entrar em contato conosco. Estamos aqui para ajudar e responder a todas as suas perguntas.</p>
-        <div class="modal">
-            <!-- Ícone clicável que abre o modal de contato -->
-            <a onclick="abrirPerfil()" href="#">
-                <h1>&#x1F464;</h1>
-            </a>
-            <p>Caso sua duvida nao tenha sido resolvida, clique no icone ao lado.</p>
+        <section class="cabecalho-pagina">
+            <span>Organização do culto</span>
+            <h2>Escalas do Jeova Nissi</h2>
+            <p>Confira quem estará servindo em cada domingo e mantenha as responsabilidades alinhadas com o repertório.</p>
+        </section>
+
+        <div class="escalas-geral" id="escalas-geral">
+            <!-- As escalas são geradas pelo JavaScript -->
         </div>
+
+        <button class="btn-nova-data somente-admin" id="btn-nova-escala" onclick="abrirModalEscala()" style="display:none;">
+            + Adicionar escala
+        </button>
     </main>
 
-    <div id="perfil" class="perfil" role="dialog" aria-modal="true">
-        <!-- Caixa modal que aparece sobre a página -->
-        <div class="conteudo-perfil">
-            <span class="fechar" onclick="fecharPerfil()" aria-label="Fechar modal">X</span>
-            <!-- Botão de fechar o modal -->
-            <h2>Deixaremos um numero de contato para suporte, caso sua dúvida não seja resolvida.</h2>
-            <h3><a href="tel:+5511999999999">(11) 99999-9999</a></h3>
-            <!-- Número de telefone clicável para ligar direto -->
+    <div class="modal-edicao" id="modal-escala">
+        <div class="conteudo-edicao conteudo-escala">
+            <button class="fechar-edicao" onclick="fecharModalEscala()">✕</button>
+            <h3 id="modal-escala-titulo">Adicionar escala</h3>
+            <input type="text" id="input-data-escala" placeholder="Data do domingo. Ex: 10/05">
+            <input type="text" id="input-vocal-escala" list="lista-nomes-membros" placeholder="Vocalistas">
+            <input type="text" id="input-instrumental-escala" list="lista-nomes-membros" placeholder="Instrumental">
+            <input type="text" id="input-midia-escala" list="lista-midia-som" placeholder="Mídia">
+            <input type="text" id="input-som-escala" list="lista-midia-som" placeholder="Som">
+            <textarea id="input-observacoes-escala" placeholder="Observações da escala"></textarea>
+            <datalist id="lista-nomes-membros"></datalist>
+            <datalist id="lista-midia-som">
+                <option value="Nicole"></option>
+                <option value="Aminadabe / Binho"></option>
+            </datalist>
+            <button onclick="salvarEscala()">Salvar escala</button>
         </div>
     </div>
 
     <footer>
-        <!-- Rodapé com informações de copyright -->
-        <p>&copy; 2026 Meu Site Teste. Todos os direitos reservados.</p>
+        <p>&copy; 2026 Ministério de Louvor Jeová Nissi. Todos os direitos reservados.</p>
     </footer>
 
     <button id="back-to-top" aria-label="Voltar ao topo">↑</button>
-    <!-- Botão para subir ao topo quando a página rolar para baixo -->
 
     <script src="../script.js"></script>
-    <!-- Puxa o JavaScript para controlar o modal e o botão de rolagem -->
 </body>
 </html>
