@@ -21,7 +21,7 @@ const usuarios = [
     { usuario: 'Vitoria.moreira',   senha: '2520',   perfil: 'membro', nome: 'Vitoria'   },
     { usuario: 'Wagao.barcelos',     senha: '2521',   perfil: 'membro', nome: 'Wagao'     },
     { usuario: 'Eliane.santos',    senha: '2522',   perfil: 'membro', nome: 'Eliane'    },
-    { usuario: 'Erika.santos',     senha: '2523',   perfil: 'membro', nome: 'Erika'     },
+    { usuario: 'Erika.gonçalves',     senha: '2523',   perfil: 'membro', nome: 'Erika'     },
     { usuario: 'Visitante',        senha: '1234',   perfil: 'membro', nome: 'Visitante' },
 ];
  
