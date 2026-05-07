@@ -2151,3 +2151,141 @@ footer {
         padding: 28px 20px;
     }
 }
+
+/* =====================================================
+   RESPONSIVIDADE GLOBAL
+   ===================================================== */
+html {
+    box-sizing: border-box;
+}
+
+*, *::before, *::after {
+    box-sizing: inherit;
+}
+
+img, video, iframe {
+    max-width: 100%;
+    height: auto;
+}
+
+@media (max-width: 992px) {
+    header,
+    .topnav,
+    .meses-container,
+    .repertorio-geral,
+    .cabecalho-admin,
+    .cabecalho-membros-home,
+    .cabecalho-data,
+    .acoes-admin,
+    .lista-membros li,
+    .navegacao-historico {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .topnav a {
+        flex: 1 1 auto;
+        min-width: 140px;
+    }
+
+    .bloco-mes,
+    .bloco-data,
+    .card-escala,
+    .conteudo-edicao,
+    .conteudo-membros,
+    .conteudo-perfil {
+        width: 100%;
+        min-width: auto;
+    }
+
+    main {
+        width: min(100%, 95%);
+        padding: 18px;
+    }
+}
+
+@media (max-width: 768px) {
+    header {
+        padding: 12px 14px;
+    }
+
+    .topnav {
+        gap: 8px;
+    }
+
+    .topnav a {
+        min-width: 0;
+        max-width: none;
+    }
+
+    .repertorio-geral,
+    .meses-container {
+        flex-direction: column;
+    }
+
+    .bloco-ano,
+    .bloco-mes,
+    .bloco-data {
+        width: 100%;
+    }
+
+    .modal-edicao .conteudo-edicao,
+    .conteudo-membros,
+    .conteudo-perfil {
+        width: min(100%, 96%);
+        padding: 18px;
+    }
+
+    .lista-repertorio {
+        padding-inline-start: 18px;
+    }
+
+    .lista-membros li {
+        justify-content: flex-start;
+    }
+
+    .navegacao-historico {
+        justify-content: center;
+        gap: 12px;
+    }
+}
+
+@media (max-width: 600px) {
+    body {
+        padding-bottom: 72px;
+    }
+
+    header {
+        gap: 10px;
+    }
+
+    .topnav a {
+        width: 100%;
+        text-align: center;
+    }
+
+    .voltar-tela-login {
+        padding: 10px 12px;
+    }
+
+    .voltar-tela-login a,
+    .btn-nova-data,
+    .btn-add-musica,
+    .btn-excluir-data,
+    .somente-admin a,
+    .area-membros a {
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .modal-edicao .conteudo-edicao,
+    .conteudo-membros,
+    .conteudo-perfil {
+        padding: 16px;
+    }
+
+    .home-hero,
+    .home-grid {
+        width: 100%;
+    }
+}

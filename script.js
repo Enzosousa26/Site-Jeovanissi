@@ -1048,6 +1048,21 @@ function salvarNovaData() {
     renderizarRepertorio();
 }
 
+function formatarDataAutomaticamente(event) {
+    const input = event.target;
+    let digits = input.value.replace(/\D/g, '');
+
+    if (digits.length > 4) {
+        digits = digits.slice(0, 4);
+    }
+
+    if (digits.length <= 2) {
+        input.value = digits + (digits.length === 2 ? '/' : '');
+    } else {
+        input.value = `${digits.slice(0, 2)}/${digits.slice(2)}`;
+    }
+}
+
 // ============================================================
 // ESCALAS — GERENCIAMENTO POR DATA
 // ============================================================
@@ -1253,4 +1268,9 @@ document.addEventListener('DOMContentLoaded', () => {
     renderizarRepertorio();
     renderizarEscalas();
     abrirEscalaPendente();
+
+    const inputNovaData = document.getElementById('input-nova-data');
+    if (inputNovaData) {
+        inputNovaData.addEventListener('input', formatarDataAutomaticamente);
+    }
 });
