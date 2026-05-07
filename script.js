@@ -310,12 +310,31 @@ const MEMBROS_PADRAO = [
     { nome: 'Erika', cargo: 'Vocalista', categoria: 'vocal' },
 ];
 
+function prioridadeLider(cargo) {
+    const texto = cargo.toLowerCase();
+    if (texto.includes('líder geral') || texto.includes('lider geral')) return 1;
+    if (texto.includes('líder instrumental') || texto.includes('lider instrumental')) return 2;
+    if (texto.includes('líder vocal') || texto.includes('lider vocal')) return 3;
+    return 4;
+}
+
+function compararMembros(a, b) {
+    const ordemA = prioridadeLider(a.cargo);
+    const ordemB = prioridadeLider(b.cargo);
+
+    if (ordemA !== ordemB) {
+        return ordemA - ordemB;
+    }
+
+    return a.nome.localeCompare(b.nome, 'pt', { sensitivity: 'base' });
+}
+
 function carregarMembros() {
     const salvo = localStorage.getItem(CHAVE_MEMBROS);
     const membros = salvo ? JSON.parse(salvo) : [...MEMBROS_PADRAO];
 
     // Garante que membros salvos sem categoria recebam a categoria correta
-    return membros.map((membro) => {
+    const membrosComCategoria = membros.map((membro) => {
         if (membro.categoria) return membro;
 
         const cargo = membro.cargo.toLowerCase();
@@ -338,10 +357,13 @@ function carregarMembros() {
 
         return { ...membro, categoria };
     });
+
+    return membrosComCategoria.sort(compararMembros);
 }
 
 function salvarMembros(membros) {
-    localStorage.setItem(CHAVE_MEMBROS, JSON.stringify(membros));
+    const membrosOrdenados = [...membros].sort(compararMembros);
+    localStorage.setItem(CHAVE_MEMBROS, JSON.stringify(membrosOrdenados));
 }
 
 function dataRepertorioValida(data) {
