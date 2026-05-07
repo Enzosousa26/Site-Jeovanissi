@@ -212,6 +212,9 @@ body {
 .voltar-tela-login{
     /* Faixa superior usada para voltar para a tela de login */
     background-color: #111;
+    display: flex;
+    justify-content: flex-start;
+    padding: 14px 16px 0;
 }
  
 .voltar-tela-login a{
@@ -220,13 +223,14 @@ body {
     color: white;
     background: rgba(255, 255, 255, 0.05);
     transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
-    text-align: left;
-    display: flex;
-    width: 15px;
-    height: 20px;
-    margin-left: 15px;
-    padding: 6px;
-    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 32px;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
 }
  
 .voltar-tela-login a:hover{
