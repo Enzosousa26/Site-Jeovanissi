@@ -11,7 +11,7 @@ const usuarios = [
     { usuario: 'Enzo.santos',      senha: '2510',   perfil: 'membro', nome: 'Enzo'      },
     { usuario: 'Alesio.ribeiro',    senha: '2511',   perfil: 'membro', nome: 'Alesio'    },
     { usuario: 'Douglas.batista',   senha: '2512',   perfil: 'membro', nome: 'Douglas'   },
-    { usuario: 'Davi.ricardo',   senha: '2513',   perfil: 'membro', nome: 'Edilane'   },
+    { usuario: 'Davi.ricardo',   senha: '2513',   perfil: 'membro', nome: 'Davi'      },
     { usuario: 'Edilane.santos',   senha: '2514',   perfil: 'membro', nome: 'Edilane'   },
     { usuario: 'Joao.pinheiro',      senha: '2515',   perfil: 'membro', nome: 'Joao'      },
     { usuario: 'Larrisa.brenda',   senha: '2516',   perfil: 'membro', nome: 'Larrisa'   },
@@ -22,6 +22,7 @@ const usuarios = [
     { usuario: 'Wagao.barcelos',     senha: '2521',   perfil: 'membro', nome: 'Wagao'     },
     { usuario: 'Eliane.santos',    senha: '2522',   perfil: 'membro', nome: 'Eliane'    },
     { usuario: 'Erika.santos',     senha: '2523',   perfil: 'membro', nome: 'Erika'     },
+    { usuario: 'Visitante',        senha: '1234',   perfil: 'membro', nome: 'Visitante' },
 ];
  
 // Funcionalidade do botão de login
