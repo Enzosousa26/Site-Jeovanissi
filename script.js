@@ -308,7 +308,7 @@ const MEMBROS_PADRAO = [
     { nome: 'Wagao', cargo: 'Baixista', categoria: 'instrumental' },
     { nome: 'Eliane', cargo: 'Vocalista', categoria: 'vocal' },
     { nome: 'Erika', cargo: 'Vocalista', categoria: 'vocal' },
-    { nome: 'Davi Ricardo', cargo: 'Vocalista', categoria: 'vocal' },
+    { nome: 'Davi', cargo: 'Vocalista', categoria: 'vocal' },
 ];
 
 function prioridadeLider(cargo) {
