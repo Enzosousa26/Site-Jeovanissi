@@ -133,27 +133,52 @@ let _indexMembroAtual = null;
 let _modoModalMembro = null;
 let _gerenciandoMembros = false;
 const MEMBROS_PADRAO = [
-    { nome: 'Aminadabe / Binho', cargo: 'Líder Geral' },
-    { nome: 'Patrick', cargo: 'Líder Instrumental' },
-    { nome: 'Moises', cargo: 'Líder Vocal' },
-    { nome: 'Alesio', cargo: 'Vocalista' },
-    { nome: 'Douglas', cargo: 'Baterista / Baixista' },
-    { nome: 'Edilane', cargo: 'Vocalista' },
-    { nome: 'Enzo', cargo: 'Baterista' },
-    { nome: 'Joao', cargo: 'Instrumental' },
-    { nome: 'Larrisa', cargo: 'Vocalista' },
-    { nome: 'Miguel', cargo: 'Instrumental' },
-    { nome: 'Nicole', cargo: 'Vocalista / Mídia' },
-    { nome: 'Vanessa', cargo: 'Vocalista' },
-    { nome: 'Vitoria', cargo: 'Vocalista' },
-    { nome: 'Wagao', cargo: 'Baixista' },
-    { nome: 'Eliane', cargo: 'Vocalista' },
-    { nome: 'Erika', cargo: 'Vocalista' },
+    { nome: 'Aminadabe / Binho', cargo: 'Líder Geral', categoria: 'lider' },
+    { nome: 'Patrick', cargo: 'Líder Instrumental', categoria: 'instrumental' },
+    { nome: 'Moises', cargo: 'Líder Vocal', categoria: 'vocal' },
+    { nome: 'Alesio', cargo: 'Vocalista', categoria: 'vocal' },
+    { nome: 'Douglas', cargo: 'Baterista / Baixista', categoria: 'instrumental' },
+    { nome: 'Edilane', cargo: 'Vocalista', categoria: 'vocal' },
+    { nome: 'Enzo', cargo: 'Baterista', categoria: 'instrumental' },
+    { nome: 'Joao', cargo: 'Instrumental', categoria: 'instrumental' },
+    { nome: 'Larrisa', cargo: 'Vocalista', categoria: 'vocal' },
+    { nome: 'Miguel', cargo: 'Instrumental', categoria: 'instrumental' },
+    { nome: 'Nicole', cargo: 'Vocalista / Mídia', categoria: 'vocal' },
+    { nome: 'Vanessa', cargo: 'Vocalista', categoria: 'vocal' },
+    { nome: 'Vitoria', cargo: 'Vocalista', categoria: 'vocal' },
+    { nome: 'Wagao', cargo: 'Baixista', categoria: 'instrumental' },
+    { nome: 'Eliane', cargo: 'Vocalista', categoria: 'vocal' },
+    { nome: 'Erika', cargo: 'Vocalista', categoria: 'vocal' },
 ];
 
 function carregarMembros() {
     const salvo = localStorage.getItem(CHAVE_MEMBROS);
-    return salvo ? JSON.parse(salvo) : [...MEMBROS_PADRAO];
+    const membros = salvo ? JSON.parse(salvo) : [...MEMBROS_PADRAO];
+
+    // Garante que membros salvos sem categoria recebam a categoria correta
+    return membros.map((membro) => {
+        if (membro.categoria) return membro;
+
+        const cargo = membro.cargo.toLowerCase();
+        let categoria = 'vocal';
+
+        if (
+            cargo.includes('baterista') ||
+            cargo.includes('baixista') ||
+            cargo.includes('instrumental') ||
+            cargo.includes('líder instrumental') ||
+            cargo.includes('lider instrumental')
+        ) {
+            categoria = 'instrumental';
+        } else if (
+            cargo.includes('líder geral') ||
+            cargo.includes('lider geral')
+        ) {
+            categoria = 'lider';
+        }
+
+        return { ...membro, categoria };
+    });
 }
 
 function salvarMembros(membros) {
@@ -164,8 +189,14 @@ function dataRepertorioValida(data) {
     return /^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])$/.test(data);
 }
 
-function responsavelMidiaSomValido(nome) {
-    const permitidos = ['Nicole', 'Aminadabe / Binho'];
+function responsavelMidiaValido(nome) {
+    const permitidos = ['Nicole'];
+    const nomes = normalizarResponsaveisEscala(nome);
+    return nomes.every((responsavel) => permitidos.includes(responsavel));
+}
+
+function responsavelSomValido(nome) {
+    const permitidos = ['Aminadabe / Binho'];
     const nomes = normalizarResponsaveisEscala(nome);
     return nomes.every((responsavel) => permitidos.includes(responsavel));
 }
@@ -227,27 +258,29 @@ function selecionarResponsaveisEscala(id, valor) {
     atualizarSeletorEscalaDesktop(id);
 }
 
-function preencherSelectMembrosEscala(id) {
+function preencherSelectMembrosEscala(id, categoria) {
     const select = document.getElementById(id);
     if (!select) return;
 
     const selecionados = obterSelecionadosEscala(id);
     select.innerHTML = '';
 
-    carregarMembros().forEach((membro) => {
-        const option = document.createElement('option');
-        option.value = membro.nome;
-        option.textContent = membro.nome;
-        option.selected = selecionados.includes(membro.nome);
-        select.appendChild(option);
-    });
+    carregarMembros()
+        .filter((membro) => !categoria || membro.categoria === categoria)
+        .forEach((membro) => {
+            const option = document.createElement('option');
+            option.value = membro.nome;
+            option.textContent = membro.nome;
+            option.selected = selecionados.includes(membro.nome);
+            select.appendChild(option);
+        });
 
     atualizarSeletorEscalaDesktop(id);
 }
 
 function preencherSeletoresEscala() {
-    preencherSelectMembrosEscala('input-vocal-escala');
-    preencherSelectMembrosEscala('input-instrumental-escala');
+    preencherSelectMembrosEscala('input-vocal-escala', 'vocal');
+    preencherSelectMembrosEscala('input-instrumental-escala', 'instrumental');
     atualizarSeletorEscalaDesktop('input-midia-escala');
     atualizarSeletorEscalaDesktop('input-som-escala');
 }
@@ -264,9 +297,9 @@ let seletorEscalaDesktopAberto = null;
 function resumoSelecaoEscala(select) {
     const selecionados = Array.from(select.selectedOptions).map((option) => option.value.trim()).filter(Boolean);
 
-    if (selecionados.length === 0) return '0 Item';
+    if (selecionados.length === 0) return '0 Selecionados';
     if (selecionados.length === 1) return selecionados[0];
-    return `${selecionados.length} Membros`;
+    return `${selecionados.length} Selecionados`;
 }
 
 function atualizarSeletorEscalaDesktop(id) {
@@ -587,48 +620,31 @@ function logout() {
 // MODAL DE PERFIL (seu código original)
 // ============================================================
 function abrirPerfil() {
-    // Procura o elemento que tem id 'perfil'. Esse é o modal.
     const modal = document.getElementById('perfil');
-    if (!modal) return; // Se não achar, sai sem fazer nada.
- 
-    // Faz o modal aparecer na tela usando flex.
+    if (!modal) return;
     modal.style.display = 'flex';
- 
-    // Depois de um pouquinho, adiciona a classe 'ativo'.
-    // Isso faz a animação de aparecer funcionar.
     setTimeout(() => {
         modal.classList.add('ativo');
     }, 10);
 }
  
 function fecharPerfil() {
-    // Procura de novo o modal para fechar.
     const modal = document.getElementById('perfil');
     if (!modal) return;
- 
-    // Remove a classe que mostra o modal.
     modal.classList.remove('ativo');
- 
-    // Depois de 300ms, esconde o modal totalmente.
     setTimeout(() => {
         modal.style.display = 'none';
     }, 300);
 }
  
 function exibirMembros() {
-    // Procura o elemento que tem id 'perfil'. Esse é o modal.
     const modalMembros = document.getElementById('membros');
-    if (!modalMembros) return; // Se não achar, sai sem fazer nada.
+    if (!modalMembros) return;
 
     _gerenciandoMembros = false;
     renderizarMembros();
     alternarBotaoAdicionarMembro();
- 
-    // Faz o modal aparecer na tela usando flex.
     modalMembros.style.display = 'flex';
- 
-    // Depois de um pouquinho, adiciona a classe 'ativo'.
-    // Isso faz a animação de aparecer funcionar.
     setTimeout(() => {
         modalMembros.classList.add('ativo');
     }, 10);
@@ -657,22 +673,16 @@ function alternarBotaoAdicionarMembro() {
 }
  
 function fecharExibirMembros() {
-    // Procura de novo o modal para fechar.
     const modalFecharMembros = document.getElementById('membros');
     if (!modalFecharMembros) return;
- 
-    // Remove a classe que mostra o modal.
     modalFecharMembros.classList.remove('ativo');
     _gerenciandoMembros = false;
- 
-    // Depois de 300ms, esconde o modal totalmente.
     setTimeout(() => {
         modalFecharMembros.style.display = 'none';
     }, 300);
 }
  
 window.addEventListener('pointerdown', function(event) {
-    // Fecha o modal quando o usuário clica fora da caixa de conteúdo.
     const modalFecharMembros = document.getElementById('membros');
     if (modalFecharMembros && event.target === modalFecharMembros) {
         fecharExibirMembros();
@@ -680,34 +690,28 @@ window.addEventListener('pointerdown', function(event) {
 });
  
 window.addEventListener('load', () => {
-    // Quando a página terminar de carregar, faz o menu ficar marcado.
     const topnavLinks = document.querySelectorAll('.topnav a');
  
     topnavLinks.forEach((link) => {
-        // Compara o pathname resolvido do link com o pathname atual
         const linkPath = new URL(link.href, window.location.origin).pathname;
         if (linkPath === window.location.pathname) {
             link.classList.add('active');
         }
  
         link.addEventListener('mousedown', () => {
-            // Quando começa a apertar o link, limpa todos e marca este.
             topnavLinks.forEach((item) => item.classList.remove('active'));
             link.classList.add('active');
         });
  
         link.addEventListener('click', () => {
-            // Quando clica no link, também garante que ele fique marcado.
             topnavLinks.forEach((item) => item.classList.remove('active'));
             link.classList.add('active');
         });
     });
  
-    // Botão voltar ao topo
     const backToTopBtn = document.getElementById('back-to-top');
     if (backToTopBtn) {
         window.addEventListener('scroll', () => {
-            // Se o usuário rolar para baixo mais de 300 pixels, mostra o botão.
             if (window.scrollY > 300) {
                 backToTopBtn.classList.add('show');
             } else {
@@ -716,7 +720,6 @@ window.addEventListener('load', () => {
         });
  
         backToTopBtn.addEventListener('click', () => {
-            // Quando o botão for clicado, sobe devagar para o topo.
             window.scrollTo({
                 top: 0,
                 behavior: 'smooth'
@@ -741,7 +744,6 @@ window.addEventListener('load', () => {
 });
  
 function toggleSenha() {
-    // Alterna o campo de senha entre oculto e visível.
     const input = document.getElementById('senha-input');
     input.type = input.type === 'password' ? 'text' : 'password';
 }
@@ -750,22 +752,23 @@ function toggleSenha() {
 // REPERTÓRIO — GERENCIAMENTO DE LISTAS POR DATA
 // ============================================================
  
-// Chave usada para salvar e ler o repertório no localStorage
 const CHAVE_REPERTORIO = 'repertorio';
 const CHAVE_ESCALAS = 'escalasLouvor';
  
-// Variáveis de controle do modal de edição de música
-let _dataAtual = null;   // Qual domingo está sendo editado
-let _indexAtual = null;  // Qual música está sendo editada (null = nova música)
+let _dataAtual = null;
+let _indexAtual = null;
 let _dataEscalaAtual = null;
+
+const NOMES_MESES = [
+    'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+    'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+];
  
-// Retorna o repertório salvo no localStorage, ou um objeto vazio se não houver nada
 function carregarRepertorio() {
     const salvo = localStorage.getItem(CHAVE_REPERTORIO);
     return salvo ? JSON.parse(salvo) : {};
 }
  
-// Salva o objeto de repertório no localStorage
 function salvarRepertorio(repertorio) {
     localStorage.setItem(CHAVE_REPERTORIO, JSON.stringify(repertorio));
 }
@@ -778,22 +781,44 @@ function carregarEscalas() {
 function salvarEscalas(escalas) {
     localStorage.setItem(CHAVE_ESCALAS, JSON.stringify(escalas));
 }
+
+// Agrupa as datas do repertório por ano e mês
+// Cada chave é dd/mm; o ano é inferido como o ano atual
+function agruparRepertorioPorAnoMes(repertorio) {
+    const anoAtual = new Date().getFullYear();
+    const grupos = {};
+
+    Object.keys(repertorio).forEach((data) => {
+        const partes = data.split('/');
+        if (partes.length !== 2) return;
+
+        const mes = parseInt(partes[1], 10);
+        const ano = anoAtual;
+        const chaveAno = String(ano);
+        const chaveMes = String(mes);
+
+        if (!grupos[chaveAno]) grupos[chaveAno] = {};
+        if (!grupos[chaveAno][chaveMes]) grupos[chaveAno][chaveMes] = [];
+        grupos[chaveAno][chaveMes].push(data);
+    });
+
+    return grupos;
+}
  
-// Renderiza todas as listas de domingo na div#repertorio-geral
+// Renderiza o repertório agrupado por ano e mês
 function renderizarRepertorio() {
     const container = document.getElementById('repertorio-geral');
-    if (!container) return; // Não está na página de repertório, ignora
+    if (!container) return;
  
     const repertorio = carregarRepertorio();
     const ehAdmin = localStorage.getItem('perfilUsuario') === 'admin';
  
-    // Mostra o botão de nova data somente para admin
     const btnNovaData = document.getElementById('btn-nova-data');
     if (btnNovaData) {
         btnNovaData.style.display = ehAdmin ? 'inline-block' : 'none';
     }
  
-    container.innerHTML = ''; // Limpa antes de redesenhar
+    container.innerHTML = '';
  
     const datas = Object.keys(repertorio);
  
@@ -801,89 +826,113 @@ function renderizarRepertorio() {
         container.innerHTML = '<p style="color:#888;">Nenhuma lista cadastrada ainda.</p>';
         return;
     }
- 
-    // Cria um bloco para cada domingo
-    datas.forEach(data => {
-        const musicas = repertorio[data];
- 
-        const bloco = document.createElement('div');
-        bloco.className = 'bloco-data';
- 
-        // Cabeçalho do bloco com o nome da data e botão de excluir (só admin)
-        const cabecalho = document.createElement('div');
-        cabecalho.className = 'cabecalho-data';
-        cabecalho.innerHTML = `<h4>Domingo ${data}</h4>`;
- 
-        if (ehAdmin) {
-            const btnExcluirData = document.createElement('button');
-            btnExcluirData.className = 'btn-excluir-data somente-admin';
-            btnExcluirData.textContent = '🗑 Excluir lista';
-            btnExcluirData.onclick = () => excluirData(data);
-            cabecalho.appendChild(btnExcluirData);
-        }
- 
-        bloco.appendChild(cabecalho);
- 
-        // Lista de músicas
-        const ul = document.createElement('ul');
-        ul.className = 'lista-repertorio';
- 
-        musicas.forEach((musica, index) => {
-            const li = document.createElement('li');
- 
-            // Se tiver link, transforma o nome em âncora
-            if (musica.link) {
-                li.innerHTML = `<a href="${musica.link}" target="_blank" rel="noopener">${musica.nome}</a>`;
-            } else {
-                li.textContent = musica.nome;
-            }
- 
-            // Botões de editar e excluir (só admin)
-            if (ehAdmin) {
-                const acoes = document.createElement('span');
-                acoes.className = 'acoes-musica somente-admin';
- 
-                const btnEditar = document.createElement('button');
-                btnEditar.textContent = '✏️';
-                btnEditar.title = 'Editar música';
-                btnEditar.onclick = () => abrirModalEdicao(data, index);
- 
-                const btnExcluir = document.createElement('button');
-                btnExcluir.textContent = '🗑';
-                btnExcluir.title = 'Excluir música';
-                btnExcluir.onclick = () => excluirMusica(data, index);
- 
-                acoes.appendChild(btnEditar);
-                acoes.appendChild(btnExcluir);
-                li.appendChild(acoes);
-            }
- 
-            ul.appendChild(li);
+
+    const grupos = agruparRepertorioPorAnoMes(repertorio);
+
+    // Itera pelos anos em ordem crescente
+    Object.keys(grupos).sort().forEach((ano) => {
+        const blocoAno = document.createElement('div');
+        blocoAno.className = 'bloco-ano';
+
+        const tituloAno = document.createElement('h3');
+        tituloAno.className = 'titulo-ano';
+        tituloAno.textContent = `Repertório ${ano}`;
+        blocoAno.appendChild(tituloAno);
+
+        const mesesContainer = document.createElement('div');
+        mesesContainer.className = 'meses-container';
+
+        // Itera pelos meses em ordem crescente
+        Object.keys(grupos[ano]).sort((a, b) => Number(a) - Number(b)).forEach((mes) => {
+            const blocoMes = document.createElement('div');
+            blocoMes.className = 'bloco-mes';
+
+            const tituloMes = document.createElement('h4');
+            tituloMes.className = 'titulo-mes';
+            tituloMes.textContent = `Mês de ${NOMES_MESES[Number(mes) - 1]}`;
+            blocoMes.appendChild(tituloMes);
+
+            // Itera pelas datas desse mês em ordem crescente de dia
+            grupos[ano][mes].sort((a, b) => parseInt(a) - parseInt(b)).forEach((data) => {
+                const musicas = repertorio[data];
+
+                const bloco = document.createElement('div');
+                bloco.className = 'bloco-data';
+
+                const cabecalho = document.createElement('div');
+                cabecalho.className = 'cabecalho-data';
+                cabecalho.innerHTML = `<h5>Domingo ${data}</h5>`;
+
+                if (ehAdmin) {
+                    const btnExcluirData = document.createElement('button');
+                    btnExcluirData.className = 'btn-excluir-data somente-admin';
+                    btnExcluirData.textContent = '🗑 Excluir lista';
+                    btnExcluirData.onclick = () => excluirData(data);
+                    cabecalho.appendChild(btnExcluirData);
+                }
+
+                bloco.appendChild(cabecalho);
+
+                const ul = document.createElement('ul');
+                ul.className = 'lista-repertorio';
+
+                musicas.forEach((musica, index) => {
+                    const li = document.createElement('li');
+
+                    if (musica.link) {
+                        li.innerHTML = `<a href="${musica.link}" target="_blank" rel="noopener">${musica.nome}</a>`;
+                    } else {
+                        li.textContent = musica.nome;
+                    }
+
+                    if (ehAdmin) {
+                        const acoes = document.createElement('span');
+                        acoes.className = 'acoes-musica somente-admin';
+
+                        const btnEditar = document.createElement('button');
+                        btnEditar.textContent = '✏️';
+                        btnEditar.title = 'Editar música';
+                        btnEditar.onclick = () => abrirModalEdicao(data, index);
+
+                        const btnExcluir = document.createElement('button');
+                        btnExcluir.textContent = '🗑';
+                        btnExcluir.title = 'Excluir música';
+                        btnExcluir.onclick = () => excluirMusica(data, index);
+
+                        acoes.appendChild(btnEditar);
+                        acoes.appendChild(btnExcluir);
+                        li.appendChild(acoes);
+                    }
+
+                    ul.appendChild(li);
+                });
+
+                bloco.appendChild(ul);
+
+                if (ehAdmin) {
+                    const btnAdd = document.createElement('button');
+                    btnAdd.className = 'btn-add-musica somente-admin';
+                    btnAdd.textContent = '+ Adicionar música';
+                    btnAdd.onclick = () => abrirModalEdicao(data, null);
+                    bloco.appendChild(btnAdd);
+                }
+
+                blocoMes.appendChild(bloco);
+            });
+
+            mesesContainer.appendChild(blocoMes);
         });
- 
-        bloco.appendChild(ul);
- 
-        // Botão para adicionar música neste domingo (só admin)
-        if (ehAdmin) {
-            const btnAdd = document.createElement('button');
-            btnAdd.className = 'btn-add-musica somente-admin';
-            btnAdd.textContent = '+ Adicionar música';
-            btnAdd.onclick = () => abrirModalEdicao(data, null);
-            bloco.appendChild(btnAdd);
-        }
- 
-        container.appendChild(bloco);
+
+        blocoAno.appendChild(mesesContainer);
+
+        container.appendChild(blocoAno);
     });
 }
  
-// Abre o modal de edição de música
-// Se index for null, é uma nova música; se for um número, é edição
 function abrirModalEdicao(data, index) {
-    // Guarda a data e a posição da música que será alterada.
     _dataAtual = data;
     _indexAtual = index;
  
-    // Busca os elementos que compõem o modal de edição.
     const modal = document.getElementById('modal-edicao');
     const titulo = document.getElementById('modal-titulo');
     const inputNome = document.getElementById('input-nome-musica');
@@ -892,42 +941,34 @@ function abrirModalEdicao(data, index) {
     if (!modal) return;
  
     if (index !== null) {
-        // Edição: preenche os campos com os dados existentes
         const repertorio = carregarRepertorio();
         const musica = repertorio[data][index];
         titulo.textContent = 'Editar música';
         inputNome.value = musica.nome;
         inputLink.value = musica.link || '';
     } else {
-        // Nova música: limpa os campos
         titulo.textContent = 'Adicionar música';
         inputNome.value = '';
         inputLink.value = '';
     }
  
-    // Exibe o modal e dispara a animação de entrada.
     modal.style.display = 'flex';
     setTimeout(() => modal.classList.add('ativo'), 10);
 }
  
-// Fecha o modal de edição de música
 function fecharModalEdicao() {
-    // Fecha o modal depois da animação de saída.
     const modal = document.getElementById('modal-edicao');
     if (!modal) return;
     modal.classList.remove('ativo');
     setTimeout(() => { modal.style.display = 'none'; }, 300);
 }
  
-// Salva a música (nova ou editada) no localStorage e redesenha
 function salvarMusica() {
-    // Lê os valores digitados no formulário do modal.
     const nome = document.getElementById('input-nome-musica').value.trim();
     const link = document.getElementById('input-link-musica').value.trim();
     const criandoMusica = _indexAtual === null;
  
     if (!nome) {
-        // Impede salvar uma música sem nome.
         alert('Digite o nome da música.');
         return;
     }
@@ -935,10 +976,8 @@ function salvarMusica() {
     const repertorio = carregarRepertorio();
  
     if (_indexAtual !== null) {
-        // Edita a música existente
         repertorio[_dataAtual][_indexAtual] = { nome, link };
     } else {
-        // Adiciona nova música à lista do domingo
         repertorio[_dataAtual].push({ nome, link });
     }
  
@@ -952,9 +991,7 @@ function salvarMusica() {
     }
 }
  
-// Remove uma música da lista e redesenha
 function excluirMusica(data, index) {
-    // Confirma antes de remover uma música específica.
     if (!confirm('Excluir esta música?')) return;
     const repertorio = carregarRepertorio();
     repertorio[data].splice(index, 1);
@@ -962,9 +999,7 @@ function excluirMusica(data, index) {
     renderizarRepertorio();
 }
  
-// Remove um domingo inteiro da lista e redesenha
 function excluirData(data) {
-    // Confirma antes de remover toda a lista de um domingo.
     if (!confirm(`Excluir a lista do domingo ${data}?`)) return;
     const repertorio = carregarRepertorio();
     delete repertorio[data];
@@ -972,9 +1007,7 @@ function excluirData(data) {
     renderizarRepertorio();
 }
  
-// Abre o modal de nova data
 function abrirModalNovaData() {
-    // Abre o modal usado para criar uma nova data.
     const modal = document.getElementById('modal-nova-data');
     if (!modal) return;
     document.getElementById('input-nova-data').value = '';
@@ -982,22 +1015,17 @@ function abrirModalNovaData() {
     setTimeout(() => modal.classList.add('ativo'), 10);
 }
  
-// Fecha o modal de nova data
 function fecharModalNovaData() {
-    // Fecha o modal de nova data depois da animação.
     const modal = document.getElementById('modal-nova-data');
     if (!modal) return;
     modal.classList.remove('ativo');
     setTimeout(() => { modal.style.display = 'none'; }, 300);
 }
  
-// Cria uma nova lista de domingo vazia e redesenha
 function salvarNovaData() {
-    // Lê a data digitada pelo administrador.
     const data = document.getElementById('input-nova-data').value.trim();
  
     if (!data) {
-        // Evita criar uma lista sem data.
         alert('Digite a data do domingo.');
         return;
     }
@@ -1010,12 +1038,11 @@ function salvarNovaData() {
     const repertorio = carregarRepertorio();
  
     if (repertorio[data]) {
-        // Evita cadastrar duas listas para a mesma data.
         alert('Já existe uma lista para essa data.');
         return;
     }
  
-    repertorio[data] = []; // Lista vazia pronta para receber músicas
+    repertorio[data] = [];
     salvarRepertorio(repertorio);
     fecharModalNovaData();
     renderizarRepertorio();
@@ -1161,8 +1188,13 @@ function salvarEscala() {
         return;
     }
 
-    if (!responsavelMidiaSomValido(midia) || !responsavelMidiaSomValido(som)) {
-        alert('Mídia e som só podem ser preenchidos com Nicole ou Aminadabe / Binho.');
+    if (midia.length > 0 && !responsavelMidiaValido(midia)) {
+        alert('Mídia só pode ser preenchida com Nicole.');
+        return;
+    }
+
+    if (som.length > 0 && !responsavelSomValido(som)) {
+        alert('Som só pode ser preenchido com Aminadabe / Binho.');
         return;
     }
 
@@ -1198,7 +1230,6 @@ function abrirEscalaPendente() {
     abrirModalEscala(dataPendente);
 }
  
-// Fecha modais de repertório ao clicar fora da caixa de conteúdo
 window.addEventListener('pointerdown', function(event) {
     const modalEdicao = document.getElementById('modal-edicao');
     if (modalEdicao && event.target === modalEdicao) fecharModalEdicao();
@@ -1213,7 +1244,6 @@ window.addEventListener('pointerdown', function(event) {
     if (modalEscala && event.target === modalEscala) fecharModalEscala();
 });
  
-// Renderiza o repertório assim que a página carregar
 document.addEventListener('DOMContentLoaded', () => {
     renderizarMembros();
     alternarBotaoAdicionarMembro();
