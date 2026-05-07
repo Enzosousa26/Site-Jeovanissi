@@ -223,6 +223,8 @@ function selecionarResponsaveisEscala(id, valor) {
     Array.from(select.options).forEach((option) => {
         option.selected = responsaveis.includes(option.value);
     });
+
+    atualizarSeletorEscalaDesktop(id);
 }
 
 function preencherSelectMembrosEscala(id) {
@@ -239,11 +241,165 @@ function preencherSelectMembrosEscala(id) {
         option.selected = selecionados.includes(membro.nome);
         select.appendChild(option);
     });
+
+    atualizarSeletorEscalaDesktop(id);
 }
 
 function preencherSeletoresEscala() {
     preencherSelectMembrosEscala('input-vocal-escala');
     preencherSelectMembrosEscala('input-instrumental-escala');
+    atualizarSeletorEscalaDesktop('input-midia-escala');
+    atualizarSeletorEscalaDesktop('input-som-escala');
+}
+
+const idsSeletoresEscalaDesktop = [
+    'input-vocal-escala',
+    'input-instrumental-escala',
+    'input-midia-escala',
+    'input-som-escala',
+];
+
+let seletorEscalaDesktopAberto = null;
+
+function resumoSelecaoEscala(select) {
+    const selecionados = Array.from(select.selectedOptions).map((option) => option.value.trim()).filter(Boolean);
+
+    if (selecionados.length === 0) return '0 Item';
+    if (selecionados.length === 1) return selecionados[0];
+    return `${selecionados.length} Membros`;
+}
+
+function atualizarSeletorEscalaDesktop(id) {
+    const select = document.getElementById(id);
+    if (!select) return;
+
+    const gatilho = select.parentElement?.querySelector(`[data-select-escala="${id}"]`);
+    if (!gatilho) return;
+
+    const texto = gatilho.querySelector('.seletor-escala-desktop-texto');
+    if (texto) texto.textContent = resumoSelecaoEscala(select);
+}
+
+function fecharSeletorEscalaDesktop() {
+    if (!seletorEscalaDesktopAberto) return;
+
+    seletorEscalaDesktopAberto.remove();
+    seletorEscalaDesktopAberto = null;
+}
+
+function abrirSeletorEscalaDesktop(id) {
+    const select = document.getElementById(id);
+    if (!select) return;
+
+    fecharSeletorEscalaDesktop();
+
+    const folha = document.createElement('div');
+    folha.className = 'seletor-escala-desktop';
+    folha.setAttribute('role', 'dialog');
+    folha.setAttribute('aria-modal', 'true');
+
+    const painel = document.createElement('div');
+    painel.className = 'seletor-escala-desktop-painel';
+
+    const topo = document.createElement('div');
+    topo.className = 'seletor-escala-desktop-topo';
+
+    const fechar = document.createElement('button');
+    fechar.type = 'button';
+    fechar.className = 'seletor-escala-desktop-fechar';
+    fechar.setAttribute('aria-label', 'Fechar seleção');
+    fechar.textContent = '×';
+    fechar.addEventListener('click', fecharSeletorEscalaDesktop);
+
+    topo.appendChild(fechar);
+
+    const lista = document.createElement('div');
+    lista.className = 'seletor-escala-desktop-lista';
+
+    Array.from(select.options).forEach((option) => {
+        const item = document.createElement('button');
+        item.type = 'button';
+        item.className = 'seletor-escala-desktop-opcao';
+        item.setAttribute('aria-pressed', String(option.selected));
+
+        const marcador = document.createElement('span');
+        marcador.className = 'seletor-escala-desktop-check';
+
+        const nome = document.createElement('span');
+        nome.textContent = option.textContent;
+
+        item.appendChild(marcador);
+        item.appendChild(nome);
+
+        item.addEventListener('click', () => {
+            option.selected = !option.selected;
+            item.classList.toggle('selecionado', option.selected);
+            item.setAttribute('aria-pressed', String(option.selected));
+            atualizarSeletorEscalaDesktop(id);
+            select.dispatchEvent(new Event('change', { bubbles: true }));
+        });
+
+        if (option.selected) item.classList.add('selecionado');
+        lista.appendChild(item);
+    });
+
+    painel.appendChild(topo);
+    painel.appendChild(lista);
+    folha.appendChild(painel);
+
+    folha.addEventListener('pointerdown', (event) => {
+        if (event.target === folha) fecharSeletorEscalaDesktop();
+    });
+
+    document.body.appendChild(folha);
+    seletorEscalaDesktopAberto = folha;
+}
+
+function inicializarSeletoresEscalaDesktop() {
+    const mediaDesktop = window.matchMedia('(min-width: 769px)');
+    const alternarClasseDesktop = () => {
+        document.body.classList.toggle('escala-desktop-selects', mediaDesktop.matches);
+        if (!mediaDesktop.matches) fecharSeletorEscalaDesktop();
+    };
+
+    idsSeletoresEscalaDesktop.forEach((id) => {
+        const select = document.getElementById(id);
+        if (!select || select.dataset.desktopEscala === 'true') return;
+
+        const gatilho = document.createElement('button');
+        gatilho.type = 'button';
+        gatilho.className = 'seletor-escala-desktop-gatilho';
+        gatilho.dataset.selectEscala = id;
+        gatilho.setAttribute('aria-haspopup', 'dialog');
+
+        const texto = document.createElement('span');
+        texto.className = 'seletor-escala-desktop-texto';
+
+        const mais = document.createElement('span');
+        mais.className = 'seletor-escala-desktop-mais';
+        mais.setAttribute('aria-hidden', 'true');
+        mais.textContent = '...';
+
+        gatilho.appendChild(texto);
+        gatilho.appendChild(mais);
+        gatilho.addEventListener('click', (event) => {
+            event.preventDefault();
+            abrirSeletorEscalaDesktop(id);
+        });
+
+        select.insertAdjacentElement('afterend', gatilho);
+        select.addEventListener('change', () => atualizarSeletorEscalaDesktop(id));
+        select.dataset.desktopEscala = 'true';
+        atualizarSeletorEscalaDesktop(id);
+    });
+
+    alternarClasseDesktop();
+
+    if (typeof mediaDesktop.addEventListener === 'function') {
+        mediaDesktop.addEventListener('change', alternarClasseDesktop);
+    } else {
+        mediaDesktop.addListener(alternarClasseDesktop);
+    }
 }
 
 function preencherAutocompleteMembros() {
@@ -1062,6 +1218,7 @@ document.addEventListener('DOMContentLoaded', () => {
     renderizarMembros();
     alternarBotaoAdicionarMembro();
     preencherAutocompleteMembros();
+    inicializarSeletoresEscalaDesktop();
     preencherSeletoresEscala();
     renderizarRepertorio();
     renderizarEscalas();

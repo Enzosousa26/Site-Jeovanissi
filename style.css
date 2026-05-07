@@ -1263,9 +1263,152 @@ footer {
     outline: none;
     border-color: #555;
 }
+
+.seletor-escala-desktop-gatilho {
+    display: none;
+}
+
+@media (min-width: 769px) {
+    .escala-desktop-selects .campo-escala-multipla select {
+        display: none;
+    }
+
+    .escala-desktop-selects .seletor-escala-desktop-gatilho {
+        width: 100%;
+        min-height: 48px;
+        padding: 8px 14px;
+        border: 1.5px solid #ccc;
+        border-radius: 8px;
+        background-color: white;
+        color: var(--cor-texto);
+        font-family: inherit;
+        font-size: 1rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        box-sizing: border-box;
+        cursor: pointer;
+    }
+
+    .escala-desktop-selects .seletor-escala-desktop-gatilho:focus-visible {
+        outline: none;
+        border-color: #555;
+        box-shadow: 0 0 0 3px rgba(68, 78, 92, 0.12);
+    }
+
+    .seletor-escala-desktop-texto {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .seletor-escala-desktop-mais {
+        color: var(--cor-texto);
+        letter-spacing: 1px;
+        flex-shrink: 0;
+    }
+
+    .seletor-escala-desktop {
+        position: fixed;
+        inset: 0;
+        z-index: 10000;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        padding: 16px;
+        background-color: rgba(0, 0, 0, 0.18);
+        box-sizing: border-box;
+    }
+
+    .seletor-escala-desktop-painel {
+        width: min(560px, 100%);
+        max-height: min(72vh, 620px);
+        padding: 18px 24px 0;
+        border-radius: 28px 28px 16px 16px;
+        background-color: #252527;
+        color: white;
+        box-shadow: 0 -16px 50px rgba(0, 0, 0, 0.35);
+        box-sizing: border-box;
+        overflow: hidden;
+    }
+
+    .seletor-escala-desktop-topo {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 14px;
+    }
+
+    .seletor-escala-desktop-fechar {
+        width: 48px;
+        height: 48px;
+        border: 0;
+        border-radius: 50%;
+        background-color: #1b1b1d;
+        color: white;
+        font-size: 40px;
+        line-height: 1;
+        cursor: pointer;
+    }
+
+    .seletor-escala-desktop-lista {
+        max-height: calc(min(72vh, 620px) - 80px);
+        padding: 6px 0 20px;
+        overflow-y: auto;
+    }
+
+    .seletor-escala-desktop-opcao {
+        width: 100%;
+        min-height: 58px;
+        padding: 0 8px;
+        border: 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+        background: transparent;
+        color: white;
+        display: flex;
+        align-items: center;
+        gap: 22px;
+        font-family: inherit;
+        font-size: 1rem;
+        text-align: left;
+        cursor: pointer;
+    }
+
+    .seletor-escala-desktop-opcao:hover {
+        background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .seletor-escala-desktop-check {
+        width: 24px;
+        height: 24px;
+        border: 2px solid #6a6a70;
+        border-radius: 50%;
+        box-sizing: border-box;
+        flex-shrink: 0;
+        position: relative;
+    }
+
+    .seletor-escala-desktop-opcao.selecionado .seletor-escala-desktop-check {
+        border-color: #2f8cff;
+        background-color: #2f8cff;
+    }
+
+    .seletor-escala-desktop-opcao.selecionado .seletor-escala-desktop-check::after {
+        content: "✓";
+        position: absolute;
+        inset: 0;
+        color: #111;
+        font-size: 15px;
+        font-weight: 700;
+        line-height: 20px;
+        text-align: center;
+    }
+}
  
 /* Botão de salvar dentro do modal */
-.conteudo-edicao button:not(.fechar-edicao) {
+.conteudo-edicao button:not(.fechar-edicao):not(.seletor-escala-desktop-gatilho) {
     background-color: #111;
     color: white;
     border: none;
@@ -1276,7 +1419,7 @@ footer {
     transition: background 0.2s;
 }
  
-.conteudo-edicao button:not(.fechar-edicao):hover {
+.conteudo-edicao button:not(.fechar-edicao):not(.seletor-escala-desktop-gatilho):hover {
     /* Escurece o botão de salvar ao passar o mouse */
     background-color: #333;
 }
