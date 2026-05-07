@@ -22,7 +22,7 @@ const usuarios = [
     { usuario: 'Wagao.barcelos',     senha: '2521',   perfil: 'membro', nome: 'Wagao'     },
     { usuario: 'Eliane.oliveira',    senha: '2522',   perfil: 'membro', nome: 'Eliane'    },
     { usuario: 'Erika.gonçalves',     senha: '2523',   perfil: 'membro', nome: 'Erika'     },
-    { usuario: 'Visitante',        senha: '1234',   perfil: 'membro', nome: 'Visitante' },
+    { usuario: 'Visitante',        senha: '1234',   perfil: 'visitante', nome: 'Visitante' },
 ];
  
 // Funcionalidade do botão de login
@@ -121,8 +121,167 @@ function verificarPerfilMembro(){
 // Exibe o perfil correto no h4 automaticamente ao carregar a página
 const tagPerfil = document.querySelector('.mudar-perfil') || document.querySelector('h4');
 if (tagPerfil && perfilUsuario) {
-    const perfilFormatado = perfilUsuario === 'admin' ? 'Admin' : 'Membro';
+    const perfilFormatado = perfilUsuario === 'admin' ? 'Admin' : perfilUsuario === 'visitante' ? 'Visitante' : 'Membro';
     tagPerfil.innerHTML = nomeUsuario ? `Perfil: ${perfilFormatado} | ${nomeUsuario}` : `Perfil: ${perfilFormatado}`;
+}
+
+const INSTAGRAM_VISITANTE = 'https://instagram.com/jeovanissi'; // Atualize com o perfil real quando quiser.
+
+function isVisitante() {
+    return perfilUsuario === 'visitante';
+}
+
+function configurarAcessoPorPerfil() {
+    if (perfilUsuario === 'admin') {
+        return;
+    }
+
+    document.querySelectorAll('.somente-admin').forEach(el => {
+        el.style.display = 'none';
+    });
+
+    if (isVisitante()) {
+        document.querySelectorAll('.somente-visitante').forEach(el => {
+            el.style.display = 'block';
+        });
+        document.querySelectorAll('.somente-nao-visitante').forEach(el => {
+            el.style.display = 'none';
+        });
+        adicionarMenuVisitante();
+        mostrarConteudoVisitante();
+    } else {
+        document.querySelectorAll('.somente-visitante').forEach(el => {
+            el.style.display = 'none';
+        });
+    }
+}
+
+function adicionarMenuVisitante() {
+    const topnav = document.querySelector('.topnav');
+    if (!topnav) return;
+
+    // Limpa o menu atual
+    topnav.innerHTML = '';
+
+    // Adiciona novos links interessantes para visitantes
+    const links = [
+        { href: '#sobre-nos', text: 'Sobre Nós', onclick: 'mostrarSobreNos()' },
+        { href: '#eventos', text: 'Eventos', onclick: 'mostrarEventos()' },
+        { href: '#contato', text: 'Contato', onclick: 'mostrarContato()' },
+        { href: INSTAGRAM_VISITANTE, text: 'Instagram', target: '_blank' }
+    ];
+
+    links.forEach(linkData => {
+        const link = document.createElement('a');
+        link.href = linkData.href;
+        link.textContent = linkData.text;
+        if (linkData.onclick) link.setAttribute('onclick', linkData.onclick);
+        if (linkData.target) link.target = linkData.target;
+        topnav.appendChild(link);
+    });
+}
+
+function mostrarConteudoVisitante() {
+    const main = document.querySelector('main');
+    if (!main) return;
+
+    const jaExiste = document.querySelector('.visitante-card');
+    if (jaExiste) return;
+
+    const section = document.createElement('section');
+    section.className = 'visitante-card somente-visitante';
+    section.innerHTML = `
+        <div class="visitante-card-conteudo">
+            <h3>Bem-vindo, visitante!</h3>
+            <p>Estas são informações especiais pensadas para quem está conhecendo nosso ministério.</p>
+            <ul>
+                <li>Veja repertórios recentes e conheça nossas músicas.</li>
+                <li>Confira as escalas e nosso próximo culto.</li>
+                <li>Saiba como participar e acompanhar nosso trabalho.</li>
+            </ul>
+        </div>
+    `;
+
+    main.prepend(section);
+}
+
+function mostrarSobreNos() {
+    const main = document.querySelector('main');
+    if (!main) return;
+
+    // Remove conteúdo anterior de visitante se existir
+    document.querySelectorAll('.visitante-conteudo').forEach(el => el.remove());
+
+    const section = document.createElement('section');
+    section.className = 'visitante-conteudo';
+    section.innerHTML = `
+        <h2>Sobre Nós - Jeová Nissi</h2>
+        <p>Jeová Nissi significa "Deus é a nossa bandeira". Somos um ministério de louvor dedicado a glorificar a Deus através da música e adoração.</p>
+        <p>No nosso Instagram (@jeovanissi), você pode acompanhar nossas histórias, ensaios e momentos especiais de adoração.</p>
+        <ul>
+            <li><strong>Missão:</strong> Levar pessoas a uma experiência profunda com Deus através do louvor.</li>
+            <li><strong>Valores:</strong> Unidade, excelência e coração disponível para servir.</li>
+        </ul>
+    `;
+
+    main.appendChild(section);
+    section.scrollIntoView({ behavior: 'smooth' });
+}
+
+function mostrarEventos() {
+    const main = document.querySelector('main');
+    if (!main) return;
+
+    document.querySelectorAll('.visitante-conteudo').forEach(el => el.remove());
+
+    const section = document.createElement('section');
+    section.className = 'visitante-conteudo';
+    section.innerHTML = `
+        <h2>Próximos Eventos</h2>
+        <p>Fique por dentro dos nossos cultos e eventos especiais. Siga nosso Instagram para atualizações em tempo real!</p>
+        <div class="eventos-lista">
+            <article>
+                <h3>Culto de Domingo</h3>
+                <p>Todo domingo às 18h na nossa igreja. Venha adorar conosco!</p>
+                <p><em>Confira fotos e stories no Instagram.</em></p>
+            </article>
+            <article>
+                <h3>Ensaio Semanal</h3>
+                <p>Quintas-feiras às 20h00. Momento de preparação e comunhão.</p>
+                <p><em>Acompanhe os bastidores nos nossos posts.</em></p>
+            </article>
+            <article>
+                <h3>Eventos Especiais</h3>
+                <p>Conferências, retiros e celebrações. Sempre anunciamos primeiro no Instagram!</p>
+            </article>
+        </div>
+    `;
+
+    main.appendChild(section);
+    section.scrollIntoView({ behavior: 'smooth' });
+}
+
+function mostrarContato() {
+    const main = document.querySelector('main');
+    if (!main) return;
+
+    document.querySelectorAll('.visitante-conteudo').forEach(el => el.remove());
+
+    const section = document.createElement('section');
+    section.className = 'visitante-conteudo';
+    section.innerHTML = `
+        <h2>Entre em Contato</h2>
+        <p>Gostaria de fazer parte do nosso ministério? Entre em contato conosco!</p>
+        <div class="contato-info">
+            <p><strong>Instagram:</strong> <a href="${INSTAGRAM_VISITANTE}" target="_blank">@jeovanissi</a></p>
+            <p><strong>Email:</strong> contato@jeovanissi.com</p>
+            <p><strong>Local:</strong> Rua Itupu, 22 - São Paulo, SP</p>
+        </div>
+        <p>Siga nosso Instagram para mensagens diretas e fique por dentro de tudo!</p>
+    `;
+
+    main.appendChild(section);
+    section.scrollIntoView({ behavior: 'smooth' });
 }
 
 // ============================================================
@@ -1268,6 +1427,7 @@ document.addEventListener('DOMContentLoaded', () => {
     renderizarRepertorio();
     renderizarEscalas();
     abrirEscalaPendente();
+    configurarAcessoPorPerfil();
 
     const inputNovaData = document.getElementById('input-nova-data');
     if (inputNovaData) {
