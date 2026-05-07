@@ -1238,6 +1238,31 @@ footer {
     outline: none;
     border-color: #555;
 }
+
+.campo-escala-multipla {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    color: var(--cor-texto);
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-align: left;
+}
+
+.campo-escala-multipla select {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1.5px solid #ccc;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    box-sizing: border-box;
+}
+
+.campo-escala-multipla select:focus {
+    outline: none;
+    border-color: #555;
+}
  
 /* Botão de salvar dentro do modal */
 .conteudo-edicao button:not(.fechar-edicao) {

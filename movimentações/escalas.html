@@ -44,19 +44,37 @@
 
     <div class="modal-edicao" id="modal-escala">
         <div class="conteudo-edicao conteudo-escala">
-            <button class="fechar-edicao" onclick="fecharModalEscala()">✕</button>
+            <button class="fechar-edicao" onclick="fecharModalEscala()">&times;</button>
             <h3 id="modal-escala-titulo">Adicionar escala</h3>
             <input type="text" id="input-data-escala" placeholder="Data do domingo. Ex: 10/05">
-            <input type="text" id="input-vocal-escala" list="lista-nomes-membros" placeholder="Vocalistas">
-            <input type="text" id="input-instrumental-escala" list="lista-nomes-membros" placeholder="Instrumental">
-            <input type="text" id="input-midia-escala" list="lista-midia-som" placeholder="Mídia">
-            <input type="text" id="input-som-escala" list="lista-midia-som" placeholder="Som">
+
+            <label class="campo-escala-multipla" for="input-vocal-escala">
+                Vocalistas
+                <select id="input-vocal-escala" multiple size="5"></select>
+            </label>
+
+            <label class="campo-escala-multipla" for="input-instrumental-escala">
+                Instrumental
+                <select id="input-instrumental-escala" multiple size="5"></select>
+            </label>
+
+            <label class="campo-escala-multipla" for="input-midia-escala">
+                M&iacute;dia
+                <select id="input-midia-escala" multiple size="2">
+                    <option value="Nicole">Nicole</option>
+                    <option value="Aminadabe / Binho">Aminadabe / Binho</option>
+                </select>
+            </label>
+
+            <label class="campo-escala-multipla" for="input-som-escala">
+                Som
+                <select id="input-som-escala" multiple size="2">
+                    <option value="Nicole">Nicole</option>
+                    <option value="Aminadabe / Binho">Aminadabe / Binho</option>
+                </select>
+            </label>
+
             <textarea id="input-observacoes-escala" placeholder="Observações da escala"></textarea>
-            <datalist id="lista-nomes-membros"></datalist>
-            <datalist id="lista-midia-som">
-                <option value="Nicole"></option>
-                <option value="Aminadabe / Binho"></option>
-            </datalist>
             <button onclick="salvarEscala()">Salvar escala</button>
         </div>
     </div>

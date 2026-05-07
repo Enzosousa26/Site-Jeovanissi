@@ -166,7 +166,84 @@ function dataRepertorioValida(data) {
 
 function responsavelMidiaSomValido(nome) {
     const permitidos = ['Nicole', 'Aminadabe / Binho'];
-    return !nome || permitidos.includes(nome);
+    const nomes = normalizarResponsaveisEscala(nome);
+    return nomes.every((responsavel) => permitidos.includes(responsavel));
+}
+
+function escaparHtml(valor) {
+    return String(valor)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+function normalizarResponsaveisEscala(valor) {
+    if (Array.isArray(valor)) {
+        return valor.map((item) => String(item).trim()).filter(Boolean);
+    }
+
+    if (!valor) return [];
+
+    return String(valor).split(',').map((item) => item.trim()).filter(Boolean);
+}
+
+function formatarResponsaveisEscala(valor, textoVazio = 'Não definido') {
+    const responsaveis = normalizarResponsaveisEscala(valor);
+    if (responsaveis.length === 0) return textoVazio;
+    return responsaveis.map(escaparHtml).join(', ');
+}
+
+function obterSelecionadosEscala(id) {
+    const select = document.getElementById(id);
+    if (!select) return [];
+
+    return Array.from(select.selectedOptions)
+        .map((option) => option.value.trim())
+        .filter(Boolean);
+}
+
+function selecionarResponsaveisEscala(id, valor) {
+    const select = document.getElementById(id);
+    if (!select) return;
+
+    const responsaveis = normalizarResponsaveisEscala(valor);
+
+    responsaveis.forEach((responsavel) => {
+        const existe = Array.from(select.options).some((option) => option.value === responsavel);
+        if (!existe) {
+            const option = document.createElement('option');
+            option.value = responsavel;
+            option.textContent = responsavel;
+            select.appendChild(option);
+        }
+    });
+
+    Array.from(select.options).forEach((option) => {
+        option.selected = responsaveis.includes(option.value);
+    });
+}
+
+function preencherSelectMembrosEscala(id) {
+    const select = document.getElementById(id);
+    if (!select) return;
+
+    const selecionados = obterSelecionadosEscala(id);
+    select.innerHTML = '';
+
+    carregarMembros().forEach((membro) => {
+        const option = document.createElement('option');
+        option.value = membro.nome;
+        option.textContent = membro.nome;
+        option.selected = selecionados.includes(membro.nome);
+        select.appendChild(option);
+    });
+}
+
+function preencherSeletoresEscala() {
+    preencherSelectMembrosEscala('input-vocal-escala');
+    preencherSelectMembrosEscala('input-instrumental-escala');
 }
 
 function preencherAutocompleteMembros() {
@@ -323,6 +400,7 @@ function salvarEdicaoMembro() {
     salvarMembros(membros);
     fecharModalEditarMembro();
     renderizarMembros();
+    preencherSeletoresEscala();
 }
 
 function excluirMembro(index) {
@@ -334,6 +412,7 @@ function excluirMembro(index) {
     membros.splice(index, 1);
     salvarMembros(membros);
     renderizarMembros();
+    preencherSeletoresEscala();
 }
  
 // ============================================================
@@ -814,31 +893,32 @@ function renderizarEscalas() {
         const escala = escalas[data];
         const card = document.createElement('article');
         card.className = 'card-escala';
+        const observacoes = escala.observacoes ? escaparHtml(escala.observacoes) : 'Sem observações';
 
         card.innerHTML = `
             <div class="cabecalho-escala">
-                <h3>Domingo ${data}</h3>
+                <h3>Domingo ${escaparHtml(data)}</h3>
             </div>
             <dl>
                 <div>
                     <dt>Vocal</dt>
-                    <dd>${escala.vocal || 'Não definido'}</dd>
+                    <dd>${formatarResponsaveisEscala(escala.vocal)}</dd>
                 </div>
                 <div>
                     <dt>Instrumental</dt>
-                    <dd>${escala.instrumental || 'Não definido'}</dd>
+                    <dd>${formatarResponsaveisEscala(escala.instrumental)}</dd>
                 </div>
                 <div>
                     <dt>Mídia</dt>
-                    <dd>${escala.midia || 'Não definido'}</dd>
+                    <dd>${formatarResponsaveisEscala(escala.midia)}</dd>
                 </div>
                 <div>
                     <dt>Som</dt>
-                    <dd>${escala.som || 'Não definido'}</dd>
+                    <dd>${formatarResponsaveisEscala(escala.som)}</dd>
                 </div>
                 <div>
                     <dt>Observações</dt>
-                    <dd>${escala.observacoes || 'Sem observações'}</dd>
+                    <dd>${observacoes}</dd>
                 </div>
             </dl>
         `;
@@ -868,33 +948,30 @@ function abrirModalEscala(data = null) {
     const modal = document.getElementById('modal-escala');
     const titulo = document.getElementById('modal-escala-titulo');
     const inputData = document.getElementById('input-data-escala');
-    const inputVocal = document.getElementById('input-vocal-escala');
-    const inputInstrumental = document.getElementById('input-instrumental-escala');
-    const inputMidia = document.getElementById('input-midia-escala');
-    const inputSom = document.getElementById('input-som-escala');
     const inputObservacoes = document.getElementById('input-observacoes-escala');
 
     if (!modal) return;
 
     const escalas = carregarEscalas();
     _dataEscalaAtual = data;
+    preencherSeletoresEscala();
 
     if (data && escalas[data]) {
         const escala = escalas[data];
         titulo.textContent = 'Editar escala';
         inputData.value = data;
-        inputVocal.value = escala.vocal || '';
-        inputInstrumental.value = escala.instrumental || '';
-        inputMidia.value = escala.midia || '';
-        inputSom.value = escala.som || '';
+        selecionarResponsaveisEscala('input-vocal-escala', escala.vocal);
+        selecionarResponsaveisEscala('input-instrumental-escala', escala.instrumental);
+        selecionarResponsaveisEscala('input-midia-escala', escala.midia);
+        selecionarResponsaveisEscala('input-som-escala', escala.som);
         inputObservacoes.value = escala.observacoes || '';
     } else {
         titulo.textContent = 'Adicionar escala';
         inputData.value = data || '';
-        inputVocal.value = '';
-        inputInstrumental.value = '';
-        inputMidia.value = '';
-        inputSom.value = '';
+        selecionarResponsaveisEscala('input-vocal-escala', []);
+        selecionarResponsaveisEscala('input-instrumental-escala', []);
+        selecionarResponsaveisEscala('input-midia-escala', []);
+        selecionarResponsaveisEscala('input-som-escala', []);
         inputObservacoes.value = '';
     }
 
@@ -917,10 +994,10 @@ function fecharModalEscala() {
 
 function salvarEscala() {
     const data = document.getElementById('input-data-escala').value.trim();
-    const vocal = document.getElementById('input-vocal-escala').value.trim();
-    const instrumental = document.getElementById('input-instrumental-escala').value.trim();
-    const midia = document.getElementById('input-midia-escala').value.trim();
-    const som = document.getElementById('input-som-escala').value.trim();
+    const vocal = obterSelecionadosEscala('input-vocal-escala');
+    const instrumental = obterSelecionadosEscala('input-instrumental-escala');
+    const midia = obterSelecionadosEscala('input-midia-escala');
+    const som = obterSelecionadosEscala('input-som-escala');
     const observacoes = document.getElementById('input-observacoes-escala').value.trim();
 
     if (!data) {
@@ -985,6 +1062,7 @@ document.addEventListener('DOMContentLoaded', () => {
     renderizarMembros();
     alternarBotaoAdicionarMembro();
     preencherAutocompleteMembros();
+    preencherSeletoresEscala();
     renderizarRepertorio();
     renderizarEscalas();
     abrirEscalaPendente();
