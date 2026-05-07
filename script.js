@@ -488,6 +488,21 @@ window.addEventListener('load', () => {
             });
         });
     }
+
+    const historicoVoltarBtns = document.querySelectorAll('.historico-voltar');
+    const historicoAvancarBtns = document.querySelectorAll('.historico-avancar');
+
+    historicoVoltarBtns.forEach((botao) => {
+        botao.addEventListener('click', () => {
+            window.history.back();
+        });
+    });
+
+    historicoAvancarBtns.forEach((botao) => {
+        botao.addEventListener('click', () => {
+            window.history.forward();
+        });
+    });
 });
  
 function toggleSenha() {

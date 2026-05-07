@@ -307,11 +307,46 @@ main p {
 footer {
     /* Rodapé simples */
     color: black;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
     text-align: center;
-    padding: 8px;
-    padding-bottom: 2px;
-    height: 50px;
+    padding: 10px 16px;
+    min-height: 50px;
     border-radius: 5px 5px 0px 0px;
+}
+
+.navegacao-historico {
+    display: inline-flex;
+    align-items: center;
+    gap: 18px;
+    overflow: hidden;
+}
+
+.navegacao-historico button {
+    width: auto;
+    height: auto;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: currentColor;
+    font-size: 26px;
+    line-height: 1;
+    cursor: pointer;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.navegacao-historico button:hover {
+    color: var(--cor-primaria);
+    transform: translateY(-1px);
+}
+
+.navegacao-historico button:disabled {
+    color: #8f8f8f;
+    cursor: default;
 }
  
 .modal {
