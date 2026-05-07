@@ -131,6 +131,7 @@ if (tagPerfil && perfilUsuario) {
 const CHAVE_MEMBROS = 'membrosBanda';
 let _indexMembroAtual = null;
 let _modoModalMembro = null;
+let _gerenciandoMembros = false;
 const MEMBROS_PADRAO = [
     { nome: 'Aminadabe / Binho', cargo: 'Líder Geral' },
     { nome: 'Patrick', cargo: 'Líder Instrumental' },
@@ -208,7 +209,7 @@ function renderizarMembros() {
         dados.appendChild(cargo);
         item.appendChild(dados);
 
-        if (ehAdmin) {
+        if (ehAdmin && _gerenciandoMembros) {
             const acoes = document.createElement('span');
             acoes.className = 'acoes-membro';
 
@@ -384,7 +385,9 @@ function exibirMembros() {
     const modalMembros = document.getElementById('membros');
     if (!modalMembros) return; // Se não achar, sai sem fazer nada.
 
+    _gerenciandoMembros = false;
     renderizarMembros();
+    alternarBotaoAdicionarMembro();
  
     // Faz o modal aparecer na tela usando flex.
     modalMembros.style.display = 'flex';
@@ -395,6 +398,28 @@ function exibirMembros() {
         modalMembros.classList.add('ativo');
     }, 10);
 }
+
+function gerenciarMembros() {
+    const modalMembros = document.getElementById('membros');
+    if (!modalMembros) return;
+
+    _gerenciandoMembros = true;
+    renderizarMembros();
+    alternarBotaoAdicionarMembro();
+
+    modalMembros.style.display = 'flex';
+    setTimeout(() => {
+        modalMembros.classList.add('ativo');
+    }, 10);
+}
+
+function alternarBotaoAdicionarMembro() {
+    const btnAdicionar = document.querySelector('.btn-add-membro');
+    if (!btnAdicionar) return;
+
+    const ehAdmin = localStorage.getItem('perfilUsuario') === 'admin';
+    btnAdicionar.style.display = ehAdmin && _gerenciandoMembros ? 'inline-block' : 'none';
+}
  
 function fecharExibirMembros() {
     // Procura de novo o modal para fechar.
@@ -403,6 +428,7 @@ function fecharExibirMembros() {
  
     // Remove a classe que mostra o modal.
     modalFecharMembros.classList.remove('ativo');
+    _gerenciandoMembros = false;
  
     // Depois de 300ms, esconde o modal totalmente.
     setTimeout(() => {
@@ -942,6 +968,7 @@ window.addEventListener('pointerdown', function(event) {
 // Renderiza o repertório assim que a página carregar
 document.addEventListener('DOMContentLoaded', () => {
     renderizarMembros();
+    alternarBotaoAdicionarMembro();
     preencherAutocompleteMembros();
     renderizarRepertorio();
     renderizarEscalas();
