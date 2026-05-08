@@ -301,6 +301,11 @@ const CACHE_DADOS = {
     repertorio: null,
     escalas: null,
 };
+const DADOS_PENDENTES = {
+    membros: false,
+    repertorio: false,
+    escalas: false,
+};
 
 function carregarDadosLocais(chave, valorPadrao) {
     const salvo = localStorage.getItem(chave);
@@ -340,11 +345,27 @@ async function enviarDadosRemotos(chave, dados) {
 
 async function sincronizarDadosRemotos() {
     try {
+        API_DISPONIVEL = true;
+
+        if (DADOS_PENDENTES.membros && CACHE_DADOS.membros) {
+            await enviarDadosRemotos('membros', CACHE_DADOS.membros);
+            DADOS_PENDENTES.membros = false;
+        }
+
         const membrosRemotos = await buscarDadosRemotos('membros');
         CACHE_DADOS.membros = ordenarMembros(membrosRemotos ?? [...MEMBROS_PADRAO]);
+
+        if (DADOS_PENDENTES.repertorio && CACHE_DADOS.repertorio) {
+            await enviarDadosRemotos('repertorio', CACHE_DADOS.repertorio);
+            DADOS_PENDENTES.repertorio = false;
+        }
         CACHE_DADOS.repertorio = await buscarDadosRemotos('repertorio');
+
+        if (DADOS_PENDENTES.escalas && CACHE_DADOS.escalas) {
+            await enviarDadosRemotos('escalas', CACHE_DADOS.escalas);
+            DADOS_PENDENTES.escalas = false;
+        }
         CACHE_DADOS.escalas = await buscarDadosRemotos('escalas');
-        API_DISPONIVEL = true;
 
         salvarDadosLocais(CHAVE_MEMBROS, CACHE_DADOS.membros);
         salvarDadosLocais(CHAVE_REPERTORIO, CACHE_DADOS.repertorio ?? {});
@@ -485,7 +506,10 @@ function salvarMembros(membros) {
     if (API_DISPONIVEL) {
         enviarDadosRemotos('membros', membrosOrdenados).catch((erro) => {
             console.warn('Não foi possível sincronizar membros com o servidor remoto:', erro);
+            DADOS_PENDENTES.membros = true;
         });
+    } else {
+        DADOS_PENDENTES.membros = true;
     }
 }
 
@@ -1082,7 +1106,10 @@ function salvarRepertorio(repertorio) {
     if (API_DISPONIVEL) {
         enviarDadosRemotos('repertorio', repertorio).catch((erro) => {
             console.warn('Não foi possível sincronizar repertório com o servidor remoto:', erro);
+            DADOS_PENDENTES.repertorio = true;
         });
+    } else {
+        DADOS_PENDENTES.repertorio = true;
     }
 }
 
@@ -1103,7 +1130,10 @@ function salvarEscalas(escalas) {
     if (API_DISPONIVEL) {
         enviarDadosRemotos('escalas', escalas).catch((erro) => {
             console.warn('Não foi possível sincronizar escalas com o servidor remoto:', erro);
+            DADOS_PENDENTES.escalas = true;
         });
+    } else {
+        DADOS_PENDENTES.escalas = true;
     }
 }
 
