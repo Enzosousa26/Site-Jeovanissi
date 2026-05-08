@@ -1608,14 +1608,19 @@ window.addEventListener('storage', (event) => {
     if (!event.key) return;
 
     if (event.key === CHAVE_MEMBROS) {
+        CACHE_DADOS.membros = null;
         renderizarMembros();
+        preencherAutocompleteMembros();
+        preencherSeletoresEscala();
     }
 
     if (event.key === CHAVE_REPERTORIO) {
+        CACHE_DADOS.repertorio = null;
         renderizarRepertorio();
     }
 
     if (event.key === CHAVE_ESCALAS) {
+        CACHE_DADOS.escalas = null;
         renderizarEscalas();
     }
 });
