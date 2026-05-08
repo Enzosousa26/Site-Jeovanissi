@@ -288,14 +288,97 @@ function mostrarContato() {
 // MEMBROS DA BANDA
 // ============================================================
 const CHAVE_MEMBROS = 'membrosBanda';
+const CHAVE_REPERTORIO = 'repertorio';
+const CHAVE_ESCALAS = 'escalasLouvor';
+const API_ROOT = '/api';
+
 let _indexMembroAtual = null;
 let _modoModalMembro = null;
 let _gerenciandoMembros = false;
+let API_DISPONIVEL = false;
+const CACHE_DADOS = {
+    membros: null,
+    repertorio: null,
+    escalas: null,
+};
+
+function carregarDadosLocais(chave, valorPadrao) {
+    const salvo = localStorage.getItem(chave);
+    return salvo ? JSON.parse(salvo) : valorPadrao;
+}
+
+function salvarDadosLocais(chave, dados) {
+    localStorage.setItem(chave, JSON.stringify(dados));
+}
+
+async function buscarDadosRemotos(chave) {
+    const response = await fetch(`${API_ROOT}/${chave}`, {
+        headers: { 'Content-Type': 'application/json' },
+        cache: 'no-store',
+    });
+
+    if (!response.ok) {
+        throw new Error(`Falha ao buscar ${chave}: ${response.status}`);
+    }
+
+    return response.json();
+}
+
+async function enviarDadosRemotos(chave, dados) {
+    const response = await fetch(`${API_ROOT}/${chave}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(dados),
+    });
+
+    if (!response.ok) {
+        throw new Error(`Falha ao salvar ${chave}: ${response.status}`);
+    }
+
+    return response.json();
+}
+
+async function sincronizarDadosRemotos() {
+    try {
+        const membrosRemotos = await buscarDadosRemotos('membros');
+        CACHE_DADOS.membros = ordenarMembros(membrosRemotos ?? [...MEMBROS_PADRAO]);
+        CACHE_DADOS.repertorio = await buscarDadosRemotos('repertorio');
+        CACHE_DADOS.escalas = await buscarDadosRemotos('escalas');
+        API_DISPONIVEL = true;
+
+        salvarDadosLocais(CHAVE_MEMBROS, CACHE_DADOS.membros);
+        salvarDadosLocais(CHAVE_REPERTORIO, CACHE_DADOS.repertorio ?? {});
+        salvarDadosLocais(CHAVE_ESCALAS, CACHE_DADOS.escalas ?? {});
+    } catch (erro) {
+        console.warn('Servidor de dados remotos indisponível, usando cache local:', erro);
+        API_DISPONIVEL = false;
+
+        if (CACHE_DADOS.membros === null) {
+            CACHE_DADOS.membros = ordenarMembros(carregarDadosLocais(CHAVE_MEMBROS, [...MEMBROS_PADRAO]));
+        }
+        if (CACHE_DADOS.repertorio === null) {
+            CACHE_DADOS.repertorio = carregarDadosLocais(CHAVE_REPERTORIO, {});
+        }
+        if (CACHE_DADOS.escalas === null) {
+            CACHE_DADOS.escalas = carregarDadosLocais(CHAVE_ESCALAS, {});
+        }
+    }
+}
+
+function iniciarAtualizacaoAutomatica() {
+    setInterval(async () => {
+        await sincronizarDadosRemotos();
+        renderizarMembros();
+        renderizarRepertorio();
+        renderizarEscalas();
+    }, 10000);
+}
+
 const MEMBROS_PADRAO = [
     { nome: 'Aminadabe / Binho', cargo: 'Líder Geral', categoria: 'lider' },
     { nome: 'Patrick', cargo: 'Líder Instrumental', categoria: 'instrumental' },
     { nome: 'Moises', cargo: 'Líder Vocal', categoria: 'vocal' },
-    { nome: 'Alesio', cargo: 'Vocalista', categoria: 'vocal' },
+    { nome: 'Aelsio', cargo: 'Vocalista', categoria: 'vocal' },
     { nome: 'Douglas', cargo: 'Baterista / Baixista', categoria: 'instrumental' },
     { nome: 'Edilane', cargo: 'Vocalista', categoria: 'vocal' },
     { nome: 'Enzo', cargo: 'Baterista', categoria: 'instrumental' },
@@ -330,11 +413,7 @@ function compararMembros(a, b) {
     return a.nome.localeCompare(b.nome, 'pt', { sensitivity: 'base' });
 }
 
-function carregarMembros() {
-    const salvo = localStorage.getItem(CHAVE_MEMBROS);
-    const membros = salvo ? JSON.parse(salvo) : [...MEMBROS_PADRAO];
-
-    // Garante que membros salvos sem categoria recebam a categoria correta
+function ordenarMembros(membros) {
     const membrosComCategoria = membros.map((membro) => {
         if (membro.categoria) return membro;
 
@@ -362,9 +441,52 @@ function carregarMembros() {
     return membrosComCategoria.sort(compararMembros);
 }
 
+function carregarMembros() {
+    if (CACHE_DADOS.membros) {
+        return CACHE_DADOS.membros;
+    }
+
+    const membros = carregarDadosLocais(CHAVE_MEMBROS, [...MEMBROS_PADRAO]);
+
+    const membrosComCategoria = membros.map((membro) => {
+        if (membro.categoria) return membro;
+
+        const cargo = membro.cargo.toLowerCase();
+        let categoria = 'vocal';
+
+        if (
+            cargo.includes('baterista') ||
+            cargo.includes('baixista') ||
+            cargo.includes('instrumental') ||
+            cargo.includes('líder instrumental') ||
+            cargo.includes('lider instrumental')
+        ) {
+            categoria = 'instrumental';
+        } else if (
+            cargo.includes('líder geral') ||
+            cargo.includes('lider geral')
+        ) {
+            categoria = 'lider';
+        }
+
+        return { ...membro, categoria };
+    });
+
+    const membrosOrdenados = membrosComCategoria.sort(compararMembros);
+    CACHE_DADOS.membros = membrosOrdenados;
+    return membrosOrdenados;
+}
+
 function salvarMembros(membros) {
-    const membrosOrdenados = [...membros].sort(compararMembros);
-    localStorage.setItem(CHAVE_MEMBROS, JSON.stringify(membrosOrdenados));
+    const membrosOrdenados = ordenarMembros(membros);
+    CACHE_DADOS.membros = membrosOrdenados;
+    salvarDadosLocais(CHAVE_MEMBROS, membrosOrdenados);
+
+    if (API_DISPONIVEL) {
+        enviarDadosRemotos('membros', membrosOrdenados).catch((erro) => {
+            console.warn('Não foi possível sincronizar membros com o servidor remoto:', erro);
+        });
+    }
 }
 
 function dataRepertorioValida(data) {
@@ -934,9 +1056,6 @@ function toggleSenha() {
 // REPERTÓRIO — GERENCIAMENTO DE LISTAS POR DATA
 // ============================================================
  
-const CHAVE_REPERTORIO = 'repertorio';
-const CHAVE_ESCALAS = 'escalasLouvor';
- 
 let _dataAtual = null;
 let _indexAtual = null;
 let _dataEscalaAtual = null;
@@ -947,21 +1066,45 @@ const NOMES_MESES = [
 ];
  
 function carregarRepertorio() {
-    const salvo = localStorage.getItem(CHAVE_REPERTORIO);
-    return salvo ? JSON.parse(salvo) : {};
+    if (CACHE_DADOS.repertorio) {
+        return CACHE_DADOS.repertorio;
+    }
+
+    const repertorio = carregarDadosLocais(CHAVE_REPERTORIO, {});
+    CACHE_DADOS.repertorio = repertorio;
+    return repertorio;
 }
- 
+
 function salvarRepertorio(repertorio) {
-    localStorage.setItem(CHAVE_REPERTORIO, JSON.stringify(repertorio));
+    CACHE_DADOS.repertorio = repertorio;
+    salvarDadosLocais(CHAVE_REPERTORIO, repertorio);
+
+    if (API_DISPONIVEL) {
+        enviarDadosRemotos('repertorio', repertorio).catch((erro) => {
+            console.warn('Não foi possível sincronizar repertório com o servidor remoto:', erro);
+        });
+    }
 }
 
 function carregarEscalas() {
-    const salvo = localStorage.getItem(CHAVE_ESCALAS);
-    return salvo ? JSON.parse(salvo) : {};
+    if (CACHE_DADOS.escalas) {
+        return CACHE_DADOS.escalas;
+    }
+
+    const escalas = carregarDadosLocais(CHAVE_ESCALAS, {});
+    CACHE_DADOS.escalas = escalas;
+    return escalas;
 }
 
 function salvarEscalas(escalas) {
-    localStorage.setItem(CHAVE_ESCALAS, JSON.stringify(escalas));
+    CACHE_DADOS.escalas = escalas;
+    salvarDadosLocais(CHAVE_ESCALAS, escalas);
+
+    if (API_DISPONIVEL) {
+        enviarDadosRemotos('escalas', escalas).catch((erro) => {
+            console.warn('Não foi possível sincronizar escalas com o servidor remoto:', erro);
+        });
+    }
 }
 
 // Agrupa as datas do repertório por ano e mês
@@ -1441,7 +1584,9 @@ window.addEventListener('pointerdown', function(event) {
     if (modalEscala && event.target === modalEscala) fecharModalEscala();
 });
  
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    await sincronizarDadosRemotos();
+
     renderizarMembros();
     alternarBotaoAdicionarMembro();
     preencherAutocompleteMembros();
@@ -1451,9 +1596,26 @@ document.addEventListener('DOMContentLoaded', () => {
     renderizarEscalas();
     abrirEscalaPendente();
     configurarAcessoPorPerfil();
+    iniciarAtualizacaoAutomatica();
 
     const inputNovaData = document.getElementById('input-nova-data');
     if (inputNovaData) {
         inputNovaData.addEventListener('input', formatarDataAutomaticamente);
+    }
+});
+
+window.addEventListener('storage', (event) => {
+    if (!event.key) return;
+
+    if (event.key === CHAVE_MEMBROS) {
+        renderizarMembros();
+    }
+
+    if (event.key === CHAVE_REPERTORIO) {
+        renderizarRepertorio();
+    }
+
+    if (event.key === CHAVE_ESCALAS) {
+        renderizarEscalas();
     }
 });

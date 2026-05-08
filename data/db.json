@@ -1,0 +1,91 @@
+{
+  "membros": [
+    {
+      "nome": "Aminadabe / Binho",
+      "cargo": "Líder Geral",
+      "categoria": "lider"
+    },
+    {
+      "nome": "Patrick",
+      "cargo": "Líder Instrumental",
+      "categoria": "instrumental"
+    },
+    {
+      "nome": "Moises",
+      "cargo": "Líder Vocal",
+      "categoria": "vocal"
+    },
+    {
+      "nome": "Alesio",
+      "cargo": "Vocalista",
+      "categoria": "vocal"
+    },
+    {
+      "nome": "Douglas",
+      "cargo": "Baterista / Baixista",
+      "categoria": "instrumental"
+    },
+    {
+      "nome": "Edilane",
+      "cargo": "Vocalista",
+      "categoria": "vocal"
+    },
+    {
+      "nome": "Enzo",
+      "cargo": "Baterista",
+      "categoria": "instrumental"
+    },
+    {
+      "nome": "Joao",
+      "cargo": "Instrumental",
+      "categoria": "instrumental"
+    },
+    {
+      "nome": "Larrisa",
+      "cargo": "Vocalista",
+      "categoria": "vocal"
+    },
+    {
+      "nome": "Miguel",
+      "cargo": "Instrumental",
+      "categoria": "instrumental"
+    },
+    {
+      "nome": "Nicole",
+      "cargo": "Vocalista / Mídia",
+      "categoria": "vocal"
+    },
+    {
+      "nome": "Vanessa",
+      "cargo": "Vocalista",
+      "categoria": "vocal"
+    },
+    {
+      "nome": "Vitoria",
+      "cargo": "Vocalista",
+      "categoria": "vocal"
+    },
+    {
+      "nome": "Wagao",
+      "cargo": "Baixista",
+      "categoria": "instrumental"
+    },
+    {
+      "nome": "Eliane",
+      "cargo": "Vocalista",
+      "categoria": "vocal"
+    },
+    {
+      "nome": "Erika",
+      "cargo": "Vocalista",
+      "categoria": "vocal"
+    },
+    {
+      "nome": "Davi",
+      "cargo": "Vocalista",
+      "categoria": "vocal"
+    }
+  ],
+  "repertorio": {},
+  "escalas": {}
+}

@@ -1,0 +1,13 @@
+{
+  "name": "site-jeovanissi",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Servidor local para sincronização remota do site Jeova Nissi",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
