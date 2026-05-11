@@ -1,8 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const DATA_DIR = path.join(__dirname, '..', 'data');
-const REPO_DB_FILE = path.join(DATA_DIR, 'db.json');
+const REPO_DB_FILE = path.join(__dirname, '..', 'db.json');
 const TMP_DB_FILE = '/tmp/vercel-db.json';
 
 const DEFAULT_DB = {
