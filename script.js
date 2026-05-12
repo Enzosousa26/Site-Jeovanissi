@@ -3,27 +3,8 @@
 // ============================================================
 // SISTEMA DE USUÁRIOS
 // ============================================================
-// Lista simples de usuários permitidos para acessar o site.
-const usuarios = [
-    { usuario: 'Aminadabe.santos', senha: '251010', perfil: 'admin', nome: 'Aminadabe' },
-    { usuario: 'Patrick.prudente',   senha: '251010',   perfil: 'admin', nome: 'Patrick'   },
-    { usuario: 'Moises.souza',    senha: '251010',   perfil: 'admin', nome: 'Moises'    },
-    { usuario: 'Enzo.santos',      senha: '2510',   perfil: 'membro', nome: 'Enzo'      },
-    { usuario: 'Alesio.ribeiro',    senha: '2511',   perfil: 'membro', nome: 'Alesio'    },
-    { usuario: 'Douglas.batista',   senha: '2512',   perfil: 'membro', nome: 'Douglas'   },
-    { usuario: 'Davi.ricardo',   senha: '2513',   perfil: 'membro', nome: 'Davi'      },
-    { usuario: 'Edilane.santos',   senha: '2514',   perfil: 'membro', nome: 'Edilane'   },
-    { usuario: 'Joao.pinheiro',      senha: '2515',   perfil: 'membro', nome: 'Joao'      },
-    { usuario: 'Larrisa.brenda',   senha: '2516',   perfil: 'membro', nome: 'Larrisa'   },
-    { usuario: 'Miguel.pinheiro',    senha: '2517',   perfil: 'membro', nome: 'Miguel'    },
-    { usuario: 'Nicole.cruz',    senha: '2518',   perfil: 'membro', nome: 'Nicole'    },
-    { usuario: 'Vanessa.rodrigues',   senha: '2519',   perfil: 'membro', nome: 'Vanessa'   },
-    { usuario: 'Vitoria.moreira',   senha: '2520',   perfil: 'membro', nome: 'Vitoria'   },
-    { usuario: 'Wagao.barcelos',     senha: '2521',   perfil: 'membro', nome: 'Wagao'     },
-    { usuario: 'Eliane.oliveira',    senha: '2522',   perfil: 'membro', nome: 'Eliane'    },
-    { usuario: 'Erika.gonçalves',     senha: '2523',   perfil: 'membro', nome: 'Erika'     },
-    { usuario: 'Visitante',        senha: '1234',   perfil: 'visitante', nome: 'Visitante' },
-];
+const CHAVE_USUARIO_LOGIN = 'usuarioLogin';
+const CHAVE_TOKEN_LOGIN = 'tokenLogin';
  
 // Funcionalidade do botão de login
 const loginBtn = document.getElementById('login-btn');
@@ -31,45 +12,48 @@ const loginBtn = document.getElementById('login-btn');
 function exibirTextoDeUsuarioAdm(tag, texto){
     // Escreve um texto em uma tag quando o usuário é administrador.
     let campo = document.querySelector(tag);
-    campo.innerHTML = texto;
+    if (campo) campo.textContent = texto;
 }
 function exibirTextoDeUsuarioMembro(tag, texto){
     // Escreve um texto em uma tag quando o usuário é membro comum.
     let campoUm = document.querySelector(tag);
-    campoUm.innerHTML = texto;
+    if (campoUm) campoUm.textContent = texto;
 }
  
 if (loginBtn) {
     // Só ativa o login quando o botão existe na página atual.
-    loginBtn.addEventListener('click', () => {
+    loginBtn.addEventListener('click', async () => {
         // Lê os inputs no momento do clique
         let usuario = document.querySelector('input[type="text"]').value;
         let senha = document.getElementById('senha-input').value;
  
-        // Procura o usuário na lista
-        const encontrado = usuarios.find(u => u.usuario === usuario && u.senha === senha);
+        loginBtn.disabled = true;
+
+        try {
+            // Valida o usuário no Supabase, sem expor a lista de senhas no JavaScript.
+            const encontrado = await autenticarUsuario(usuario, senha);
  
-        if (encontrado) {
-            // Salva o perfil e nome no localStorage para usar nas outras páginas
-            localStorage.setItem('perfilUsuario', encontrado.perfil);
-            localStorage.setItem('nomeUsuario', encontrado.nome);
- 
-            // Espera a animação terminar antes de redirecionar
-            document.body.style.animation = 'fadeOutDown 0.5s ease forwards';
-            setTimeout(() => {
-                window.location.href = './movimentações/home.html';
-            }, 500);
- 
-            window.location.href = './movimentações/home.html';
- 
-            if (encontrado.perfil === 'admin') {
-                exibirTextoDeUsuarioAdm();
+            if (encontrado) {
+                // Salva o perfil e nome no localStorage para usar nas outras páginas.
+                localStorage.setItem('perfilUsuario', encontrado.perfil);
+                localStorage.setItem('nomeUsuario', encontrado.nome);
+                sessionStorage.setItem(CHAVE_USUARIO_LOGIN, usuario);
+                sessionStorage.setItem(CHAVE_TOKEN_LOGIN, encontrado.token);
+    
+                // Espera a animação terminar antes de redirecionar.
+                document.body.style.animation = 'fadeOutDown 0.5s ease forwards';
+                setTimeout(() => {
+                    window.location.href = './movimentações/home.html';
+                }, 500);
             } else {
-                exibirTextoDeUsuarioMembro();
+                // Avisa quando o usuário ou a senha não foram encontrados.
+                alert('Acesso não encontrado. Confira seu usuário e sua senha e tente novamente.');
+                loginBtn.disabled = false;
             }
-        } else {
-            // Avisa quando o usuário ou a senha não foram encontrados.
-            alert('ERRO! Usuario invalido, tente novamente!');
+        } catch (erro) {
+            console.warn('Erro ao fazer login:', erro);
+            alert('Não conseguimos entrar agora. Verifique sua conexão e tente novamente em alguns instantes.');
+            loginBtn.disabled = false;
         }
     });
 
@@ -96,7 +80,7 @@ if (!perfilUsuario && !document.getElementById('login-btn')) {
 // Exibe o nome no modal de perfil
 const tagNome = document.querySelector('.nome-usuario');
 if (tagNome && nomeUsuario) {
-    tagNome.innerHTML = nomeUsuario;
+    tagNome.textContent = nomeUsuario;
 }
  
 // Esconde elementos exclusivos de admin para membros comuns
@@ -122,7 +106,7 @@ function verificarPerfilMembro(){
 const tagPerfil = document.querySelector('.mudar-perfil') || document.querySelector('h4');
 if (tagPerfil && perfilUsuario) {
     const perfilFormatado = perfilUsuario === 'admin' ? 'Admin' : perfilUsuario === 'visitante' ? 'Visitante' : 'Membro';
-    tagPerfil.innerHTML = nomeUsuario ? `Perfil: ${perfilFormatado} | ${nomeUsuario}` : `Perfil: ${perfilFormatado}`;
+    tagPerfil.textContent = nomeUsuario ? `Perfil: ${perfilFormatado} | ${nomeUsuario}` : `Perfil: ${perfilFormatado}`;
 }
 
 const INSTAGRAM_VISITANTE = 'https://instagram.com/jeovanissi'; // Atualize com o perfil real quando quiser.
@@ -290,13 +274,20 @@ function mostrarContato() {
 const CHAVE_MEMBROS = 'membrosBanda';
 const CHAVE_REPERTORIO = 'repertorio';
 const CHAVE_ESCALAS = 'escalasLouvor';
-const API_ROOT = '/api';
 
 let _indexMembroAtual = null;
 let _modoModalMembro = null;
 let _gerenciandoMembros = false;
 let API_DISPONIVEL = false;
+let _avisoSupabaseExibido = false;
+let _avisoSalvamentoExibido = false;
+let _intervaloAtualizacao = null;
 const CACHE_DADOS = {
+    membros: null,
+    repertorio: null,
+    escalas: null,
+};
+const VERSAO_DADOS = {
     membros: null,
     repertorio: null,
     escalas: null,
@@ -316,31 +307,143 @@ function salvarDadosLocais(chave, dados) {
     localStorage.setItem(chave, JSON.stringify(dados));
 }
 
-async function buscarDadosRemotos(chave) {
-    const response = await fetch(`${API_ROOT}/${chave}`, {
-        headers: { 'Content-Type': 'application/json' },
-        cache: 'no-store',
-    });
+// ============================================================
+// INTEGRAÇÃO SUPABASE — substitui as chamadas /api/...
+// ============================================================
+const SUPABASE_URL = 'https://brlmggncnoyngukztxhi.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJybG1nZ25jbm95bmd1a3p0eGhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1ODg5NjQsImV4cCI6MjA5NDE2NDk2NH0.Oh4GaM9XgMn6AiIosc3p3BSfe1I2jO9Wr61amSPCqx0';
 
-    if (!response.ok) {
-        throw new Error(`Falha ao buscar ${chave}: ${response.status}`);
+const TABELAS_ID = {
+    membros: 1,
+    repertorio: 1,
+    escalas: 1,
+};
+
+const SUPABASE_HEADERS = {
+    'apikey': SUPABASE_ANON_KEY,
+    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+    'Content-Type': 'application/json',
+};
+
+async function fetchComTimeout(url, options = {}, tempoLimite = 8000) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), tempoLimite);
+
+    try {
+        return await fetch(url, {
+            ...options,
+            signal: controller.signal,
+        });
+    } finally {
+        clearTimeout(timer);
+    }
+}
+
+async function montarErroSupabase(response, acao, tabela) {
+    let detalhe = '';
+
+    try {
+        detalhe = await response.text();
+    } catch (erro) {
+        detalhe = '';
     }
 
+    return new Error(`Falha ao ${acao} ${tabela}: ${response.status}${detalhe ? ` - ${detalhe}` : ''}`);
+}
+
+function avisarSupabaseIndisponivel(erro) {
+    if (_avisoSupabaseExibido || perfilUsuario !== 'admin') return;
+
+    _avisoSupabaseExibido = true;
+    console.warn('Supabase indisponível, usando cache local:', erro);
+    alert('O Supabase ainda não está configurado ou está indisponível. As alterações feitas agora ficam só neste navegador até as tabelas serem criadas no Supabase.');
+}
+
+function avisarFalhaSalvamentoRemoto(erro) {
+    if (_avisoSalvamentoExibido || perfilUsuario !== 'admin') return;
+
+    _avisoSalvamentoExibido = true;
+    console.warn('Não foi possível salvar no Supabase:', erro);
+    alert('Não foi possível salvar no Supabase. Entre novamente como admin e tente de novo. Se outro admin alterou os dados ao mesmo tempo, recarregue a página antes de salvar.');
+}
+
+function obterCredenciaisSessao() {
+    return {
+        usuario: sessionStorage.getItem(CHAVE_USUARIO_LOGIN),
+        token: sessionStorage.getItem(CHAVE_TOKEN_LOGIN),
+    };
+}
+
+async function chamarRpcSupabase(nomeFuncao, parametros) {
+    const response = await fetchComTimeout(
+        `${SUPABASE_URL}/rest/v1/rpc/${nomeFuncao}`,
+        {
+            method: 'POST',
+            headers: SUPABASE_HEADERS,
+            body: JSON.stringify(parametros),
+        }
+    );
+
+    if (!response.ok) {
+        throw await montarErroSupabase(response, 'executar', nomeFuncao);
+    }
+
+    if (response.status === 204) return null;
     return response.json();
 }
 
-async function enviarDadosRemotos(chave, dados) {
-    const response = await fetch(`${API_ROOT}/${chave}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(dados),
+async function autenticarUsuario(usuario, senha) {
+    const resultado = await chamarRpcSupabase('autenticar_usuario_site', {
+        p_usuario: usuario,
+        p_senha: senha,
     });
 
-    if (!response.ok) {
-        throw new Error(`Falha ao salvar ${chave}: ${response.status}`);
+    if (!resultado || !resultado.perfil || !resultado.nome || !resultado.token) {
+        return null;
     }
 
-    return response.json();
+    return resultado;
+}
+
+async function buscarDadosRemotos(tabela) {
+    const response = await fetchComTimeout(
+        `${SUPABASE_URL}/rest/v1/${tabela}?id=eq.${TABELAS_ID[tabela]}&select=dados,atualizado_em`,
+        {
+            headers: SUPABASE_HEADERS,
+            cache: 'no-store',
+        }
+    );
+
+    if (!response.ok) {
+        throw await montarErroSupabase(response, 'buscar', tabela);
+    }
+
+    const rows = await response.json();
+    if (!rows || rows.length === 0) return null;
+    VERSAO_DADOS[tabela] = rows[0].atualizado_em ?? null;
+    return rows[0].dados;
+}
+
+async function enviarDadosRemotos(tabela, dados) {
+    const credenciais = obterCredenciaisSessao();
+
+    if (!credenciais.usuario || !credenciais.token) {
+        throw new Error('Sessão de admin expirada. Entre novamente para salvar no Supabase.');
+    }
+
+    const resultado = await chamarRpcSupabase('salvar_dados_site', {
+        p_tabela: tabela,
+        p_dados: dados,
+        p_usuario: credenciais.usuario,
+        p_token: credenciais.token,
+        p_atualizado_em: VERSAO_DADOS[tabela],
+    });
+
+    if (resultado?.atualizado_em) {
+        VERSAO_DADOS[tabela] = resultado.atualizado_em;
+    }
+
+    return dados;
 }
 
 async function sincronizarDadosRemotos() {
@@ -353,25 +456,42 @@ async function sincronizarDadosRemotos() {
         }
 
         const membrosRemotos = await buscarDadosRemotos('membros');
-        CACHE_DADOS.membros = ordenarMembros(membrosRemotos ?? [...MEMBROS_PADRAO]);
+        if (membrosRemotos === null) {
+            CACHE_DADOS.membros = ordenarMembros(carregarDadosLocais(CHAVE_MEMBROS, [...MEMBROS_PADRAO]));
+            await enviarDadosRemotos('membros', CACHE_DADOS.membros);
+        } else {
+            CACHE_DADOS.membros = ordenarMembros(Array.isArray(membrosRemotos) ? membrosRemotos : [...MEMBROS_PADRAO]);
+        }
 
         if (DADOS_PENDENTES.repertorio && CACHE_DADOS.repertorio) {
             await enviarDadosRemotos('repertorio', CACHE_DADOS.repertorio);
             DADOS_PENDENTES.repertorio = false;
         }
-        CACHE_DADOS.repertorio = await buscarDadosRemotos('repertorio');
+        const repertorioRemoto = await buscarDadosRemotos('repertorio');
+        if (repertorioRemoto === null) {
+            CACHE_DADOS.repertorio = carregarDadosLocais(CHAVE_REPERTORIO, {});
+            await enviarDadosRemotos('repertorio', CACHE_DADOS.repertorio);
+        } else {
+            CACHE_DADOS.repertorio = repertorioRemoto ?? {};
+        }
 
         if (DADOS_PENDENTES.escalas && CACHE_DADOS.escalas) {
             await enviarDadosRemotos('escalas', CACHE_DADOS.escalas);
             DADOS_PENDENTES.escalas = false;
         }
-        CACHE_DADOS.escalas = await buscarDadosRemotos('escalas');
+        const escalasRemotas = await buscarDadosRemotos('escalas');
+        if (escalasRemotas === null) {
+            CACHE_DADOS.escalas = carregarDadosLocais(CHAVE_ESCALAS, {});
+            await enviarDadosRemotos('escalas', CACHE_DADOS.escalas);
+        } else {
+            CACHE_DADOS.escalas = escalasRemotas ?? {};
+        }
 
         salvarDadosLocais(CHAVE_MEMBROS, CACHE_DADOS.membros);
         salvarDadosLocais(CHAVE_REPERTORIO, CACHE_DADOS.repertorio ?? {});
         salvarDadosLocais(CHAVE_ESCALAS, CACHE_DADOS.escalas ?? {});
     } catch (erro) {
-        console.warn('Servidor de dados remotos indisponível, usando cache local:', erro);
+        avisarSupabaseIndisponivel(erro);
         API_DISPONIVEL = false;
 
         if (CACHE_DADOS.membros === null) {
@@ -387,11 +507,17 @@ async function sincronizarDadosRemotos() {
 }
 
 function iniciarAtualizacaoAutomatica() {
-    setInterval(async () => {
-        await sincronizarDadosRemotos();
-        renderizarMembros();
-        renderizarRepertorio();
-        renderizarEscalas();
+    if (_intervaloAtualizacao) return;
+
+    _intervaloAtualizacao = setInterval(async () => {
+        try {
+            await sincronizarDadosRemotos();
+            renderizarMembros();
+            renderizarRepertorio();
+            renderizarEscalas();
+        } catch (erro) {
+            console.warn('Falha na atualização automática:', erro);
+        }
     }, 10000);
 }
 
@@ -505,7 +631,8 @@ function salvarMembros(membros) {
 
     if (API_DISPONIVEL) {
         enviarDadosRemotos('membros', membrosOrdenados).catch((erro) => {
-            console.warn('Não foi possível sincronizar membros com o servidor remoto:', erro);
+            console.warn('Não foi possível sincronizar membros com o Supabase:', erro);
+            avisarFalhaSalvamentoRemoto(erro);
             DADOS_PENDENTES.membros = true;
         });
     } else {
@@ -536,6 +663,19 @@ function escaparHtml(valor) {
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#039;');
+}
+
+function normalizarLinkSeguro(link) {
+    const valor = String(link || '').trim();
+    if (!valor) return '';
+
+    try {
+        const url = new URL(valor, window.location.href);
+        if (!['http:', 'https:'].includes(url.protocol)) return '';
+        return url.href;
+    } catch (erro) {
+        return '';
+    }
 }
 
 function normalizarResponsaveisEscala(valor) {
@@ -939,6 +1079,8 @@ function logout() {
     // Limpa os dados salvos da sessão do usuário.
     localStorage.removeItem('perfilUsuario');
     localStorage.removeItem('nomeUsuario');
+    sessionStorage.removeItem(CHAVE_USUARIO_LOGIN);
+    sessionStorage.removeItem(CHAVE_TOKEN_LOGIN);
 
     // Volta para a tela inicial de login.
     window.location.href = '../index.html';
@@ -1105,7 +1247,8 @@ function salvarRepertorio(repertorio) {
 
     if (API_DISPONIVEL) {
         enviarDadosRemotos('repertorio', repertorio).catch((erro) => {
-            console.warn('Não foi possível sincronizar repertório com o servidor remoto:', erro);
+            console.warn('Não foi possível sincronizar repertório com o Supabase:', erro);
+            avisarFalhaSalvamentoRemoto(erro);
             DADOS_PENDENTES.repertorio = true;
         });
     } else {
@@ -1129,7 +1272,8 @@ function salvarEscalas(escalas) {
 
     if (API_DISPONIVEL) {
         enviarDadosRemotos('escalas', escalas).catch((erro) => {
-            console.warn('Não foi possível sincronizar escalas com o servidor remoto:', erro);
+            console.warn('Não foi possível sincronizar escalas com o Supabase:', erro);
+            avisarFalhaSalvamentoRemoto(erro);
             DADOS_PENDENTES.escalas = true;
         });
     } else {
@@ -1216,7 +1360,9 @@ function renderizarRepertorio() {
 
                 const cabecalho = document.createElement('div');
                 cabecalho.className = 'cabecalho-data';
-                cabecalho.innerHTML = `<h5>Domingo ${data}</h5>`;
+                const tituloData = document.createElement('h5');
+                tituloData.textContent = `Domingo ${data}`;
+                cabecalho.appendChild(tituloData);
 
                 if (ehAdmin) {
                     const btnExcluirData = document.createElement('button');
@@ -1233,9 +1379,15 @@ function renderizarRepertorio() {
 
                 musicas.forEach((musica, index) => {
                     const li = document.createElement('li');
+                    const linkSeguro = normalizarLinkSeguro(musica.link);
 
-                    if (musica.link) {
-                        li.innerHTML = `<a href="${musica.link}" target="_blank" rel="noopener">${musica.nome}</a>`;
+                    if (linkSeguro) {
+                        const linkMusica = document.createElement('a');
+                        linkMusica.href = linkSeguro;
+                        linkMusica.target = '_blank';
+                        linkMusica.rel = 'noopener';
+                        linkMusica.textContent = musica.nome;
+                        li.appendChild(linkMusica);
                     } else {
                         li.textContent = musica.nome;
                     }
@@ -1614,9 +1766,7 @@ window.addEventListener('pointerdown', function(event) {
     if (modalEscala && event.target === modalEscala) fecharModalEscala();
 });
  
-document.addEventListener('DOMContentLoaded', async () => {
-    await sincronizarDadosRemotos();
-
+function inicializarInterface() {
     renderizarMembros();
     alternarBotaoAdicionarMembro();
     preencherAutocompleteMembros();
@@ -1626,12 +1776,25 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderizarEscalas();
     abrirEscalaPendente();
     configurarAcessoPorPerfil();
-    iniciarAtualizacaoAutomatica();
 
     const inputNovaData = document.getElementById('input-nova-data');
     if (inputNovaData) {
         inputNovaData.addEventListener('input', formatarDataAutomaticamente);
     }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    inicializarInterface();
+
+    sincronizarDadosRemotos().then(() => {
+        renderizarMembros();
+        preencherAutocompleteMembros();
+        preencherSeletoresEscala();
+        renderizarRepertorio();
+        renderizarEscalas();
+    }).finally(() => {
+        iniciarAtualizacaoAutomatica();
+    });
 });
 
 window.addEventListener('storage', (event) => {
