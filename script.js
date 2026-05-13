@@ -1,12 +1,15 @@
 ﻿// Ele faz ações acontecerem, como abrir modal e marcar o link ativo.
+// Aqui tem login, permissões, membros, repertório, escalas e a conexão com o Supabase.
  
 // ============================================================
 // SISTEMA DE USUÁRIOS
 // ============================================================
+// Guardo esse nome para salvar o usuário da sessão sem repetir texto.
 const CHAVE_USUARIO_LOGIN = 'usuarioLogin';
+// Esse é o nome usado para guardar o token que vem do Supabase.
 const CHAVE_TOKEN_LOGIN = 'tokenLogin';
  
-// Funcionalidade do botão de login
+// Pego o botão de login. Se ele existir, eu estou na tela de entrada.
 const loginBtn = document.getElementById('login-btn');
  
 function exibirTextoDeUsuarioAdm(tag, texto){
@@ -27,6 +30,7 @@ if (loginBtn) {
         let usuario = document.querySelector('input[type="text"]').value;
         let senha = document.getElementById('senha-input').value;
  
+        // Desativo para a pessoa não clicar várias vezes enquanto o login carrega.
         loginBtn.disabled = true;
 
         try {
@@ -37,6 +41,7 @@ if (loginBtn) {
                 // Salva o perfil e nome no localStorage para usar nas outras páginas.
                 localStorage.setItem('perfilUsuario', encontrado.perfil);
                 localStorage.setItem('nomeUsuario', encontrado.nome);
+                // O usuário e o token ficam na sessão da aba, porque uso isso para salvar no Supabase.
                 sessionStorage.setItem(CHAVE_USUARIO_LOGIN, usuario);
                 sessionStorage.setItem(CHAVE_TOKEN_LOGIN, encontrado.token);
     
@@ -51,12 +56,14 @@ if (loginBtn) {
                 loginBtn.disabled = false;
             }
         } catch (erro) {
+            // Se cair aqui, normalmente é internet, Supabase fora ou alguma configuração errada.
             console.warn('Erro ao fazer login:', erro);
             alert('Não conseguimos entrar agora. Verifique sua conexão e tente novamente em alguns instantes.');
             loginBtn.disabled = false;
         }
     });
 
+    // Também deixei o Enter funcionando para facilitar o login.
     document.addEventListener('keydown', (event) => {
         if (event.key === 'Enter') {
             event.preventDefault();
@@ -69,6 +76,7 @@ if (loginBtn) {
 // LEITURA DO PERFIL NAS PÁGINAS INTERNAS
 // (Esse bloco roda em home.html e nas outras páginas internas)
 // ============================================================
+// Aqui eu pego o perfil salvo para saber o que cada pessoa pode ver.
 const perfilUsuario = localStorage.getItem('perfilUsuario');
 const nomeUsuario   = localStorage.getItem('nomeUsuario');
  
@@ -91,7 +99,7 @@ if (perfilUsuario !== 'admin') {
 }
  
 // ============================================================
-// FUNÇÕES DE VERIFICAÇÃO DE PERFIL (suas funções originais)
+// FUNÇÕES DE VERIFICAÇÃO DE PERFIL (funções que eu já tinha deixado antes)
 // ============================================================
 function verificarPerfilAdm(){
     // Mostra manualmente o texto de perfil admin.
@@ -105,26 +113,32 @@ function verificarPerfilMembro(){
 // Exibe o perfil correto no h4 automaticamente ao carregar a página
 const tagPerfil = document.querySelector('.mudar-perfil') || document.querySelector('h4');
 if (tagPerfil && perfilUsuario) {
+    // Deixo o texto do perfil mais bonito antes de jogar no HTML.
     const perfilFormatado = perfilUsuario === 'admin' ? 'Admin' : perfilUsuario === 'visitante' ? 'Visitante' : 'Membro';
     tagPerfil.textContent = nomeUsuario ? `Perfil: ${perfilFormatado} | ${nomeUsuario}` : `Perfil: ${perfilFormatado}`;
 }
 
+// Link do Instagram usado quando o perfil for visitante.
 const INSTAGRAM_VISITANTE = 'https://instagram.com/jeovanissi'; // Atualize com o perfil real quando quiser.
 
 function isVisitante() {
+    // Fiz essa função só para não repetir essa comparação toda hora.
     return perfilUsuario === 'visitante';
 }
 
 function configurarAcessoPorPerfil() {
+    // Admin pode ver tudo, então não preciso mexer na tela dele aqui.
     if (perfilUsuario === 'admin') {
         return;
     }
 
+    // Quem não é admin não pode ver os botões e áreas administrativas.
     document.querySelectorAll('.somente-admin').forEach(el => {
         el.style.display = 'none';
     });
 
     if (isVisitante()) {
+        // Visitante recebe uma tela mais simples, com links de apresentação.
         document.querySelectorAll('.somente-visitante').forEach(el => {
             el.style.display = 'block';
         });
@@ -141,6 +155,7 @@ function configurarAcessoPorPerfil() {
 }
 
 function adicionarMenuVisitante() {
+    // Aqui eu troco o menu normal por um menu mais útil para visitante.
     const topnav = document.querySelector('.topnav');
     if (!topnav) return;
 
@@ -156,6 +171,7 @@ function adicionarMenuVisitante() {
     ];
 
     links.forEach(linkData => {
+        // Crio os links pelo JavaScript para deixar tudo no mesmo lugar.
         const link = document.createElement('a');
         link.href = linkData.href;
         link.textContent = linkData.text;
@@ -166,6 +182,7 @@ function adicionarMenuVisitante() {
 }
 
 function mostrarConteudoVisitante() {
+    // Esse card aparece só para quem está conhecendo o ministério.
     const main = document.querySelector('main');
     if (!main) return;
 
@@ -190,6 +207,7 @@ function mostrarConteudoVisitante() {
 }
 
 function mostrarSobreNos() {
+    // Mostra o texto de "Sobre Nós" e rola a tela até ele.
     const main = document.querySelector('main');
     if (!main) return;
 
@@ -213,6 +231,7 @@ function mostrarSobreNos() {
 }
 
 function mostrarEventos() {
+    // Mostra uma parte simples com os eventos principais.
     const main = document.querySelector('main');
     if (!main) return;
 
@@ -246,6 +265,7 @@ function mostrarEventos() {
 }
 
 function mostrarContato() {
+    // Mostra os contatos para o visitante conseguir falar com a gente.
     const main = document.querySelector('main');
     if (!main) return;
 
@@ -271,27 +291,34 @@ function mostrarContato() {
 // ============================================================
 // MEMBROS DA BANDA
 // ============================================================
+// Chaves usadas para salvar cópias locais no navegador.
 const CHAVE_MEMBROS = 'membrosBanda';
 const CHAVE_REPERTORIO = 'repertorio';
 const CHAVE_ESCALAS = 'escalasLouvor';
 
+// Variáveis de controle dos modais e do modo de edição.
 let _indexMembroAtual = null;
 let _modoModalMembro = null;
 let _gerenciandoMembros = false;
+// Começa como false e vira true quando o Supabase responde.
 let API_DISPONIVEL = false;
+// Esses avisos evitam ficar abrindo alert repetido para o admin.
 let _avisoSupabaseExibido = false;
 let _avisoSalvamentoExibido = false;
 let _intervaloAtualizacao = null;
+// Cache em memória para não precisar ler tudo de novo a cada função.
 const CACHE_DADOS = {
     membros: null,
     repertorio: null,
     escalas: null,
 };
+// Guardo a data da última versão para evitar salvar por cima de alteração de outro admin.
 const VERSAO_DADOS = {
     membros: null,
     repertorio: null,
     escalas: null,
 };
+// Se algum salvamento falhar, marco aqui para tentar de novo depois.
 const DADOS_PENDENTES = {
     membros: false,
     repertorio: false,
@@ -299,26 +326,32 @@ const DADOS_PENDENTES = {
 };
 
 function carregarDadosLocais(chave, valorPadrao) {
+    // Busca no localStorage e usa um valor padrão se não tiver nada salvo.
     const salvo = localStorage.getItem(chave);
     return salvo ? JSON.parse(salvo) : valorPadrao;
 }
 
 function salvarDadosLocais(chave, dados) {
+    // Salva uma cópia no navegador para o site não ficar vazio se a internet falhar.
     localStorage.setItem(chave, JSON.stringify(dados));
 }
 
 // ============================================================
 // INTEGRAÇÃO SUPABASE — substitui as chamadas /api/...
 // ============================================================
+// URL do projeto no Supabase que está sendo usado pelo site publicado.
 const SUPABASE_URL = 'https://brlmggncnoyngukztxhi.supabase.co';
+// Chave pública anon. Ela pode ficar no front porque as regras/RLS limitam o acesso.
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJybG1nZ25jbm95bmd1a3p0eGhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1ODg5NjQsImV4cCI6MjA5NDE2NDk2NH0.Oh4GaM9XgMn6AiIosc3p3BSfe1I2jO9Wr61amSPCqx0';
 
+// Cada tabela usa uma única linha com id 1 para guardar o JSON.
 const TABELAS_ID = {
     membros: 1,
     repertorio: 1,
     escalas: 1,
 };
 
+// Cabeçalhos que o Supabase exige em toda requisição REST/RPC.
 const SUPABASE_HEADERS = {
     'apikey': SUPABASE_ANON_KEY,
     'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
@@ -326,6 +359,7 @@ const SUPABASE_HEADERS = {
 };
 
 async function fetchComTimeout(url, options = {}, tempoLimite = 8000) {
+    // Coloquei timeout para a tela não ficar esperando para sempre se a internet travar.
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), tempoLimite);
 
@@ -340,6 +374,7 @@ async function fetchComTimeout(url, options = {}, tempoLimite = 8000) {
 }
 
 async function montarErroSupabase(response, acao, tabela) {
+    // Tento pegar o texto do erro do Supabase para facilitar quando der problema.
     let detalhe = '';
 
     try {
@@ -352,6 +387,7 @@ async function montarErroSupabase(response, acao, tabela) {
 }
 
 function avisarSupabaseIndisponivel(erro) {
+    // Só aviso admin, porque visitante/membro não precisa ver alerta técnico.
     if (_avisoSupabaseExibido || perfilUsuario !== 'admin') return;
 
     _avisoSupabaseExibido = true;
@@ -360,6 +396,7 @@ function avisarSupabaseIndisponivel(erro) {
 }
 
 function avisarFalhaSalvamentoRemoto(erro) {
+    // Esse alerta aparece quando a leitura funciona, mas salvar no Supabase falhou.
     if (_avisoSalvamentoExibido || perfilUsuario !== 'admin') return;
 
     _avisoSalvamentoExibido = true;
@@ -368,6 +405,7 @@ function avisarFalhaSalvamentoRemoto(erro) {
 }
 
 function obterCredenciaisSessao() {
+    // Pego o usuário e o token criados no login para confirmar salvamentos.
     return {
         usuario: sessionStorage.getItem(CHAVE_USUARIO_LOGIN),
         token: sessionStorage.getItem(CHAVE_TOKEN_LOGIN),
@@ -375,6 +413,7 @@ function obterCredenciaisSessao() {
 }
 
 async function chamarRpcSupabase(nomeFuncao, parametros) {
+    // Chama uma função SQL do Supabase, tipo login ou salvar dados.
     const response = await fetchComTimeout(
         `${SUPABASE_URL}/rest/v1/rpc/${nomeFuncao}`,
         {
@@ -393,6 +432,7 @@ async function chamarRpcSupabase(nomeFuncao, parametros) {
 }
 
 async function autenticarUsuario(usuario, senha) {
+    // Login de verdade fica no Supabase, assim não deixo senha solta no JavaScript.
     const resultado = await chamarRpcSupabase('autenticar_usuario_site', {
         p_usuario: usuario,
         p_senha: senha,
@@ -406,6 +446,7 @@ async function autenticarUsuario(usuario, senha) {
 }
 
 async function buscarDadosRemotos(tabela) {
+    // Busca o JSON salvo na tabela certa do Supabase.
     const response = await fetchComTimeout(
         `${SUPABASE_URL}/rest/v1/${tabela}?id=eq.${TABELAS_ID[tabela]}&select=dados,atualizado_em`,
         {
@@ -425,6 +466,7 @@ async function buscarDadosRemotos(tabela) {
 }
 
 async function enviarDadosRemotos(tabela, dados) {
+    // Antes de salvar, preciso ter usuário e token da sessão atual.
     const credenciais = obterCredenciaisSessao();
 
     if (!credenciais.usuario || !credenciais.token) {
@@ -447,16 +489,19 @@ async function enviarDadosRemotos(tabela, dados) {
 }
 
 async function sincronizarDadosRemotos() {
+    // Essa função tenta deixar localStorage, cache e Supabase falando a mesma coisa.
     try {
         API_DISPONIVEL = true;
 
         if (DADOS_PENDENTES.membros && CACHE_DADOS.membros) {
+            // Se tinha membro pendente, tento mandar antes de buscar de novo.
             await enviarDadosRemotos('membros', CACHE_DADOS.membros);
             DADOS_PENDENTES.membros = false;
         }
 
         const membrosRemotos = await buscarDadosRemotos('membros');
         if (membrosRemotos === null) {
+            // Se a tabela estiver vazia, começo com os dados locais/padrão.
             CACHE_DADOS.membros = ordenarMembros(carregarDadosLocais(CHAVE_MEMBROS, [...MEMBROS_PADRAO]));
             await enviarDadosRemotos('membros', CACHE_DADOS.membros);
         } else {
@@ -464,6 +509,7 @@ async function sincronizarDadosRemotos() {
         }
 
         if (DADOS_PENDENTES.repertorio && CACHE_DADOS.repertorio) {
+            // Mesma ideia dos membros, mas para o repertório.
             await enviarDadosRemotos('repertorio', CACHE_DADOS.repertorio);
             DADOS_PENDENTES.repertorio = false;
         }
@@ -476,6 +522,7 @@ async function sincronizarDadosRemotos() {
         }
 
         if (DADOS_PENDENTES.escalas && CACHE_DADOS.escalas) {
+            // Mesma ideia, mas para as escalas.
             await enviarDadosRemotos('escalas', CACHE_DADOS.escalas);
             DADOS_PENDENTES.escalas = false;
         }
@@ -491,6 +538,7 @@ async function sincronizarDadosRemotos() {
         salvarDadosLocais(CHAVE_REPERTORIO, CACHE_DADOS.repertorio ?? {});
         salvarDadosLocais(CHAVE_ESCALAS, CACHE_DADOS.escalas ?? {});
     } catch (erro) {
+        // Se o Supabase não responder, o site continua usando os dados do navegador.
         avisarSupabaseIndisponivel(erro);
         API_DISPONIVEL = false;
 
@@ -507,8 +555,10 @@ async function sincronizarDadosRemotos() {
 }
 
 function iniciarAtualizacaoAutomatica() {
+    // Evita criar mais de um intervalo ao mesmo tempo.
     if (_intervaloAtualizacao) return;
 
+    // A cada 10 segundos tento buscar alterações feitas por outro admin.
     _intervaloAtualizacao = setInterval(async () => {
         try {
             await sincronizarDadosRemotos();
@@ -522,6 +572,7 @@ function iniciarAtualizacaoAutomatica() {
 }
 
 const MEMBROS_PADRAO = [
+    // Lista inicial caso ainda não tenha nada salvo no navegador ou no Supabase.
     { nome: 'Aminadabe / Binho', cargo: 'Líder Geral', categoria: 'lider' },
     { nome: 'Patrick', cargo: 'Líder Instrumental', categoria: 'instrumental' },
     { nome: 'Moises', cargo: 'Líder Vocal', categoria: 'vocal' },
@@ -542,6 +593,7 @@ const MEMBROS_PADRAO = [
 ];
 
 function prioridadeLider(cargo) {
+    // Uso isso para deixar os líderes aparecendo primeiro na lista.
     const texto = cargo.toLowerCase();
     if (texto.includes('líder geral') || texto.includes('lider geral')) return 1;
     if (texto.includes('líder instrumental') || texto.includes('lider instrumental')) return 2;
@@ -550,6 +602,7 @@ function prioridadeLider(cargo) {
 }
 
 function compararMembros(a, b) {
+    // Primeiro ordena por cargo de liderança, depois por nome.
     const ordemA = prioridadeLider(a.cargo);
     const ordemB = prioridadeLider(b.cargo);
 
@@ -561,9 +614,11 @@ function compararMembros(a, b) {
 }
 
 function ordenarMembros(membros) {
+    // Garante que todo membro tenha categoria antes de ordenar.
     const membrosComCategoria = membros.map((membro) => {
         if (membro.categoria) return membro;
 
+        // Se for dado antigo sem categoria, tento descobrir pelo cargo.
         const cargo = membro.cargo.toLowerCase();
         let categoria = 'vocal';
 
@@ -589,10 +644,12 @@ function ordenarMembros(membros) {
 }
 
 function carregarMembros() {
+    // Se já carreguei antes, uso o cache para ser mais rápido.
     if (CACHE_DADOS.membros) {
         return CACHE_DADOS.membros;
     }
 
+    // Se não tem cache, pego do navegador ou da lista padrão.
     const membros = carregarDadosLocais(CHAVE_MEMBROS, [...MEMBROS_PADRAO]);
 
     const membrosComCategoria = membros.map((membro) => {
@@ -620,43 +677,51 @@ function carregarMembros() {
     });
 
     const membrosOrdenados = membrosComCategoria.sort(compararMembros);
+    // Depois de arrumar, guardo no cache.
     CACHE_DADOS.membros = membrosOrdenados;
     return membrosOrdenados;
 }
 
 function salvarMembros(membros) {
+    // Toda vez que salvo, já deixo ordenado para a tela ficar organizada.
     const membrosOrdenados = ordenarMembros(membros);
     CACHE_DADOS.membros = membrosOrdenados;
     salvarDadosLocais(CHAVE_MEMBROS, membrosOrdenados);
 
     if (API_DISPONIVEL) {
+        // Salvo no Supabase em segundo plano.
         enviarDadosRemotos('membros', membrosOrdenados).catch((erro) => {
             console.warn('Não foi possível sincronizar membros com o Supabase:', erro);
             avisarFalhaSalvamentoRemoto(erro);
             DADOS_PENDENTES.membros = true;
         });
     } else {
+        // Se estiver offline, marco como pendente para tentar depois.
         DADOS_PENDENTES.membros = true;
     }
 }
 
 function dataRepertorioValida(data) {
+    // Aceito somente data no formato dd/mm.
     return /^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])$/.test(data);
 }
 
 function responsavelMidiaValido(nome) {
+    // Por regra do ministério, mídia fica só com Nicole.
     const permitidos = ['Nicole'];
     const nomes = normalizarResponsaveisEscala(nome);
     return nomes.every((responsavel) => permitidos.includes(responsavel));
 }
 
 function responsavelSomValido(nome) {
+    // Por regra do ministério, som fica só com Aminadabe / Binho.
     const permitidos = ['Aminadabe / Binho'];
     const nomes = normalizarResponsaveisEscala(nome);
     return nomes.every((responsavel) => permitidos.includes(responsavel));
 }
 
 function escaparHtml(valor) {
+    // Proteção simples para texto digitado não virar HTML na tela.
     return String(valor)
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
@@ -666,6 +731,7 @@ function escaparHtml(valor) {
 }
 
 function normalizarLinkSeguro(link) {
+    // Confere se o link é http/https antes de abrir para o usuário.
     const valor = String(link || '').trim();
     if (!valor) return '';
 
@@ -679,6 +745,7 @@ function normalizarLinkSeguro(link) {
 }
 
 function normalizarResponsaveisEscala(valor) {
+    // Deixo os responsáveis sempre em formato de lista.
     if (Array.isArray(valor)) {
         return valor.map((item) => String(item).trim()).filter(Boolean);
     }
@@ -689,12 +756,14 @@ function normalizarResponsaveisEscala(valor) {
 }
 
 function formatarResponsaveisEscala(valor, textoVazio = 'Não definido') {
+    // Transforma a lista de responsáveis em texto para aparecer no card.
     const responsaveis = normalizarResponsaveisEscala(valor);
     if (responsaveis.length === 0) return textoVazio;
     return responsaveis.map(escaparHtml).join(', ');
 }
 
 function obterSelecionadosEscala(id) {
+    // Pega todos os nomes selecionados em um campo de escala.
     const select = document.getElementById(id);
     if (!select) return [];
 
@@ -704,12 +773,14 @@ function obterSelecionadosEscala(id) {
 }
 
 function selecionarResponsaveisEscala(id, valor) {
+    // Marca no select os responsáveis que já estavam salvos.
     const select = document.getElementById(id);
     if (!select) return;
 
     const responsaveis = normalizarResponsaveisEscala(valor);
 
     responsaveis.forEach((responsavel) => {
+        // Se algum nome antigo não existir nas opções, eu adiciono para não perder dado.
         const existe = Array.from(select.options).some((option) => option.value === responsavel);
         if (!existe) {
             const option = document.createElement('option');
@@ -727,6 +798,7 @@ function selecionarResponsaveisEscala(id, valor) {
 }
 
 function preencherSelectMembrosEscala(id, categoria) {
+    // Monta os selects da escala usando a lista de membros.
     const select = document.getElementById(id);
     if (!select) return;
 
@@ -747,6 +819,7 @@ function preencherSelectMembrosEscala(id, categoria) {
 }
 
 function preencherSeletoresEscala() {
+    // Atualiza todos os campos de responsáveis da escala.
     preencherSelectMembrosEscala('input-vocal-escala', 'vocal');
     preencherSelectMembrosEscala('input-instrumental-escala', 'instrumental');
     atualizarSeletorEscalaDesktop('input-midia-escala');
@@ -754,6 +827,7 @@ function preencherSeletoresEscala() {
 }
 
 const idsSeletoresEscalaDesktop = [
+    // Esses campos ganham uma interface melhor no desktop.
     'input-vocal-escala',
     'input-instrumental-escala',
     'input-midia-escala',
@@ -763,6 +837,7 @@ const idsSeletoresEscalaDesktop = [
 let seletorEscalaDesktopAberto = null;
 
 function resumoSelecaoEscala(select) {
+    // Texto curto que aparece no botão do seletor.
     const selecionados = Array.from(select.selectedOptions).map((option) => option.value.trim()).filter(Boolean);
 
     if (selecionados.length === 0) return '0 Selecionados';
@@ -771,6 +846,7 @@ function resumoSelecaoEscala(select) {
 }
 
 function atualizarSeletorEscalaDesktop(id) {
+    // Atualiza o texto do botão customizado depois que muda a seleção.
     const select = document.getElementById(id);
     if (!select) return;
 
@@ -782,6 +858,7 @@ function atualizarSeletorEscalaDesktop(id) {
 }
 
 function fecharSeletorEscalaDesktop() {
+    // Fecha a janelinha de seleção do desktop.
     if (!seletorEscalaDesktopAberto) return;
 
     seletorEscalaDesktopAberto.remove();
@@ -789,6 +866,7 @@ function fecharSeletorEscalaDesktop() {
 }
 
 function abrirSeletorEscalaDesktop(id) {
+    // Abre um painel maior para marcar várias pessoas no desktop.
     const select = document.getElementById(id);
     if (!select) return;
 
@@ -818,6 +896,7 @@ function abrirSeletorEscalaDesktop(id) {
     lista.className = 'seletor-escala-desktop-lista';
 
     Array.from(select.options).forEach((option) => {
+        // Cada opção vira um botão, porque fica mais fácil clicar.
         const item = document.createElement('button');
         item.type = 'button';
         item.className = 'seletor-escala-desktop-opcao';
@@ -833,6 +912,7 @@ function abrirSeletorEscalaDesktop(id) {
         item.appendChild(nome);
 
         item.addEventListener('click', () => {
+            // Clique alterna selecionado/não selecionado.
             option.selected = !option.selected;
             item.classList.toggle('selecionado', option.selected);
             item.setAttribute('aria-pressed', String(option.selected));
@@ -857,6 +937,7 @@ function abrirSeletorEscalaDesktop(id) {
 }
 
 function inicializarSeletoresEscalaDesktop() {
+    // Só uso esse visual diferente quando a tela é maior.
     const mediaDesktop = window.matchMedia('(min-width: 769px)');
     const alternarClasseDesktop = () => {
         document.body.classList.toggle('escala-desktop-selects', mediaDesktop.matches);
@@ -864,6 +945,7 @@ function inicializarSeletoresEscalaDesktop() {
     };
 
     idsSeletoresEscalaDesktop.forEach((id) => {
+        // Cria um botão fake ao lado de cada select original.
         const select = document.getElementById(id);
         if (!select || select.dataset.desktopEscala === 'true') return;
 
@@ -904,6 +986,7 @@ function inicializarSeletoresEscalaDesktop() {
 }
 
 function preencherAutocompleteMembros() {
+    // Preenche sugestões de nomes nos campos que usam datalist.
     const datalist = document.getElementById('lista-nomes-membros');
     if (!datalist) return;
 
@@ -917,6 +1000,7 @@ function preencherAutocompleteMembros() {
 }
 
 function renderizarMembros() {
+    // Desenha a lista de membros dentro do modal.
     const lista = document.getElementById('lista-membros');
     if (!lista) return;
 
@@ -926,6 +1010,7 @@ function renderizarMembros() {
     lista.innerHTML = '';
 
     membros.forEach((membro, index) => {
+        // Crio cada item da lista manualmente para evitar HTML quebrado.
         const item = document.createElement('li');
         const dados = document.createElement('span');
         const nome = document.createElement('strong');
@@ -944,6 +1029,7 @@ function renderizarMembros() {
         item.appendChild(dados);
 
         if (ehAdmin && _gerenciandoMembros) {
+            // Em modo gerenciamento, admin ganha botões de editar e excluir.
             const acoes = document.createElement('span');
             acoes.className = 'acoes-membro';
 
@@ -965,6 +1051,7 @@ function renderizarMembros() {
 }
 
 function editarMembro(index) {
+    // Abre o modal já preenchido com os dados do membro escolhido.
     const membros = carregarMembros();
     const membro = membros[index];
     const modal = document.getElementById('modal-editar-membro');
@@ -989,6 +1076,7 @@ function editarMembro(index) {
 }
 
 function abrirModalAdicionarMembro() {
+    // Abre o mesmo modal, mas vazio, para cadastrar alguém novo.
     const modal = document.getElementById('modal-editar-membro');
     const titulo = document.getElementById('titulo-modal-membro');
     const inputNome = document.getElementById('input-nome-membro');
@@ -1010,6 +1098,7 @@ function abrirModalAdicionarMembro() {
 }
 
 function fecharModalEditarMembro() {
+    // Fecha o modal de membro e limpa o controle de edição.
     const modal = document.getElementById('modal-editar-membro');
     const erro = document.getElementById('erro-membro');
 
@@ -1026,6 +1115,7 @@ function fecharModalEditarMembro() {
 }
 
 function salvarEdicaoMembro() {
+    // Salva tanto edição quanto novo membro, dependendo do modo atual.
     const inputNome = document.getElementById('input-nome-membro');
     const inputCargo = document.getElementById('input-cargo-membro');
     const erro = document.getElementById('erro-membro');
@@ -1036,6 +1126,7 @@ function salvarEdicaoMembro() {
     const novoCargo = inputCargo.value.trim();
 
     if (!novoNome || !novoCargo) {
+        // Não deixo salvar membro sem nome ou cargo.
         if (erro) erro.textContent = 'Preencha o nome e o cargo antes de salvar.';
         return;
     }
@@ -1043,11 +1134,13 @@ function salvarEdicaoMembro() {
     const membros = carregarMembros();
 
     if (_modoModalMembro === 'editar') {
+        // Aqui substituo o membro que já existia.
         membros[_indexMembroAtual] = {
             nome: novoNome,
             cargo: novoCargo,
         };
     } else {
+        // Aqui adiciono no final e depois a função de salvar ordena tudo.
         membros.push({
             nome: novoNome,
             cargo: novoCargo,
@@ -1061,6 +1154,7 @@ function salvarEdicaoMembro() {
 }
 
 function excluirMembro(index) {
+    // Pergunto antes porque excluir remove da lista de membros.
     const membros = carregarMembros();
     const membro = membros[index];
 
@@ -1087,9 +1181,10 @@ function logout() {
 }
  
 // ============================================================
-// MODAL DE PERFIL (seu código original)
+// MODAL DE PERFIL (parte do modal que eu já tinha feito antes)
 // ============================================================
 function abrirPerfil() {
+    // Abre o modal de perfil com animação.
     const modal = document.getElementById('perfil');
     if (!modal) return;
     modal.style.display = 'flex';
@@ -1099,6 +1194,7 @@ function abrirPerfil() {
 }
  
 function fecharPerfil() {
+    // Fecha o modal de perfil esperando a animação terminar.
     const modal = document.getElementById('perfil');
     if (!modal) return;
     modal.classList.remove('ativo');
@@ -1108,6 +1204,7 @@ function fecharPerfil() {
 }
  
 function exibirMembros() {
+    // Abre o modal só para visualizar os membros.
     const modalMembros = document.getElementById('membros');
     if (!modalMembros) return;
 
@@ -1121,6 +1218,7 @@ function exibirMembros() {
 }
 
 function gerenciarMembros() {
+    // Abre o modal em modo admin, mostrando botões de ação.
     const modalMembros = document.getElementById('membros');
     if (!modalMembros) return;
 
@@ -1135,6 +1233,7 @@ function gerenciarMembros() {
 }
 
 function alternarBotaoAdicionarMembro() {
+    // O botão de adicionar só aparece para admin e no modo gerenciamento.
     const btnAdicionar = document.querySelector('.btn-add-membro');
     if (!btnAdicionar) return;
 
@@ -1143,6 +1242,7 @@ function alternarBotaoAdicionarMembro() {
 }
  
 function fecharExibirMembros() {
+    // Fecha o modal de membros e sai do modo gerenciamento.
     const modalFecharMembros = document.getElementById('membros');
     if (!modalFecharMembros) return;
     modalFecharMembros.classList.remove('ativo');
@@ -1153,6 +1253,7 @@ function fecharExibirMembros() {
 }
  
 window.addEventListener('pointerdown', function(event) {
+    // Se clicar no fundo do modal de membros, eu fecho ele.
     const modalFecharMembros = document.getElementById('membros');
     if (modalFecharMembros && event.target === modalFecharMembros) {
         fecharExibirMembros();
@@ -1160,6 +1261,7 @@ window.addEventListener('pointerdown', function(event) {
 });
  
 window.addEventListener('load', () => {
+    // Quando a página carrega, marco o link atual do menu.
     const topnavLinks = document.querySelectorAll('.topnav a');
  
     topnavLinks.forEach((link) => {
@@ -1181,6 +1283,7 @@ window.addEventListener('load', () => {
  
     const backToTopBtn = document.getElementById('back-to-top');
     if (backToTopBtn) {
+        // Mostra o botão de voltar ao topo só depois de rolar a página.
         window.addEventListener('scroll', () => {
             if (window.scrollY > 300) {
                 backToTopBtn.classList.add('show');
@@ -1190,6 +1293,7 @@ window.addEventListener('load', () => {
         });
  
         backToTopBtn.addEventListener('click', () => {
+            // Volta para o topo de forma suave.
             window.scrollTo({
                 top: 0,
                 behavior: 'smooth'
@@ -1201,12 +1305,14 @@ window.addEventListener('load', () => {
     const historicoAvancarBtns = document.querySelectorAll('.historico-avancar');
 
     historicoVoltarBtns.forEach((botao) => {
+        // Botões que voltam uma página no histórico do navegador.
         botao.addEventListener('click', () => {
             window.history.back();
         });
     });
 
     historicoAvancarBtns.forEach((botao) => {
+        // Botões que avançam uma página no histórico do navegador.
         botao.addEventListener('click', () => {
             window.history.forward();
         });
@@ -1214,6 +1320,7 @@ window.addEventListener('load', () => {
 });
  
 function toggleSenha() {
+    // Alterna o campo de senha entre escondido e visível.
     const input = document.getElementById('senha-input');
     input.type = input.type === 'password' ? 'text' : 'password';
 }
@@ -1226,12 +1333,14 @@ let _dataAtual = null;
 let _indexAtual = null;
 let _dataEscalaAtual = null;
 
+// Nomes dos meses usados nos títulos do repertório.
 const NOMES_MESES = [
     'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
     'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
 ];
  
 function carregarRepertorio() {
+    // Carrega o repertório do cache ou do localStorage.
     if (CACHE_DADOS.repertorio) {
         return CACHE_DADOS.repertorio;
     }
@@ -1242,10 +1351,12 @@ function carregarRepertorio() {
 }
 
 function salvarRepertorio(repertorio) {
+    // Salva localmente primeiro para a tela responder rápido.
     CACHE_DADOS.repertorio = repertorio;
     salvarDadosLocais(CHAVE_REPERTORIO, repertorio);
 
     if (API_DISPONIVEL) {
+        // Depois tenta mandar para o Supabase.
         enviarDadosRemotos('repertorio', repertorio).catch((erro) => {
             console.warn('Não foi possível sincronizar repertório com o Supabase:', erro);
             avisarFalhaSalvamentoRemoto(erro);
@@ -1257,6 +1368,7 @@ function salvarRepertorio(repertorio) {
 }
 
 function carregarEscalas() {
+    // Carrega escalas do cache ou do localStorage.
     if (CACHE_DADOS.escalas) {
         return CACHE_DADOS.escalas;
     }
@@ -1267,6 +1379,7 @@ function carregarEscalas() {
 }
 
 function salvarEscalas(escalas) {
+    // Salva escalas localmente e depois tenta sincronizar.
     CACHE_DADOS.escalas = escalas;
     salvarDadosLocais(CHAVE_ESCALAS, escalas);
 
@@ -1284,6 +1397,7 @@ function salvarEscalas(escalas) {
 // Agrupa as datas do repertório por ano e mês
 // Cada chave é dd/mm; o ano é inferido como o ano atual
 function agruparRepertorioPorAnoMes(repertorio) {
+    // Como salvo só dd/mm, uso o ano atual para agrupar na tela.
     const anoAtual = new Date().getFullYear();
     const grupos = {};
 
@@ -1306,6 +1420,7 @@ function agruparRepertorioPorAnoMes(repertorio) {
  
 // Renderiza o repertório agrupado por ano e mês
 function renderizarRepertorio() {
+    // Monta toda a tela do repertório com os dados salvos.
     const container = document.getElementById('repertorio-geral');
     if (!container) return;
  
@@ -1314,6 +1429,7 @@ function renderizarRepertorio() {
  
     const btnNovaData = document.getElementById('btn-nova-data');
     if (btnNovaData) {
+        // Só admin pode criar nova data.
         btnNovaData.style.display = ehAdmin ? 'inline-block' : 'none';
     }
  
@@ -1322,6 +1438,7 @@ function renderizarRepertorio() {
     const datas = Object.keys(repertorio);
  
     if (datas.length === 0) {
+        // Mensagem simples quando ainda não tem lista cadastrada.
         container.innerHTML = '<p style="color:#888;">Nenhuma lista cadastrada ainda.</p>';
         return;
     }
@@ -1330,6 +1447,7 @@ function renderizarRepertorio() {
 
     // Itera pelos anos em ordem crescente
     Object.keys(grupos).sort().forEach((ano) => {
+        // Crio um bloco para cada ano.
         const blocoAno = document.createElement('div');
         blocoAno.className = 'bloco-ano';
 
@@ -1343,6 +1461,7 @@ function renderizarRepertorio() {
 
         // Itera pelos meses em ordem crescente
         Object.keys(grupos[ano]).sort((a, b) => Number(a) - Number(b)).forEach((mes) => {
+            // Dentro do ano, separo por mês.
             const blocoMes = document.createElement('div');
             blocoMes.className = 'bloco-mes';
 
@@ -1353,6 +1472,7 @@ function renderizarRepertorio() {
 
             // Itera pelas datas desse mês em ordem crescente de dia
             grupos[ano][mes].sort((a, b) => parseInt(a) - parseInt(b)).forEach((data) => {
+                // Dentro do mês, mostro cada domingo.
                 const musicas = repertorio[data];
 
                 const bloco = document.createElement('div');
@@ -1365,6 +1485,7 @@ function renderizarRepertorio() {
                 cabecalho.appendChild(tituloData);
 
                 if (ehAdmin) {
+                    // Admin pode apagar a lista inteira daquela data.
                     const btnExcluirData = document.createElement('button');
                     btnExcluirData.className = 'btn-excluir-data somente-admin';
                     btnExcluirData.textContent = '🗑 Excluir lista';
@@ -1378,6 +1499,7 @@ function renderizarRepertorio() {
                 ul.className = 'lista-repertorio';
 
                 musicas.forEach((musica, index) => {
+                    // Crio cada música da lista e, se tiver link válido, faço virar link.
                     const li = document.createElement('li');
                     const linkSeguro = normalizarLinkSeguro(musica.link);
 
@@ -1393,6 +1515,7 @@ function renderizarRepertorio() {
                     }
 
                     if (ehAdmin) {
+                        // Admin pode editar ou excluir música por música.
                         const acoes = document.createElement('span');
                         acoes.className = 'acoes-musica somente-admin';
 
@@ -1417,6 +1540,7 @@ function renderizarRepertorio() {
                 bloco.appendChild(ul);
 
                 if (ehAdmin) {
+                    // Botão para adicionar música dentro dessa data.
                     const btnAdd = document.createElement('button');
                     btnAdd.className = 'btn-add-musica somente-admin';
                     btnAdd.textContent = '+ Adicionar música';
@@ -1437,6 +1561,7 @@ function renderizarRepertorio() {
 }
  
 function abrirModalEdicao(data, index) {
+    // Abre o modal para editar uma música ou adicionar uma nova naquela data.
     _dataAtual = data;
     _indexAtual = index;
  
@@ -1448,12 +1573,14 @@ function abrirModalEdicao(data, index) {
     if (!modal) return;
  
     if (index !== null) {
+        // Se veio index, é edição de música existente.
         const repertorio = carregarRepertorio();
         const musica = repertorio[data][index];
         titulo.textContent = 'Editar música';
         inputNome.value = musica.nome;
         inputLink.value = musica.link || '';
     } else {
+        // Se não veio index, é cadastro de música nova.
         titulo.textContent = 'Adicionar música';
         inputNome.value = '';
         inputLink.value = '';
@@ -1464,6 +1591,7 @@ function abrirModalEdicao(data, index) {
 }
  
 function fecharModalEdicao() {
+    // Fecha o modal de música com a animação.
     const modal = document.getElementById('modal-edicao');
     if (!modal) return;
     modal.classList.remove('ativo');
@@ -1471,11 +1599,13 @@ function fecharModalEdicao() {
 }
  
 function salvarMusica() {
+    // Pega os campos do modal e salva a música na data atual.
     const nome = document.getElementById('input-nome-musica').value.trim();
     const link = document.getElementById('input-link-musica').value.trim();
     const criandoMusica = _indexAtual === null;
  
     if (!nome) {
+        // Nome é obrigatório porque sem ele a lista fica sem sentido.
         alert('Digite o nome da música.');
         return;
     }
@@ -1483,8 +1613,10 @@ function salvarMusica() {
     const repertorio = carregarRepertorio();
  
     if (_indexAtual !== null) {
+        // Atualiza a música que já existia.
         repertorio[_dataAtual][_indexAtual] = { nome, link };
     } else {
+        // Adiciona a música no final da lista da data.
         repertorio[_dataAtual].push({ nome, link });
     }
  
@@ -1493,12 +1625,14 @@ function salvarMusica() {
     renderizarRepertorio();
 
     if (criandoMusica && localStorage.getItem('perfilUsuario') === 'admin') {
+        // Quando cria música, já levo o admin para criar/ajustar a escala daquela data.
         localStorage.setItem('dataEscalaPendente', _dataAtual);
         window.location.href = './escalas.html';
     }
 }
  
 function excluirMusica(data, index) {
+    // Remove só uma música de uma data específica.
     if (!confirm('Excluir esta música?')) return;
     const repertorio = carregarRepertorio();
     repertorio[data].splice(index, 1);
@@ -1507,6 +1641,7 @@ function excluirMusica(data, index) {
 }
  
 function excluirData(data) {
+    // Remove a lista completa daquele domingo.
     if (!confirm(`Excluir a lista do domingo ${data}?`)) return;
     const repertorio = carregarRepertorio();
     delete repertorio[data];
@@ -1515,6 +1650,7 @@ function excluirData(data) {
 }
  
 function abrirModalNovaData() {
+    // Abre o modal para cadastrar um novo domingo no repertório.
     const modal = document.getElementById('modal-nova-data');
     if (!modal) return;
     document.getElementById('input-nova-data').value = '';
@@ -1523,6 +1659,7 @@ function abrirModalNovaData() {
 }
  
 function fecharModalNovaData() {
+    // Fecha o modal de nova data.
     const modal = document.getElementById('modal-nova-data');
     if (!modal) return;
     modal.classList.remove('ativo');
@@ -1530,6 +1667,7 @@ function fecharModalNovaData() {
 }
  
 function salvarNovaData() {
+    // Cria uma nova data vazia para depois adicionar as músicas.
     const data = document.getElementById('input-nova-data').value.trim();
  
     if (!data) {
@@ -1538,6 +1676,7 @@ function salvarNovaData() {
     }
 
     if (!dataRepertorioValida(data)) {
+        // Padronizo a data para evitar bagunça na ordenação.
         alert('Digite a data no padrão dd/mm. Ex: 05/02.');
         return;
     }
@@ -1545,6 +1684,7 @@ function salvarNovaData() {
     const repertorio = carregarRepertorio();
  
     if (repertorio[data]) {
+        // Não deixo duas listas com a mesma data.
         alert('Já existe uma lista para essa data.');
         return;
     }
@@ -1556,6 +1696,7 @@ function salvarNovaData() {
 }
 
 function formatarDataAutomaticamente(event) {
+    // Enquanto digita, eu já coloco a barra da data no lugar certo.
     const input = event.target;
     let digits = input.value.replace(/\D/g, '');
 
@@ -1574,6 +1715,7 @@ function formatarDataAutomaticamente(event) {
 // ESCALAS — GERENCIAMENTO POR DATA
 // ============================================================
 function renderizarEscalas() {
+    // Monta os cards de escala na página de escalas.
     const container = document.getElementById('escalas-geral');
     if (!container) return;
 
@@ -1582,6 +1724,7 @@ function renderizarEscalas() {
     const btnNovaEscala = document.getElementById('btn-nova-escala');
 
     if (btnNovaEscala) {
+        // Só admin pode adicionar escala nova.
         btnNovaEscala.style.display = ehAdmin ? 'inline-block' : 'none';
     }
 
@@ -1590,11 +1733,13 @@ function renderizarEscalas() {
     const datas = Object.keys(escalas);
 
     if (datas.length === 0) {
+        // Mensagem quando ainda não tem nenhuma escala.
         container.innerHTML = '<p class="mensagem-vazia">Nenhuma escala cadastrada ainda.</p>';
         return;
     }
 
     datas.forEach((data) => {
+        // Crio um card para cada domingo cadastrado.
         const escala = escalas[data];
         const card = document.createElement('article');
         card.className = 'card-escala';
@@ -1629,6 +1774,7 @@ function renderizarEscalas() {
         `;
 
         if (ehAdmin) {
+            // Admin pode editar ou excluir cada escala.
             const acoes = document.createElement('div');
             acoes.className = 'acoes-escala';
 
@@ -1650,6 +1796,7 @@ function renderizarEscalas() {
 }
 
 function abrirModalEscala(data = null) {
+    // Abre o modal de escala, podendo ser edição ou cadastro novo.
     const modal = document.getElementById('modal-escala');
     const titulo = document.getElementById('modal-escala-titulo');
     const inputData = document.getElementById('input-data-escala');
@@ -1662,6 +1809,7 @@ function abrirModalEscala(data = null) {
     preencherSeletoresEscala();
 
     if (data && escalas[data]) {
+        // Se já existe escala para a data, preencho o modal com os dados salvos.
         const escala = escalas[data];
         titulo.textContent = 'Editar escala';
         inputData.value = data;
@@ -1671,6 +1819,7 @@ function abrirModalEscala(data = null) {
         selecionarResponsaveisEscala('input-som-escala', escala.som);
         inputObservacoes.value = escala.observacoes || '';
     } else {
+        // Se não existe, deixo tudo limpo para cadastrar.
         titulo.textContent = 'Adicionar escala';
         inputData.value = data || '';
         selecionarResponsaveisEscala('input-vocal-escala', []);
@@ -1686,6 +1835,7 @@ function abrirModalEscala(data = null) {
 }
 
 function fecharModalEscala() {
+    // Fecha o modal de escala e limpa a data em edição.
     const modal = document.getElementById('modal-escala');
     if (!modal) return;
 
@@ -1698,6 +1848,7 @@ function fecharModalEscala() {
 }
 
 function salvarEscala() {
+    // Pega todos os campos do modal e salva a escala.
     const data = document.getElementById('input-data-escala').value.trim();
     const vocal = obterSelecionadosEscala('input-vocal-escala');
     const instrumental = obterSelecionadosEscala('input-instrumental-escala');
@@ -1706,16 +1857,19 @@ function salvarEscala() {
     const observacoes = document.getElementById('input-observacoes-escala').value.trim();
 
     if (!data) {
+        // Não salvo escala sem data.
         alert('Digite a data da escala.');
         return;
     }
 
     if (midia.length > 0 && !responsavelMidiaValido(midia)) {
+        // Validação da regra que deixei para mídia.
         alert('Mídia só pode ser preenchida com Nicole.');
         return;
     }
 
     if (som.length > 0 && !responsavelSomValido(som)) {
+        // Validação da regra que deixei para som.
         alert('Som só pode ser preenchido com Aminadabe / Binho.');
         return;
     }
@@ -1723,6 +1877,7 @@ function salvarEscala() {
     const escalas = carregarEscalas();
 
     if (_dataEscalaAtual && _dataEscalaAtual !== data) {
+        // Se editou a data, removo a chave antiga para não duplicar.
         delete escalas[_dataEscalaAtual];
     }
 
@@ -1733,6 +1888,7 @@ function salvarEscala() {
 }
 
 function excluirEscala(data) {
+    // Exclui a escala inteira de uma data.
     if (!confirm(`Excluir a escala do domingo ${data}?`)) return;
 
     const escalas = carregarEscalas();
@@ -1742,6 +1898,7 @@ function excluirEscala(data) {
 }
 
 function abrirEscalaPendente() {
+    // Quando vem do repertório depois de criar música, já abre a escala da mesma data.
     const container = document.getElementById('escalas-geral');
     const ehAdmin = localStorage.getItem('perfilUsuario') === 'admin';
     const dataPendente = localStorage.getItem('dataEscalaPendente');
@@ -1753,6 +1910,7 @@ function abrirEscalaPendente() {
 }
  
 window.addEventListener('pointerdown', function(event) {
+    // Fecha modais quando clico no fundo escuro deles.
     const modalEdicao = document.getElementById('modal-edicao');
     if (modalEdicao && event.target === modalEdicao) fecharModalEdicao();
  
@@ -1767,6 +1925,7 @@ window.addEventListener('pointerdown', function(event) {
 });
  
 function inicializarInterface() {
+    // Função principal para desenhar tudo que existir na página atual.
     renderizarMembros();
     alternarBotaoAdicionarMembro();
     preencherAutocompleteMembros();
@@ -1779,28 +1938,34 @@ function inicializarInterface() {
 
     const inputNovaData = document.getElementById('input-nova-data');
     if (inputNovaData) {
+        // Ativa a máscara automática dd/mm no campo de nova data.
         inputNovaData.addEventListener('input', formatarDataAutomaticamente);
     }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Primeiro eu carrego o que já tem localmente para a tela aparecer rápido.
     inicializarInterface();
 
     sincronizarDadosRemotos().then(() => {
+        // Depois que o Supabase responde, redesenho com os dados mais novos.
         renderizarMembros();
         preencherAutocompleteMembros();
         preencherSeletoresEscala();
         renderizarRepertorio();
         renderizarEscalas();
     }).finally(() => {
+        // No final, deixo a atualização automática ligada.
         iniciarAtualizacaoAutomatica();
     });
 });
 
 window.addEventListener('storage', (event) => {
+    // Se outra aba mudar o localStorage, essa aba atualiza a tela também.
     if (!event.key) return;
 
     if (event.key === CHAVE_MEMBROS) {
+        // Recarrega membros quando outra aba alterar.
         CACHE_DADOS.membros = null;
         renderizarMembros();
         preencherAutocompleteMembros();
@@ -1808,11 +1973,13 @@ window.addEventListener('storage', (event) => {
     }
 
     if (event.key === CHAVE_REPERTORIO) {
+        // Recarrega repertório quando outra aba alterar.
         CACHE_DADOS.repertorio = null;
         renderizarRepertorio();
     }
 
     if (event.key === CHAVE_ESCALAS) {
+        // Recarrega escalas quando outra aba alterar.
         CACHE_DADOS.escalas = null;
         renderizarEscalas();
     }
