@@ -48,7 +48,7 @@ if (loginBtn) {
                 // Espera a animação terminar antes de redirecionar.
                 document.body.style.animation = 'fadeOutDown 0.5s ease forwards';
                 setTimeout(() => {
-                    window.location.href = './movimentações/home.html';
+                    window.location.href = './movimenta%C3%A7%C3%B5es/home.html';
                 }, 500);
             } else {
                 // Avisa quando o usuário ou a senha não foram encontrados.
@@ -613,31 +613,112 @@ function compararMembros(a, b) {
     return a.nome.localeCompare(b.nome, 'pt', { sensitivity: 'base' });
 }
 
+function normalizarTextoBusca(valor) {
+    // Remove acentos para comparar cargos digitados de formas diferentes.
+    return String(valor || '')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+}
+
+function nomeEhAminadabeBinho(nome) {
+    const texto = normalizarTextoBusca(nome);
+    return texto.includes('aminadabe') || texto.includes('binho');
+}
+
+function descobrirCategoriaMembro(membro) {
+    // Categoria principal usada na ordenação e compatibilidade com dados antigos.
+    const cargo = normalizarTextoBusca(membro?.cargo);
+
+    if (
+        cargo.includes('baterista') ||
+        cargo.includes('baixista') ||
+        cargo.includes('baixo') ||
+        cargo.includes('tecladista') ||
+        cargo.includes('teclado') ||
+        cargo.includes('guitarrista') ||
+        cargo.includes('guitarra') ||
+        cargo.includes('violonista') ||
+        cargo.includes('violao') ||
+        cargo.includes('instrumental') ||
+        cargo.includes('lider instrumental')
+    ) {
+        return 'instrumental';
+    }
+
+    if (cargo.includes('midia') || cargo.includes('media')) {
+        return 'midia';
+    }
+
+    if (cargo.includes('som') || cargo.includes('audio') || cargo.includes('sonoplasta')) {
+        return 'som';
+    }
+
+    if (cargo.includes('lider geral')) {
+        return 'lider';
+    }
+
+    return 'vocal';
+}
+
+function membroPodeAtuarNaArea(membro, area) {
+    // Um membro pode aparecer em mais de uma área quando o cargo indicar isso.
+    const cargo = normalizarTextoBusca(membro?.cargo);
+    const categoria = normalizarTextoBusca(membro?.categoria);
+
+    if (area === 'instrumental') {
+        return (
+            categoria === 'instrumental' ||
+            nomeEhAminadabeBinho(membro?.nome) ||
+            cargo.includes('instrumental') ||
+            cargo.includes('lider instrumental') ||
+            cargo.includes('baterista') ||
+            cargo.includes('baixista') ||
+            cargo.includes('baixo') ||
+            cargo.includes('tecladista') ||
+            cargo.includes('teclado') ||
+            cargo.includes('guitarrista') ||
+            cargo.includes('guitarra') ||
+            cargo.includes('violonista') ||
+            cargo.includes('violao')
+        );
+    }
+
+    if (area === 'vocal') {
+        return (
+            categoria === 'vocal' ||
+            cargo.includes('vocal') ||
+            cargo.includes('vocalista') ||
+            cargo.includes('lider vocal')
+        );
+    }
+
+    if (area === 'midia') {
+        return (
+            categoria === 'midia' ||
+            cargo.includes('midia') ||
+            cargo.includes('media')
+        );
+    }
+
+    if (area === 'som') {
+        return (
+            categoria === 'som' ||
+            nomeEhAminadabeBinho(membro?.nome) ||
+            cargo.includes('som') ||
+            cargo.includes('audio') ||
+            cargo.includes('sonoplasta')
+        );
+    }
+
+    return true;
+}
+
 function ordenarMembros(membros) {
     // Garante que todo membro tenha categoria antes de ordenar.
     const membrosComCategoria = membros.map((membro) => {
-        if (membro.categoria) return membro;
-
-        // Se for dado antigo sem categoria, tento descobrir pelo cargo.
-        const cargo = membro.cargo.toLowerCase();
-        let categoria = 'vocal';
-
-        if (
-            cargo.includes('baterista') ||
-            cargo.includes('baixista') ||
-            cargo.includes('instrumental') ||
-            cargo.includes('líder instrumental') ||
-            cargo.includes('lider instrumental')
-        ) {
-            categoria = 'instrumental';
-        } else if (
-            cargo.includes('líder geral') ||
-            cargo.includes('lider geral')
-        ) {
-            categoria = 'lider';
-        }
-
-        return { ...membro, categoria };
+        // Recalculo pelo cargo para corrigir membros antigos salvos com categoria errada.
+        return { ...membro, categoria: descobrirCategoriaMembro(membro) };
     });
 
     return membrosComCategoria.sort(compararMembros);
@@ -653,27 +734,8 @@ function carregarMembros() {
     const membros = carregarDadosLocais(CHAVE_MEMBROS, [...MEMBROS_PADRAO]);
 
     const membrosComCategoria = membros.map((membro) => {
-        if (membro.categoria) return membro;
-
-        const cargo = membro.cargo.toLowerCase();
-        let categoria = 'vocal';
-
-        if (
-            cargo.includes('baterista') ||
-            cargo.includes('baixista') ||
-            cargo.includes('instrumental') ||
-            cargo.includes('líder instrumental') ||
-            cargo.includes('lider instrumental')
-        ) {
-            categoria = 'instrumental';
-        } else if (
-            cargo.includes('líder geral') ||
-            cargo.includes('lider geral')
-        ) {
-            categoria = 'lider';
-        }
-
-        return { ...membro, categoria };
+        // Recalculo pelo cargo para a criação de escalas refletir o cargo atual.
+        return { ...membro, categoria: descobrirCategoriaMembro(membro) };
     });
 
     const membrosOrdenados = membrosComCategoria.sort(compararMembros);
@@ -706,18 +768,24 @@ function dataRepertorioValida(data) {
     return /^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])$/.test(data);
 }
 
-function responsavelMidiaValido(nome) {
-    // Por regra do ministério, mídia fica só com Nicole.
-    const permitidos = ['Nicole'];
+function responsaveisPertencemArea(nome, area) {
     const nomes = normalizarResponsaveisEscala(nome);
-    return nomes.every((responsavel) => permitidos.includes(responsavel));
+    const membros = carregarMembros();
+
+    return nomes.every((responsavel) => {
+        const membro = membros.find((item) => item.nome === responsavel);
+        return membro ? membroPodeAtuarNaArea(membro, area) : false;
+    });
+}
+
+function responsavelMidiaValido(nome) {
+    // Mídia aceita quem tiver cargo/categoria de mídia.
+    return responsaveisPertencemArea(nome, 'midia');
 }
 
 function responsavelSomValido(nome) {
-    // Por regra do ministério, som fica só com Aminadabe / Binho.
-    const permitidos = ['Aminadabe / Binho'];
-    const nomes = normalizarResponsaveisEscala(nome);
-    return nomes.every((responsavel) => permitidos.includes(responsavel));
+    // Som aceita Aminadabe / Binho e membros cadastrados com cargo de som.
+    return responsaveisPertencemArea(nome, 'som');
 }
 
 function escaparHtml(valor) {
@@ -797,7 +865,7 @@ function selecionarResponsaveisEscala(id, valor) {
     atualizarSeletorEscalaDesktop(id);
 }
 
-function preencherSelectMembrosEscala(id, categoria) {
+function preencherSelectMembrosEscala(id, area) {
     // Monta os selects da escala usando a lista de membros.
     const select = document.getElementById(id);
     if (!select) return;
@@ -806,7 +874,7 @@ function preencherSelectMembrosEscala(id, categoria) {
     select.innerHTML = '';
 
     carregarMembros()
-        .filter((membro) => !categoria || membro.categoria === categoria)
+        .filter((membro) => !area || membroPodeAtuarNaArea(membro, area))
         .forEach((membro) => {
             const option = document.createElement('option');
             option.value = membro.nome;
@@ -822,8 +890,8 @@ function preencherSeletoresEscala() {
     // Atualiza todos os campos de responsáveis da escala.
     preencherSelectMembrosEscala('input-vocal-escala', 'vocal');
     preencherSelectMembrosEscala('input-instrumental-escala', 'instrumental');
-    atualizarSeletorEscalaDesktop('input-midia-escala');
-    atualizarSeletorEscalaDesktop('input-som-escala');
+    preencherSelectMembrosEscala('input-midia-escala', 'midia');
+    preencherSelectMembrosEscala('input-som-escala', 'som');
 }
 
 const idsSeletoresEscalaDesktop = [
@@ -1863,14 +1931,14 @@ function salvarEscala() {
     }
 
     if (midia.length > 0 && !responsavelMidiaValido(midia)) {
-        // Validação da regra que deixei para mídia.
-        alert('Mídia só pode ser preenchida com Nicole.');
+        // Validação para manter mídia com quem tem esse cargo cadastrado.
+        alert('Mídia só pode ser preenchida com membros cadastrados com cargo de mídia.');
         return;
     }
 
     if (som.length > 0 && !responsavelSomValido(som)) {
-        // Validação da regra que deixei para som.
-        alert('Som só pode ser preenchido com Aminadabe / Binho.');
+        // Validação para manter som com Aminadabe / Binho ou quem tiver cargo de som.
+        alert('Som só pode ser preenchido com Aminadabe / Binho ou membros cadastrados com cargo de som.');
         return;
     }
 

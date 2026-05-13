@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
@@ -9,7 +9,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../style.css">
-    <link rel="icon" href="../favicon-jeova-nissi.svg" type="image/svg+xml">
+    <link rel="icon" href="../assets/favicon-jeova-nissi.png" type="image/png">
+    <link rel="apple-touch-icon" href="../assets/logo-jeova-nissi.jpeg">
 </head>
 <body>
     <div class="voltar-tela-login">
@@ -17,12 +18,26 @@
     </div>
 
     <header class="topbar">
-        <h4>Perfil: Admin</h4>
-        <h1>Escalas - JEOVA NISSI</h1>
+        <div class="topbar-linha-principal">
+            <a class="marca-site" href="home.html" aria-label="Ir para a página inicial Jeová Nissi">
+                <img src="../assets/logo-jeova-nissi.jpeg" alt="Logo Jeová Nissi">
+                <span class="marca-site-texto">
+                    <span class="marca-site-nome">Jeová Nissi</span>
+                    <span class="marca-site-perfil">Perfil: Admin</span>
+                </span>
+            </a>
+            <div class="titulo-topbar">
+                <h1>Escalas - JEOVA NISSI</h1>
+            </div>
+            <div class="navegacao-historico navegacao-historico-topo" aria-label="Navegação do navegador">
+                <button type="button" class="historico-voltar" aria-label="Voltar página">&larr;</button>
+                <button type="button" class="historico-avancar" aria-label="Avançar página">&rarr;</button>
+            </div>
+        </div>
         <nav class="topnav">
-            <a href="../movimentações/home.html" aria-label="Página inicial">Home</a>
-            <a href="../movimentações/musicas.html" aria-label="Página de repertórios">Repertórios</a>
-            <a href="../movimentações/escalas.html" aria-label="Página de escalas">Escalas</a>
+            <a href="home.html" aria-label="Página inicial">Home</a>
+            <a href="musicas.html" aria-label="Página de repertórios">Repertórios</a>
+            <a href="escalas.html" aria-label="Página de escalas">Escalas</a>
         </nav>
     </header>
 
@@ -60,18 +75,12 @@
 
             <label class="campo-escala-multipla" for="input-midia-escala">
                 M&iacute;dia
-                <select id="input-midia-escala" multiple size="2">
-                    <option value="Nicole">Nicole</option>
-                    <option value="Aminadabe / Binho">Aminadabe / Binho</option>
-                </select>
+                <select id="input-midia-escala" multiple size="2"></select>
             </label>
 
             <label class="campo-escala-multipla" for="input-som-escala">
                 Som
-                <select id="input-som-escala" multiple size="2">
-                    <option value="Nicole">Nicole</option>
-                    <option value="Aminadabe / Binho">Aminadabe / Binho</option>
-                </select>
+                <select id="input-som-escala" multiple size="2"></select>
             </label>
 
             <textarea id="input-observacoes-escala" placeholder="Observações da escala"></textarea>
@@ -80,10 +89,6 @@
     </div>
 
     <footer>
-        <div class="navegacao-historico" aria-label="Navegação do navegador">
-            <button type="button" class="historico-voltar" aria-label="Voltar página">&larr;</button>
-            <button type="button" class="historico-avancar" aria-label="Avançar página">&rarr;</button>
-        </div>
         <p>&copy; 2026 Ministério de Louvor Jeová Nissi. Todos os direitos reservados.</p>
         <div class="footer-socials">
             <p>Dev •</p>

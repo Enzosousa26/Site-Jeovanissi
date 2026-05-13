@@ -17,7 +17,8 @@
     <!-- Puxa a fonte Inter do Google -->
     <link rel="stylesheet" href="../style.css">
     <!-- Puxa o arquivo CSS que diz como a página deve ficar bonita -->
-    <link rel="icon" href="../favicon-jeova-nissi.svg" type="image/svg+xml">
+    <link rel="icon" href="../assets/favicon-jeova-nissi.png" type="image/png">
+    <link rel="apple-touch-icon" href="../assets/logo-jeova-nissi.jpeg">
     <!-- Ícone que aparece na aba do navegador -->
 </head>
 <body>
@@ -27,14 +28,28 @@
     </div>
  
     <header class="topbar">
-        <h4 id="mudar-perfil" class="mudar-perfil">Perfil: </h4>
+        <div class="topbar-linha-principal">
+            <a class="marca-site" href="home.html" aria-label="Ir para a página inicial Jeová Nissi">
+                <img src="../assets/logo-jeova-nissi.jpeg" alt="Logo Jeová Nissi">
+                <span class="marca-site-texto">
+                    <span class="marca-site-nome">Jeová Nissi</span>
+                    <span id="mudar-perfil" class="mudar-perfil marca-site-perfil">Perfil: </span>
+                </span>
+            </a>
+            <div class="titulo-topbar">
+                <h1>Ministério de Louvor - JEOVÁ NISSI</h1>
+            </div>
+            <div class="navegacao-historico navegacao-historico-topo" aria-label="Navegação do navegador">
+                <button type="button" class="historico-voltar" aria-label="Voltar página">&larr;</button>
+                <button type="button" class="historico-avancar" aria-label="Avançar página">&rarr;</button>
+            </div>
+        </div>
         <!-- Cabeçalho do site com título e menu -->
-        <h1>Ministério de Louvor - JEOVÁ NISSI</h1>
         <nav class="topnav">
             <!-- Menu de navegação para ir para outras páginas -->
-            <a href="../movimentações/home.html" aria-label="Página inicial">Inicio</a>
-            <a href="../movimentações/musicas.html" aria-label="Página de repertórios">Repertórios</a>
-            <a href="../movimentações/escalas.html" aria-label="Página de contato">Escalas</a>
+            <a href="home.html" aria-label="Página inicial">Home</a>
+            <a href="musicas.html" aria-label="Página de repertórios">Repertórios</a>
+            <a href="escalas.html" aria-label="Página de contato">Escalas</a>
         </nav>
     </header>
  
@@ -50,8 +65,8 @@
             </div>
             <div class="acoes-admin">
                 <a href="#" class="somente-admin" onclick="gerenciarMembros()">Gerenciar membros</a>
-                <a href="../movimentações/musicas.html" class="somente-admin">Organizar repertórios</a>
-                <a href="../movimentações/escalas.html" class="somente-admin">Montar escalas</a>
+                <a href="musicas.html" class="somente-admin">Organizar repertórios</a>
+                <a href="escalas.html" class="somente-admin">Montar escalas</a>
             </div>
         </section>
 
@@ -99,8 +114,8 @@
             <h2>Jeová Nissi</h2>
             <p>Somos uma equipe chamada para servir a igreja com adoração, unidade e excelência, lembrando que o Senhor é a nossa bandeira.</p>
             <div class="atalhos-home">
-                <a href="../movimentações/musicas.html" class="somente-nao-visitante">Ver repertório</a>
-                <a href="../movimentações/escalas.html" class="somente-nao-visitante">Ver escalas</a>
+                <a href="musicas.html" class="somente-nao-visitante">Ver repertório</a>
+                <a href="escalas.html" class="somente-nao-visitante">Ver escalas</a>
             </div>
         </section>
 
@@ -123,10 +138,6 @@
     </main>
  
     <footer>
-        <div class="navegacao-historico" aria-label="Navegação do navegador">
-            <button type="button" class="historico-voltar" aria-label="Voltar página">&larr;</button>
-            <button type="button" class="historico-avancar" aria-label="Avançar página">&rarr;</button>
-        </div>
         <!-- Rodapé da página com aviso de copyright -->
         <p>&copy; 2026 Ministério de Louvor Jeová Nissi. Todos os direitos reservados.</p>
         <div class="footer-socials">
