@@ -6,9 +6,9 @@
     <!-- Define a codificação de caracteres para UTF-8 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Faz o site funcionar melhor em celular e tablet -->
-    <meta name="description" content="Site teste simples demonstrando estrutura HTML, CSS e JavaScript com menu responsivo e modal interativo.">
+    <meta name="description" content="Área do Ministério de Louvor Jeová Nissi para acompanhar membros, repertórios e escalas.">
     <!-- Descrição do site que o navegador e o Google podem ler -->
-    <title>Site JEOVA NISSI - Página Inicial</title>
+    <title>Jeová Nissi - Página Inicial</title>
     <!-- Título que aparece na aba do navegador -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -30,7 +30,7 @@
     <header class="topbar">
         <div class="topbar-linha-principal">
             <a class="marca-site" href="home.html" aria-label="Ir para a página inicial Jeová Nissi">
-                <img src="../assets/logo-jeova-nissi.jpeg" alt="Logo Jeová Nissi">
+                <img src="../assets/logo-jeova-nissi-profissional.svg" alt="Logo Jeová Nissi">
                 <span class="marca-site-texto">
                     <span class="marca-site-nome">Jeová Nissi</span>
                     <span id="mudar-perfil" class="mudar-perfil marca-site-perfil">Perfil: </span>
@@ -58,13 +58,13 @@
         <section class="somente-admin">
             <div class="cabecalho-admin">
                 <div>
-                    <h3>Gerenciamento Jeova Nissi</h3>
+                    <h3>Gerenciamento Jeová Nissi</h3>
                     <p>Ferramentas exclusivas para cuidar da organização do ministério.</p>
                 </div>
                 <span>Admin</span>
             </div>
             <div class="acoes-admin">
-                <a href="#" class="somente-admin" onclick="gerenciarMembros()">Gerenciar membros</a>
+                <a href="#" class="somente-admin" onclick="gerenciarMembros(); return false;">Gerenciar membros</a>
                 <a href="musicas.html" class="somente-admin">Organizar repertórios</a>
                 <a href="escalas.html" class="somente-admin">Montar escalas</a>
             </div>
@@ -73,21 +73,21 @@
         <section class="area-membros">
             <div class="cabecalho-membros-home">
                 <div>
-                    <h3>Membros Jeova Nissi</h3>
+                    <h3>Membros Jeová Nissi</h3>
                     <p>Consulte os integrantes e suas funções na banda.</p>
                 </div>
                 <span>Banda</span>
             </div>
-            <a href="#" onclick="exibirMembros()">Ver Membros Da Banda</a>
+            <a href="#" onclick="exibirMembros(); return false;">Ver Membros Da Banda</a>
         </section>
 
         <div id="membros" class="membros" role="dialog" aria-modal="true">
             <!-- Caixa modal que aparece sobre a página -->
             <div class="conteudo-membros">
-                <span class="fecharMembros" onclick="fecharExibirMembros()" aria-label="Fechar modal">X</span>
+                <button type="button" class="fecharMembros" onclick="fecharExibirMembros()" aria-label="Fechar modal">×</button>
                 <!-- Botão de fechar o modal -->
-                <h2>Membros Jeova Nissi</h2>
-                <button class="btn-add-membro somente-admin" onclick="abrirModalAdicionarMembro()">+ Adicionar membro</button>
+                <h2>Membros Jeová Nissi</h2>
+                <button type="button" class="btn-add-membro somente-admin" onclick="abrirModalAdicionarMembro()">+ Adicionar membro</button>
                 <ul class="lista-membros" id="lista-membros">
                     <!-- A lista de membros é montada pelo JavaScript -->
                 </ul>
@@ -96,14 +96,28 @@
 
         <div id="modal-editar-membro" class="modal-membro" role="dialog" aria-modal="true">
             <div class="conteudo-membro">
-                <button class="fechar-edicao" onclick="fecharModalEditarMembro()" aria-label="Fechar modal">✕</button>
+                <button type="button" class="fechar-edicao" onclick="fecharModalEditarMembro()" aria-label="Fechar modal">✕</button>
                 <h3 id="titulo-modal-membro">Editar membro</h3>
-                <input type="text" id="input-nome-membro" placeholder="Nome do membro">
-                <input type="text" id="input-cargo-membro" placeholder="Cargo do membro">
+                <input type="text" id="input-nome-membro" placeholder="Nome do membro" aria-label="Nome do membro">
+                <input type="text" id="input-cargo-membro" placeholder="Cargo do membro" aria-label="Cargo do membro">
+                <input type="text" id="input-foto-membro" placeholder="Caminho da foto. Ex: ../assets/fotos/enzo.jpg" aria-label="Caminho da foto do membro">
+                <textarea id="input-sobre-membro" rows="5" placeholder="Texto sobre o membro" aria-label="Texto sobre o membro"></textarea>
                 <p class="erro-membro" id="erro-membro"></p>
                 <div class="botoes-membro">
                     <button type="button" class="btn-cancelar-membro" onclick="fecharModalEditarMembro()">Cancelar</button>
                     <button type="button" onclick="salvarEdicaoMembro()">Salvar</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="modal-saiba-membro" class="modal-saiba-membro" role="dialog" aria-modal="true" aria-labelledby="titulo-saiba-membro">
+            <div class="conteudo-saiba-membro">
+                <button type="button" class="fechar-edicao" onclick="fecharSaibaMaisMembro()" aria-label="Fechar modal">✕</button>
+                <img id="foto-saiba-membro" src="../assets/membro-teste.svg" alt="Foto do membro">
+                <div class="texto-saiba-membro">
+                    <span id="cargo-saiba-membro">Ministério de Louvor</span>
+                    <h3 id="titulo-saiba-membro">Saiba mais sobre o membro</h3>
+                    <p id="descricao-saiba-membro">Texto teste sobre o membro.</p>
                 </div>
             </div>
         </div>

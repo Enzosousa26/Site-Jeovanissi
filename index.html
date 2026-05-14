@@ -11,7 +11,7 @@
 <body class="pagina-login">
     <main class="tela-login">
         <section class="login-hero">
-            <img class="logo-login" src="./assets/logo-jeova-nissi.jpeg" alt="Logo Jeová Nissi">
+            <img class="logo-login" src="./assets/logo-jeova-nissi-profissional.svg" alt="Logo Jeová Nissi">
             <span>Ministério de Louvor</span>
             <h1>Jeová Nissi</h1>
             <p>O Senhor é a nossa bandeira.</p>
@@ -21,14 +21,17 @@
             <h2>Acesse sua área com o seu login</h2>
             <p>Entre para acompanhar repertórios, membros e escalas do ministério.</p>
 
-            <input type="text" placeholder="Coloque aqui seu acesso">
+            <input type="text" placeholder="Coloque aqui seu acesso" aria-label="Usuário de acesso" autocomplete="username">
 
             <div class="campo-senha">
-                <input type="password" id="senha-input" placeholder="Digite sua senha">
-                <button type="button" onclick="toggleSenha()" class="exibir-senha">Exibir</button>
+                <input type="password" id="senha-input" placeholder="Digite sua senha" aria-label="Senha" autocomplete="current-password">
+                <button type="button" onclick="toggleSenha()" class="exibir-senha" aria-label="Exibir ou ocultar senha">Exibir</button>
             </div>
 
-            <button id="login-btn" type="button">Entrar</button>
+            <div class="login-actions">
+                <button id="login-btn" type="button">Entrar</button>
+                <button id="visitante-btn" type="button">Entrar como visitante</button>
+            </div>
         </section>
     </main>
 

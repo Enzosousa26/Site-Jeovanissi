@@ -4,7 +4,7 @@
     <!-- Cabeçalho de informações da página sobre -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Página sobre nós do Site Teste, com informações sobre a empresa e seus serviços.">
+    <meta name="description" content="Repertórios do Ministério de Louvor Jeová Nissi organizados por data.">
     <title>Repertórios - Jeová Nissi</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -25,14 +25,14 @@
     <header class="topbar">
         <div class="topbar-linha-principal">
             <a class="marca-site" href="home.html" aria-label="Ir para a página inicial Jeová Nissi">
-                <img src="../assets/logo-jeova-nissi.jpeg" alt="Logo Jeová Nissi">
+                <img src="../assets/logo-jeova-nissi-profissional.svg" alt="Logo Jeová Nissi">
                 <span class="marca-site-texto">
                     <span class="marca-site-nome">Jeová Nissi</span>
-                    <span class="marca-site-perfil">Perfil: Admin</span>
+                    <span class="mudar-perfil marca-site-perfil">Perfil: </span>
                 </span>
             </a>
             <div class="titulo-topbar">
-                <h1>Repertórios - JEOVA NISSI</h1>
+                <h1>Repertórios - JEOVÁ NISSI</h1>
             </div>
             <div class="navegacao-historico navegacao-historico-topo" aria-label="Navegação do navegador">
                 <button type="button" class="historico-voltar" aria-label="Voltar página">&larr;</button>
@@ -44,14 +44,14 @@
             <!-- Links do menu que levam para outras páginas -->
             <a href="home.html" aria-label="Página inicial">Home</a>
             <a href="musicas.html" aria-label="Página de repertórios">Repertórios</a>
-            <a href="escalas.html" aria-label="Página de contato">Escalas</a>
+            <a href="escalas.html" aria-label="Página de escalas">Escalas</a>
         </nav>
     </header>
  
     <main>
         <!-- Conteúdo principal da página sobre -->
-        <h2>Repertorio musical</h2>
-        <p>Aqui estão todas as musicas do Repertorio</p>
+        <h2>Repertório musical</h2>
+        <p>Aqui estão todas as músicas do repertório.</p>
  
         <div class="repertorio-geral" id="repertorio-geral">
             <!-- As listas são geradas pelo JavaScript -->
@@ -66,21 +66,21 @@
     <!-- Modal para adicionar/editar música -->
     <div class="modal-edicao" id="modal-edicao">
         <div class="conteudo-edicao">
-            <button class="fechar-edicao" onclick="fecharModalEdicao()">✕</button>
+            <button type="button" class="fechar-edicao" onclick="fecharModalEdicao()" aria-label="Fechar modal">✕</button>
             <h3 id="modal-titulo">Adicionar música</h3>
-            <input type="text" id="input-nome-musica" placeholder="Nome da música e artista">
-            <input type="text" id="input-link-musica" placeholder="Link do YouTube (opcional)">
-            <button onclick="salvarMusica()">Salvar</button>
+            <input type="text" id="input-nome-musica" placeholder="Nome da música e artista" aria-label="Nome da música e artista">
+            <input type="text" id="input-link-musica" placeholder="Link do YouTube (opcional)" aria-label="Link do YouTube">
+            <button type="button" onclick="salvarMusica()">Salvar</button>
         </div>
     </div>
  
     <!-- Modal para nova data -->
     <div class="modal-edicao" id="modal-nova-data">
         <div class="conteudo-edicao">
-            <button class="fechar-edicao" onclick="fecharModalNovaData()">✕</button>
+            <button type="button" class="fechar-edicao" onclick="fecharModalNovaData()" aria-label="Fechar modal">✕</button>
             <h3>Nova data do repertório</h3>
-            <input type="text" id="input-nova-data" placeholder="Ex: 05/02" maxlength="5" inputmode="numeric">
-            <button onclick="salvarNovaData()">Criar lista</button>
+            <input type="text" id="input-nova-data" placeholder="Ex: 05/02" maxlength="5" inputmode="numeric" aria-label="Data do repertório">
+            <button type="button" onclick="salvarNovaData()">Criar lista</button>
         </div>
     </div>
  

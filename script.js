@@ -11,6 +11,8 @@ const CHAVE_TOKEN_LOGIN = 'tokenLogin';
  
 // Pego o botão de login. Se ele existir, eu estou na tela de entrada.
 const loginBtn = document.getElementById('login-btn');
+// Botão para visitantes entrarem sem precisar de usuário e senha.
+const visitanteBtn = document.getElementById('visitante-btn');
  
 function exibirTextoDeUsuarioAdm(tag, texto){
     // Escreve um texto em uma tag quando o usuário é administrador.
@@ -32,6 +34,7 @@ if (loginBtn) {
  
         // Desativo para a pessoa não clicar várias vezes enquanto o login carrega.
         loginBtn.disabled = true;
+        if (visitanteBtn) visitanteBtn.disabled = true;
 
         try {
             // Valida o usuário no Supabase, sem expor a lista de senhas no JavaScript.
@@ -54,12 +57,14 @@ if (loginBtn) {
                 // Avisa quando o usuário ou a senha não foram encontrados.
                 alert('Acesso não encontrado. Confira seu usuário e sua senha e tente novamente.');
                 loginBtn.disabled = false;
+                if (visitanteBtn) visitanteBtn.disabled = false;
             }
         } catch (erro) {
             // Se cair aqui, normalmente é internet, Supabase fora ou alguma configuração errada.
             console.warn('Erro ao fazer login:', erro);
             alert('Não conseguimos entrar agora. Verifique sua conexão e tente novamente em alguns instantes.');
             loginBtn.disabled = false;
+            if (visitanteBtn) visitanteBtn.disabled = false;
         }
     });
 
@@ -69,6 +74,24 @@ if (loginBtn) {
             event.preventDefault();
             loginBtn.click();
         }
+    });
+}
+
+if (visitanteBtn) {
+    visitanteBtn.addEventListener('click', () => {
+        // Visitante entra sem credenciais e sem token de edição.
+        localStorage.setItem('perfilUsuario', 'visitante');
+        localStorage.setItem('nomeUsuario', 'Visitante');
+        sessionStorage.removeItem(CHAVE_USUARIO_LOGIN);
+        sessionStorage.removeItem(CHAVE_TOKEN_LOGIN);
+
+        visitanteBtn.disabled = true;
+        if (loginBtn) loginBtn.disabled = true;
+
+        document.body.style.animation = 'fadeOutDown 0.5s ease forwards';
+        setTimeout(() => {
+            window.location.href = './movimenta%C3%A7%C3%B5es/home.html';
+        }, 500);
     });
 }
  
@@ -592,6 +615,11 @@ const MEMBROS_PADRAO = [
     { nome: 'Davi', cargo: 'Vocalista', categoria: 'vocal' },
 ];
 
+// Para trocar depois, edite cada membro e preencha os campos "foto" e "sobre".
+// Exemplo no JSON do membro: { nome: 'Enzo', cargo: 'Baterista', foto: '../assets/fotos/enzo.jpg', sobre: 'Texto sobre o Enzo.' }
+const FOTO_MEMBRO_PADRAO = '../assets/membro-teste.svg';
+const TEXTO_MEMBRO_PADRAO = 'Texto teste sobre este membro do Ministério de Louvor Jeová Nissi. Substitua este conteúdo pelo resumo, testemunho, função ou apresentação que você quiser mostrar aqui.';
+
 function prioridadeLider(cargo) {
     // Uso isso para deixar os líderes aparecendo primeiro na lista.
     const texto = cargo.toLowerCase();
@@ -1089,12 +1117,25 @@ function renderizarMembros() {
         linkNome.href = '#';
         linkNome.textContent = membro.nome;
         cargo.textContent = `(${membro.cargo})`;
+        linkNome.addEventListener('click', (event) => {
+            event.preventDefault();
+            if (!_gerenciandoMembros) abrirSaibaMaisMembro(index);
+        });
 
         nome.appendChild(linkNome);
         dados.appendChild(nome);
         dados.appendChild(document.createTextNode(' '));
         dados.appendChild(cargo);
         item.appendChild(dados);
+
+        if (!_gerenciandoMembros) {
+            const btnSaibaMais = document.createElement('button');
+            btnSaibaMais.type = 'button';
+            btnSaibaMais.className = 'btn-saiba-membro';
+            btnSaibaMais.textContent = `Saiba mais sobre ${membro.nome}`;
+            btnSaibaMais.addEventListener('click', () => abrirSaibaMaisMembro(index));
+            item.appendChild(btnSaibaMais);
+        }
 
         if (ehAdmin && _gerenciandoMembros) {
             // Em modo gerenciamento, admin ganha botões de editar e excluir.
@@ -1118,6 +1159,50 @@ function renderizarMembros() {
     });
 }
 
+function obterDetalhesMembro(membro) {
+    return {
+        foto: String(membro?.foto || '').trim() || FOTO_MEMBRO_PADRAO,
+        sobre: String(membro?.sobre || '').trim() || TEXTO_MEMBRO_PADRAO,
+    };
+}
+
+function abrirSaibaMaisMembro(index) {
+    // Abre uma apresentação simples do membro. Foto e texto vêm dos dados do próprio membro.
+    const membros = carregarMembros();
+    const membro = membros[index];
+    const modal = document.getElementById('modal-saiba-membro');
+    const foto = document.getElementById('foto-saiba-membro');
+    const cargo = document.getElementById('cargo-saiba-membro');
+    const titulo = document.getElementById('titulo-saiba-membro');
+    const descricao = document.getElementById('descricao-saiba-membro');
+
+    if (!membro || !modal || !foto || !titulo || !descricao) return;
+
+    const detalhes = obterDetalhesMembro(membro);
+    foto.onerror = () => {
+        foto.onerror = null;
+        foto.src = FOTO_MEMBRO_PADRAO;
+    };
+    foto.src = detalhes.foto;
+    foto.alt = `Foto de ${membro.nome}`;
+    if (cargo) cargo.textContent = membro.cargo || 'Ministério de Louvor';
+    titulo.textContent = `Saiba mais sobre ${membro.nome}`;
+    descricao.textContent = detalhes.sobre;
+
+    modal.style.display = 'flex';
+    setTimeout(() => modal.classList.add('ativo'), 10);
+}
+
+function fecharSaibaMaisMembro() {
+    const modal = document.getElementById('modal-saiba-membro');
+    if (!modal) return;
+
+    modal.classList.remove('ativo');
+    setTimeout(() => {
+        modal.style.display = 'none';
+    }, 300);
+}
+
 function editarMembro(index) {
     // Abre o modal já preenchido com os dados do membro escolhido.
     const membros = carregarMembros();
@@ -1126,6 +1211,8 @@ function editarMembro(index) {
     const titulo = document.getElementById('titulo-modal-membro');
     const inputNome = document.getElementById('input-nome-membro');
     const inputCargo = document.getElementById('input-cargo-membro');
+    const inputFoto = document.getElementById('input-foto-membro');
+    const inputSobre = document.getElementById('input-sobre-membro');
     const erro = document.getElementById('erro-membro');
 
     if (!modal || !inputNome || !inputCargo) return;
@@ -1135,6 +1222,8 @@ function editarMembro(index) {
     if (titulo) titulo.textContent = 'Editar membro';
     inputNome.value = membro.nome;
     inputCargo.value = membro.cargo;
+    if (inputFoto) inputFoto.value = membro.foto || '';
+    if (inputSobre) inputSobre.value = membro.sobre || '';
 
     if (erro) erro.textContent = '';
 
@@ -1149,6 +1238,8 @@ function abrirModalAdicionarMembro() {
     const titulo = document.getElementById('titulo-modal-membro');
     const inputNome = document.getElementById('input-nome-membro');
     const inputCargo = document.getElementById('input-cargo-membro');
+    const inputFoto = document.getElementById('input-foto-membro');
+    const inputSobre = document.getElementById('input-sobre-membro');
     const erro = document.getElementById('erro-membro');
 
     if (!modal || !inputNome || !inputCargo) return;
@@ -1158,6 +1249,8 @@ function abrirModalAdicionarMembro() {
     if (titulo) titulo.textContent = 'Adicionar membro';
     inputNome.value = '';
     inputCargo.value = '';
+    if (inputFoto) inputFoto.value = '';
+    if (inputSobre) inputSobre.value = '';
     if (erro) erro.textContent = '';
 
     modal.style.display = 'flex';
@@ -1186,12 +1279,16 @@ function salvarEdicaoMembro() {
     // Salva tanto edição quanto novo membro, dependendo do modo atual.
     const inputNome = document.getElementById('input-nome-membro');
     const inputCargo = document.getElementById('input-cargo-membro');
+    const inputFoto = document.getElementById('input-foto-membro');
+    const inputSobre = document.getElementById('input-sobre-membro');
     const erro = document.getElementById('erro-membro');
 
     if (!_modoModalMembro || !inputNome || !inputCargo) return;
 
     const novoNome = inputNome.value.trim();
     const novoCargo = inputCargo.value.trim();
+    const novaFoto = inputFoto ? inputFoto.value.trim() : '';
+    const novoSobre = inputSobre ? inputSobre.value.trim() : '';
 
     if (!novoNome || !novoCargo) {
         // Não deixo salvar membro sem nome ou cargo.
@@ -1203,15 +1300,21 @@ function salvarEdicaoMembro() {
 
     if (_modoModalMembro === 'editar') {
         // Aqui substituo o membro que já existia.
+        const membroAnterior = membros[_indexMembroAtual] || {};
         membros[_indexMembroAtual] = {
+            ...membroAnterior,
             nome: novoNome,
             cargo: novoCargo,
+            foto: novaFoto,
+            sobre: novoSobre,
         };
     } else {
         // Aqui adiciono no final e depois a função de salvar ordena tudo.
         membros.push({
             nome: novoNome,
             cargo: novoCargo,
+            foto: novaFoto,
+            sobre: novoSobre,
         });
     }
 
@@ -1987,6 +2090,9 @@ window.addEventListener('pointerdown', function(event) {
 
     const modalEditarMembro = document.getElementById('modal-editar-membro');
     if (modalEditarMembro && event.target === modalEditarMembro) fecharModalEditarMembro();
+
+    const modalSaibaMembro = document.getElementById('modal-saiba-membro');
+    if (modalSaibaMembro && event.target === modalSaibaMembro) fecharSaibaMaisMembro();
 
     const modalEscala = document.getElementById('modal-escala');
     if (modalEscala && event.target === modalEscala) fecharModalEscala();

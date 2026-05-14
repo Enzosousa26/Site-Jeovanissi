@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" role="img" aria-labelledby="title desc">
+    <title id="title">Imagem teste de membro</title>
+    <desc id="desc">Foto temporária para o perfil de um membro do ministério.</desc>
+    <defs>
+        <linearGradient id="fundo" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#15110c"/>
+            <stop offset="0.62" stop-color="#202832"/>
+            <stop offset="1" stop-color="#4b3418"/>
+        </linearGradient>
+        <linearGradient id="ouro" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#f5dc96"/>
+            <stop offset="1" stop-color="#b8873a"/>
+        </linearGradient>
+    </defs>
+    <rect width="640" height="640" rx="72" fill="url(#fundo)"/>
+    <circle cx="320" cy="250" r="104" fill="url(#ouro)" opacity="0.9"/>
+    <path d="M144 558c30-105 94-164 176-164s146 59 176 164" fill="url(#ouro)" opacity="0.86"/>
+    <circle cx="320" cy="320" r="250" fill="none" stroke="#f5dc96" stroke-opacity="0.22" stroke-width="10"/>
+    <text x="320" y="592" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="30" font-weight="700" fill="#f5dc96" opacity="0.82">JEOVA NISSI</text>
+</svg>

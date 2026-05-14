@@ -26,6 +26,42 @@ body {
         transform: translateY(24px);
     }
 }
+
+@keyframes logoLoginEntrada {
+    0% {
+        opacity: 0;
+        transform: translateY(24px) scale(0.88);
+        filter: blur(8px);
+    }
+    62% {
+        opacity: 1;
+        transform: translateY(-4px) scale(1.025);
+        filter: blur(0);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+    }
+}
+
+@keyframes logoLoginBrilho {
+    0% {
+        box-shadow:
+            0 28px 58px rgba(0, 0, 0, 0.38),
+            0 0 0 rgba(216, 174, 98, 0);
+    }
+    50% {
+        box-shadow:
+            0 30px 62px rgba(0, 0, 0, 0.42),
+            0 0 88px rgba(216, 174, 98, 0.26);
+    }
+    100% {
+        box-shadow:
+            0 28px 58px rgba(0, 0, 0, 0.38),
+            0 0 70px rgba(216, 174, 98, 0.15);
+    }
+}
  
 /* Regras para telas pequenas: quando a largura for menor que 600px */
 @media (max-width: 600px) {
@@ -269,22 +305,40 @@ header {
 .marca-site {
     display: inline-flex;
     align-items: center;
-    gap: 11px;
+    gap: 12px;
     color: white;
     text-decoration: none;
     font-weight: 800;
     letter-spacing: 0;
-    min-width: max-content;
+    min-width: 0;
+    width: fit-content;
+    max-width: 100%;
+    padding: 7px 10px 7px 8px;
+    border: 1px solid rgba(240, 211, 154, 0.12);
+    border-radius: 14px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.025));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.055), 0 10px 22px rgba(0, 0, 0, 0.11);
+    transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.marca-site:hover {
+    transform: translateY(-1px);
+    border-color: rgba(240, 211, 154, 0.24);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.035));
 }
 
 .marca-site img {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-    object-fit: cover;
-    border: 1px solid rgba(216, 174, 98, 0.42);
-    background: rgba(255, 255, 255, 0.04);
-    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.07), 0 8px 22px rgba(0, 0, 0, 0.18);
+    flex: 0 0 auto;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: contain;
+    border: 1px solid rgba(216, 174, 98, 0.16);
+    padding: 2px;
+    background: rgba(255, 255, 255, 0.025);
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.035), 0 7px 15px rgba(0, 0, 0, 0.15);
+    filter: saturate(0.82) brightness(0.96);
+    opacity: 0.9;
 }
 
 .marca-site-texto {
@@ -297,8 +351,12 @@ header {
 
 .marca-site-nome {
     white-space: nowrap;
-    font-size: clamp(1.18rem, 2.2vw, 1.55rem);
+    color: rgba(244, 216, 138, 0.88);
+    font-size: clamp(1.12rem, 2vw, 1.42rem);
     line-height: 1;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    text-shadow: 0 6px 14px rgba(0, 0, 0, 0.20);
 }
 
 .marca-site-perfil {
@@ -541,7 +599,7 @@ footer .navegacao-historico {
 .perfil a:hover {
     /* Efeito no link do modal */
     color: rgba(0, 0, 0, 0.704);
-    transform: scale(1, 0);
+    text-decoration: underline;
     transition: 0.5s;
 }
  
@@ -610,7 +668,7 @@ footer .navegacao-historico {
 .membros a:hover {
     /* Efeito no link do modal */
     color: rgba(0, 0, 0, 0.704);
-    transform: scale(1, 0);
+    text-decoration: underline;
     transition: 0.5s;
 }
  
@@ -693,11 +751,44 @@ footer .navegacao-historico {
     /* Destaca o nome de cada membro */
     color: #222;
 }
+
+.dados-membro a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.dados-membro a:hover {
+    color: var(--cor-primaria);
+    transform: none;
+}
  
 .lista-membros span {
     /* Texto secundário com a função de cada membro */
     color: #666;
     font-size: 0.95em;
+}
+
+.btn-saiba-membro {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 1 auto;
+    background-color: white;
+    border: 1px solid var(--cor-borda);
+    border-radius: 8px;
+    color: var(--cor-texto);
+    cursor: pointer;
+    font-size: 0.88rem;
+    font-weight: 600;
+    padding: 7px 10px;
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.btn-saiba-membro:hover {
+    background-color: var(--cor-primaria);
+    border-color: var(--cor-primaria);
+    color: white;
+    transform: translateY(-1px);
 }
  
 .membros.ativo .membros-perfil {
@@ -719,6 +810,14 @@ footer .navegacao-historico {
     font-size: 24px;
     color: #333;
     font-weight: bold;
+    width: 38px;
+    height: 38px;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
  
 .fecharMembros:hover {
@@ -947,7 +1046,8 @@ footer .navegacao-historico {
     background-color: #333;
 }
 
-.modal-membro {
+.modal-membro,
+.modal-saiba-membro {
     /* Modal visual usado para editar nome e cargo dos membros */
     position: fixed;
     inset: 0;
@@ -967,11 +1067,13 @@ footer .navegacao-historico {
     z-index: 10000;
 }
 
-.modal-membro.ativo {
+.modal-membro.ativo,
+.modal-saiba-membro.ativo {
     opacity: 1;
 }
 
-.conteudo-membro {
+.conteudo-membro,
+.conteudo-saiba-membro {
     background-color: white;
     color: #111;
     padding: 24px 28px;
@@ -988,7 +1090,8 @@ footer .navegacao-historico {
     transition: transform 0.3s ease;
 }
 
-.modal-membro.ativo .conteudo-membro {
+.modal-membro.ativo .conteudo-membro,
+.modal-saiba-membro.ativo .conteudo-saiba-membro {
     transform: scale(1);
 }
 
@@ -997,7 +1100,8 @@ footer .navegacao-historico {
     font-size: 1.1rem;
 }
 
-.conteudo-membro input {
+.conteudo-membro input,
+.conteudo-membro textarea {
     width: 100%;
     padding: 9px 12px;
     border: 1.5px solid #ccc;
@@ -1007,10 +1111,68 @@ footer .navegacao-historico {
     transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-.conteudo-membro input:focus {
+.conteudo-membro textarea {
+    min-height: 110px;
+    resize: vertical;
+    font-family: inherit;
+    line-height: 1.45;
+}
+
+.conteudo-membro input:focus,
+.conteudo-membro textarea:focus {
     outline: none;
     border-color: #555;
     box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.08);
+}
+
+.conteudo-saiba-membro {
+    max-width: 760px;
+    display: grid;
+    grid-template-columns: minmax(180px, 260px) 1fr;
+    align-items: stretch;
+    gap: 22px;
+    text-align: left;
+}
+
+.conteudo-saiba-membro img {
+    width: 100%;
+    height: 100%;
+    min-height: 260px;
+    object-fit: cover;
+    border-radius: 12px;
+    background-color: var(--cor-superficie-suave);
+    border: 1px solid var(--cor-borda);
+}
+
+.texto-saiba-membro {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 10px;
+}
+
+.texto-saiba-membro span {
+    color: var(--cor-destaque);
+    font-size: 0.82rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.texto-saiba-membro h3 {
+    margin: 0;
+    color: var(--cor-texto);
+    font-size: clamp(1.5rem, 4vw, 2.2rem);
+    line-height: 1.1;
+}
+
+.texto-saiba-membro p {
+    margin: 0;
+    color: var(--cor-texto-suave);
+    font-size: 1rem;
+    line-height: 1.65;
+    text-align: left;
+    white-space: pre-line;
 }
 
 .erro-membro {
@@ -1054,7 +1216,8 @@ footer .navegacao-historico {
 }
 
 @media (max-width: 480px) {
-    .conteudo-membro {
+    .conteudo-membro,
+    .conteudo-saiba-membro {
         padding: 18px 14px;
     }
 
@@ -1094,6 +1257,33 @@ footer .navegacao-historico {
         justify-content: center;
         text-align: center;
         margin-bottom: 10px;
+    }
+
+    .btn-saiba-membro {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .conteudo-saiba-membro {
+        grid-template-columns: 1fr;
+        gap: 16px;
+        text-align: center;
+    }
+
+    .conteudo-saiba-membro img {
+        min-height: 0;
+        height: auto;
+        aspect-ratio: 1;
+        max-width: 260px;
+        margin: 0 auto;
+    }
+
+    .texto-saiba-membro {
+        align-items: center;
+    }
+
+    .texto-saiba-membro p {
+        text-align: center;
     }
  
     .dados-membro {
@@ -1688,18 +1878,20 @@ footer .navegacao-historico {
    PADRONIZAÇÃO VISUAL DO SITE
    ===================================================== */
 :root {
-    --cor-fundo: #f4efe6;
-    --cor-superficie: #ffffff;
-    --cor-superficie-suave: #fbf8f1;
-    --cor-texto: #1b1814;
-    --cor-texto-suave: #5c544a;
-    --cor-borda: #e2d7c7;
-    --cor-primaria: #15110c;
-    --cor-primaria-hover: #2a2118;
+    --cor-fundo: #f2eadf;
+    --cor-superficie: #fffaf3;
+    --cor-superficie-suave: #fbf4e8;
+    --cor-texto: #15110c;
+    --cor-texto-suave: #62584c;
+    --cor-borda: #e6d5bb;
+    --cor-primaria: #07111b;
+    --cor-primaria-hover: #111b27;
     --cor-destaque: #b8873a;
     --cor-destaque-hover: #9f7330;
+    --cor-dourado-suave: #f0d39a;
+    --cor-fundo-escuro: #15110c;
     --raio-padrao: 10px;
-    --sombra-suave: 0 12px 30px rgba(58, 40, 18, 0.10);
+    --sombra-suave: 0 14px 34px rgba(58, 40, 18, 0.12);
 }
 
 body {
@@ -2296,12 +2488,16 @@ footer {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    background:
+        radial-gradient(circle at 18% 14%, rgba(184, 135, 58, 0.13), transparent 28%),
+        radial-gradient(circle at 84% 82%, rgba(21, 17, 12, 0.10), transparent 30%),
+        var(--cor-fundo);
 }
 
 .pagina-login .tela-login {
-    width: min(960px, calc(100% - 32px));
+    width: min(1120px, calc(100% - 32px));
     min-height: auto;
-    margin: 34px auto 18px;
+    margin: 42px auto 22px;
     padding: 0;
     display: grid;
     grid-template-columns: 1.05fr 0.95fr;
@@ -2313,9 +2509,13 @@ footer {
 }
 
 .pagina-login .login-hero {
-    min-height: 460px;
-    padding: 42px;
-    background: linear-gradient(135deg, #15110c 0%, #2a2118 58%, #4b3418 100%);
+    position: relative;
+    min-height: 560px;
+    padding: 46px;
+    background:
+        linear-gradient(180deg, rgba(2, 5, 9, 0.14), rgba(2, 5, 9, 0.38)),
+        url("./assets/login-jeova-nissi-fundo.svg") center / cover no-repeat,
+        #07111b;
     color: white;
     display: flex;
     flex-direction: column;
@@ -2324,38 +2524,72 @@ footer {
     text-align: center;
 }
 
+.pagina-login .login-hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(circle at 50% 42%, rgba(229, 178, 78, 0.16), transparent 34%),
+        linear-gradient(90deg, rgba(2, 5, 9, 0.10), rgba(2, 5, 9, 0.0) 44%, rgba(2, 5, 9, 0.24));
+    pointer-events: none;
+}
+
+.pagina-login .login-hero > * {
+    position: relative;
+    z-index: 1;
+}
+
 .logo-login {
     order: 2;
-    width: 118px;
-    height: 118px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid rgba(216, 174, 98, 0.48);
-    padding: 3px;
-    background: rgba(255, 255, 255, 0.08);
-    margin: 18px 0 16px;
-    box-shadow: 0 18px 42px rgba(0, 0, 0, 0.28), 0 0 0 1px rgba(255, 255, 255, 0.20);
+    width: min(300px, 72%);
+    height: auto;
+    aspect-ratio: 1;
+    border-radius: 999px;
+    object-fit: contain;
+    border: 1px solid rgba(240, 211, 154, 0.22);
+    padding: 10px;
+    background: rgba(3, 7, 12, 0.16);
+    margin: 22px 0 20px;
+    box-shadow:
+        0 28px 58px rgba(0, 0, 0, 0.38),
+        0 0 70px rgba(216, 174, 98, 0.15);
+    opacity: 0;
+    transform-origin: center;
+    animation:
+        logoLoginEntrada 0.95s cubic-bezier(0.2, 0.85, 0.25, 1) 0.22s forwards,
+        logoLoginBrilho 1.65s ease 1.05s both;
 }
 
 .pagina-login .login-hero span {
     order: 1;
     color: #f0d39a;
-    font-weight: 600;
+    font-size: 1.02rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
     margin-bottom: 0;
+    text-shadow: 0 8px 22px rgba(0, 0, 0, 0.36);
 }
 
 .pagina-login .login-hero h1 {
     order: 3;
-    margin: 0 0 14px;
-    font-size: clamp(2.4rem, 7vw, 4.6rem);
-    line-height: 1;
+    margin: 0 0 10px;
+    color: #f7d57e;
+    font-size: clamp(2.1rem, 4.8vw, 3.7rem);
+    line-height: 0.98;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-shadow: 0 14px 32px rgba(0, 0, 0, 0.52);
 }
 
 .pagina-login .login-hero p {
     order: 4;
     margin: 0;
-    color: rgba(255, 255, 255, 0.84);
-    font-size: 1.1rem;
+    color: rgba(255, 230, 174, 0.88);
+    font-size: 0.92rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    text-shadow: 0 10px 24px rgba(0, 0, 0, 0.42);
 }
 
 .pagina-login .login-container {
@@ -2421,13 +2655,43 @@ footer {
     background-color: var(--cor-destaque-hover);
 }
 
-.pagina-login #login-btn {
+.login-actions {
+    width: 100%;
+    display: grid;
+    gap: 10px;
+    margin-top: 4px;
+}
+
+.pagina-login #login-btn,
+.pagina-login #visitante-btn {
     width: 100%;
     height: auto;
     min-height: 44px;
-    margin-top: 4px;
-    text-transform: uppercase;
+    margin-top: 0;
     font-weight: 700;
+}
+
+.pagina-login #login-btn {
+    text-transform: uppercase;
+}
+
+.pagina-login #visitante-btn {
+    background-color: white;
+    color: var(--cor-primaria);
+    border: 1px solid var(--cor-borda);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.65);
+}
+
+.pagina-login #visitante-btn:hover {
+    background-color: var(--cor-superficie-suave);
+    border-color: rgba(184, 135, 58, 0.42);
+    color: var(--cor-primaria-hover);
+}
+
+.pagina-login #login-btn:disabled,
+.pagina-login #visitante-btn:disabled {
+    cursor: wait;
+    opacity: 0.72;
 }
 
 .pagina-login footer {
@@ -2441,15 +2705,17 @@ footer {
     }
 
     .pagina-login .login-hero {
-        min-height: 260px;
-        padding: 30px 22px;
+        min-height: 430px;
+        padding: 34px 22px;
         text-align: center;
         align-items: center;
     }
 
     .logo-login {
-        width: 92px;
-        height: 92px;
+        width: min(230px, 76%);
+        height: auto;
+        border-radius: 999px;
+        padding: 8px;
         margin-bottom: 16px;
     }
 
@@ -2516,6 +2782,7 @@ img, video, iframe {
     .marca-site {
         align-self: center;
         justify-content: center;
+        justify-self: center;
     }
 
     .bloco-mes,
@@ -2592,13 +2859,45 @@ img, video, iframe {
     .topbar-linha-principal {
         grid-template-columns: 1fr;
         justify-items: center;
-        gap: 12px;
+        gap: 14px;
     }
 
     .marca-site,
     .navegacao-historico-topo {
         align-self: center;
         justify-self: center;
+    }
+
+    .marca-site {
+        width: min(100%, 320px);
+        flex-direction: column;
+        gap: 8px;
+        padding: 12px 14px;
+        border-radius: 16px;
+        text-align: center;
+    }
+
+    .marca-site img {
+        width: 72px;
+        height: 72px;
+        padding: 4px;
+        box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.045), 0 10px 20px rgba(0, 0, 0, 0.16), 0 0 18px rgba(216, 174, 98, 0.035);
+    }
+
+    .marca-site-texto {
+        align-items: center;
+        width: 100%;
+    }
+
+    .marca-site-nome {
+        font-size: 1.18rem;
+        white-space: normal;
+    }
+
+    .marca-site-perfil {
+        max-width: 100%;
+        white-space: normal;
+        text-align: center;
     }
 
     .titulo-topbar {
@@ -2638,5 +2937,379 @@ img, video, iframe {
     .home-hero,
     .home-grid {
         width: 100%;
+    }
+}
+
+/* =====================================================
+   AJUSTES FINAIS DE RESPONSIVIDADE
+   ===================================================== */
+html,
+body {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+input,
+button,
+select,
+textarea {
+    max-width: 100%;
+}
+
+main,
+header,
+footer,
+section,
+article {
+    max-width: 100%;
+}
+
+/* =====================================================
+   TEMA GLOBAL — MESMA IDENTIDADE DO LOGIN
+   ===================================================== */
+body {
+    background:
+        radial-gradient(circle at 14% 8%, rgba(184, 135, 58, 0.12), transparent 26%),
+        radial-gradient(circle at 88% 92%, rgba(7, 17, 27, 0.08), transparent 32%),
+        var(--cor-fundo);
+    color: var(--cor-texto);
+}
+
+header,
+.voltar-tela-login {
+    background:
+        radial-gradient(circle at 16% 0%, rgba(240, 211, 154, 0.13), transparent 34%),
+        linear-gradient(135deg, #07111b 0%, #15110c 58%, #2a2118 100%);
+}
+
+main,
+.somente-admin,
+.area-membros,
+.home-grid article,
+.card-escala,
+.bloco-ano,
+.bloco-mes,
+.bloco-data,
+.conteudo-membros,
+.conteudo-membro,
+.conteudo-saiba-membro,
+.conteudo-edicao,
+.conteudo-perfil,
+.conteudo-escala,
+.visitante-card,
+.visitante-conteudo {
+    background-color: var(--cor-superficie);
+    border-color: var(--cor-borda);
+    color: var(--cor-texto);
+}
+
+.somente-admin,
+.area-membros,
+.card-escala,
+.bloco-data,
+.visitante-card {
+    border-left-color: var(--cor-destaque);
+}
+
+.home-hero {
+    background:
+        radial-gradient(circle at 50% 28%, rgba(240, 211, 154, 0.18), transparent 32%),
+        linear-gradient(135deg, #07111b 0%, #15110c 58%, #4b3418 100%);
+}
+
+.cabecalho-admin h3,
+.cabecalho-membros-home h3,
+.home-grid h3,
+.cabecalho-pagina h2,
+.card-escala h3,
+.lista-membros strong,
+main h2,
+main h3,
+main h4 {
+    color: var(--cor-texto);
+}
+
+.cabecalho-admin p,
+.cabecalho-membros-home p,
+.home-grid p,
+.cabecalho-pagina p,
+main p,
+.lista-membros span,
+.card-escala dd {
+    color: var(--cor-texto-suave);
+}
+
+.cabecalho-membros-home span,
+.cabecalho-admin span,
+.card-escala dt,
+.cabecalho-pagina span,
+.home-hero span,
+.texto-saiba-membro span {
+    color: var(--cor-dourado-suave);
+}
+
+.cabecalho-admin span,
+.cabecalho-membros-home span {
+    background-color: var(--cor-primaria);
+}
+
+.topnav a,
+.voltar-tela-login a {
+    background-color: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(240, 211, 154, 0.12);
+}
+
+.topnav a:hover,
+.topnav a.active,
+.voltar-tela-login a:hover {
+    background-color: rgba(184, 135, 58, 0.24);
+    border-color: rgba(240, 211, 154, 0.28);
+}
+
+button,
+.area-membros a,
+.somente-admin a,
+.btn-nova-data,
+.btn-add-musica,
+.btn-add-membro,
+.btn-saiba-membro,
+.login-container button,
+.acoes-escala button,
+.acoes-musica button,
+.acoes-membro button,
+.botoes-membro button:not(.btn-cancelar-membro) {
+    border-color: var(--cor-primaria);
+}
+
+.area-membros a,
+.btn-nova-data,
+.btn-add-musica,
+.btn-add-membro,
+.botoes-membro button:not(.btn-cancelar-membro) {
+    background-color: var(--cor-primaria);
+    color: white;
+}
+
+.somente-admin a,
+.btn-saiba-membro,
+.acoes-escala button,
+.acoes-musica button,
+.acoes-membro button,
+.btn-cancelar-membro {
+    background-color: var(--cor-superficie);
+    color: var(--cor-texto);
+    border-color: var(--cor-borda);
+}
+
+button:hover,
+.area-membros a:hover,
+.somente-admin a:hover,
+.btn-nova-data:hover,
+.btn-add-musica:hover,
+.btn-add-membro:hover,
+.btn-saiba-membro:hover,
+.acoes-escala button:hover,
+.acoes-musica button:hover,
+.acoes-membro button:hover {
+    background-color: var(--cor-destaque);
+    border-color: var(--cor-destaque);
+    color: white;
+}
+
+input,
+select,
+textarea {
+    background-color: #fffdf8;
+    border-color: var(--cor-borda);
+    color: var(--cor-texto);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: var(--cor-destaque);
+    box-shadow: 0 0 0 3px rgba(184, 135, 58, 0.14);
+}
+
+.lista-membros li,
+.lista-repertorio li,
+.card-escala dl div,
+.home-grid article {
+    background-color: var(--cor-superficie-suave);
+    border-color: var(--cor-borda);
+}
+
+footer {
+    color: var(--cor-texto-suave);
+}
+
+@media (max-width: 760px) {
+    .pagina-login {
+        min-height: 100svh;
+        padding: 10px 0 18px;
+    }
+
+    .pagina-login .tela-login {
+        width: calc(100% - 20px);
+        margin: 10px auto 12px;
+        border-radius: 14px;
+    }
+
+    .pagina-login .login-hero {
+        min-height: auto;
+        padding: 24px 18px 22px;
+        background-position: center top;
+    }
+
+    .logo-login {
+        width: clamp(128px, 42vw, 184px);
+        padding: 6px;
+        margin: 14px 0 12px;
+        box-shadow:
+            0 18px 38px rgba(0, 0, 0, 0.32),
+            0 0 42px rgba(216, 174, 98, 0.10);
+    }
+
+    .pagina-login .login-hero span {
+        font-size: 0.86rem;
+    }
+
+    .pagina-login .login-hero h1 {
+        font-size: clamp(1.55rem, 8vw, 2.25rem);
+        letter-spacing: 0.04em;
+        line-height: 1.05;
+    }
+
+    .pagina-login .login-hero p {
+        max-width: 26ch;
+        font-size: 0.74rem;
+        letter-spacing: 0.12em;
+        line-height: 1.45;
+    }
+
+    .pagina-login .login-container {
+        padding: 24px 18px 26px;
+        gap: 11px;
+    }
+
+    .pagina-login .login-container h2 {
+        width: 100%;
+        font-size: clamp(1.45rem, 7vw, 1.9rem);
+        line-height: 1.15;
+        overflow-wrap: anywhere;
+    }
+
+    .pagina-login .login-container p {
+        width: 100%;
+        font-size: clamp(0.98rem, 4.5vw, 1.1rem);
+    }
+
+    .pagina-login .login-container input,
+    .pagina-login .login-actions button,
+    .pagina-login #login-btn,
+    .pagina-login #visitante-btn {
+        width: 100%;
+        max-width: none;
+    }
+
+    .pagina-login .campo-senha .exibir-senha {
+        width: auto;
+        max-width: none;
+    }
+
+    .pagina-login .login-container input {
+        min-height: 50px;
+        font-size: 1rem;
+    }
+
+    .pagina-login #login-btn,
+    .pagina-login #visitante-btn {
+        min-height: 52px;
+        font-size: 1rem;
+    }
+
+    .pagina-login footer {
+        width: calc(100% - 24px);
+        margin-inline: auto;
+    }
+}
+
+@media (max-width: 480px) {
+    body:not(.pagina-login) {
+        padding-bottom: 64px;
+    }
+
+    main {
+        width: calc(100% - 20px);
+        padding: 14px;
+        margin: 14px auto;
+    }
+
+    .pagina-login {
+        padding: 8px 0 12px;
+    }
+
+    .pagina-login .tela-login {
+        width: calc(100% - 12px);
+        margin-top: 6px;
+        border-radius: 12px;
+    }
+
+    .pagina-login .login-hero {
+        padding: 20px 14px 18px;
+    }
+
+    .logo-login {
+        width: clamp(112px, 40vw, 152px);
+        margin: 10px 0;
+    }
+
+    .pagina-login .login-container {
+        padding: 22px 16px 24px;
+    }
+
+    .campo-senha input {
+        padding-right: 72px;
+    }
+
+    .campo-senha .exibir-senha {
+        right: 7px;
+        padding: 6px 9px;
+        font-size: 0.76rem;
+    }
+
+    .topnav {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .home-grid,
+    .escalas-geral {
+        grid-template-columns: 1fr;
+    }
+
+    .acoes-admin,
+    .acoes-escala,
+    .botoes-membro {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 360px) {
+    .pagina-login .login-container h2 {
+        font-size: 1.34rem;
+    }
+
+    .pagina-login .login-container p {
+        font-size: 0.94rem;
+    }
+
+    .pagina-login .login-container input {
+        font-size: 0.92rem;
+        text-align: left;
+    }
+
+    .campo-senha .exibir-senha {
+        padding-inline: 7px;
     }
 }

@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 900" role="img" aria-labelledby="title desc">
+    <title id="title">Logo Jeová Nissi</title>
+    <desc id="desc">Monograma JN dourado com asas, microfone, guitarra e chama com cruz.</desc>
+    <defs>
+        <radialGradient id="fundo" cx="50%" cy="38%" r="64%">
+            <stop offset="0" stop-color="#24313a"/>
+            <stop offset="0.58" stop-color="#121b21"/>
+            <stop offset="1" stop-color="#080b0e"/>
+        </radialGradient>
+        <linearGradient id="ouro" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#fff0a6"/>
+            <stop offset="0.25" stop-color="#e6bd55"/>
+            <stop offset="0.5" stop-color="#9f6718"/>
+            <stop offset="0.75" stop-color="#e0ad45"/>
+            <stop offset="1" stop-color="#fff1b0"/>
+        </linearGradient>
+        <linearGradient id="ouroEscuro" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#f1d16e"/>
+            <stop offset="1" stop-color="#8b5517"/>
+        </linearGradient>
+        <linearGradient id="brilho" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#ffffff" stop-opacity="0"/>
+            <stop offset="0.5" stop-color="#ffffff" stop-opacity="0.35"/>
+            <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+        </linearGradient>
+        <filter id="sombra" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="0" dy="18" stdDeviation="20" flood-color="#000000" flood-opacity="0.35"/>
+        </filter>
+    </defs>
+
+    <circle cx="450" cy="450" r="421" fill="url(#fundo)"/>
+    <circle cx="450" cy="450" r="398" fill="none" stroke="#d9ad50" stroke-opacity="0.34" stroke-width="2"/>
+    <circle cx="450" cy="450" r="372" fill="none" stroke="#ffffff" stroke-opacity="0.08" stroke-width="1"/>
+
+    <g filter="url(#sombra)">
+        <path fill="url(#ouro)" d="M110 296c64 75 133 121 208 140l-8 66c-88-27-160-81-216-162 0 72 32 134 93 186 32 27 70 48 113 62l-8 65C154 607 74 506 78 351c0-24 10-43 32-55z"/>
+        <path fill="url(#ouroEscuro)" d="M148 492c45 44 97 77 156 98l-8 65c-67-24-122-61-166-112 3-20 9-37 18-51z"/>
+        <path fill="#111b21" fill-opacity="0.72" d="M148 324c44 42 95 74 152 96l-8 40c-65-21-121-58-168-111 5-12 13-21 24-25z"/>
+
+        <path fill="url(#ouro)" d="M790 296c-64 75-133 121-208 140l8 66c88-27 160-81 216-162 0 72-32 134-93 186-32 27-70 48-113 62l8 65c138-46 218-147 214-302 0-24-10-43-32-55z"/>
+        <path fill="url(#ouroEscuro)" d="M752 492c-45 44-97 77-156 98l8 65c67-24 122-61 166-112-3-20-9-37-18-51z"/>
+        <path fill="#111b21" fill-opacity="0.72" d="M752 324c-44 42-95 74-152 96l8 40c65-21 121-58 168-111-5-12-13-21-24-25z"/>
+    </g>
+
+    <g filter="url(#sombra)">
+        <path fill="url(#ouro)" d="M338 301h95v222c0 72-54 127-128 127-80 0-133-54-133-135V389h94v127c0 26 14 43 38 43 22 0 34-15 34-42V301z"/>
+        <path fill="url(#ouro)" d="M462 301h89l137 191V301h94v344h-82L556 445v200h-94V301z"/>
+        <path fill="url(#brilho)" d="M207 338h543v62H207z" opacity="0.44"/>
+        <path fill="#ffffff" fill-opacity="0.16" d="M338 301h95v29h-95zM462 301h89l137 191v57L528 329h-66z"/>
+    </g>
+
+    <g transform="translate(250 435)" fill="none" stroke="#101820" stroke-width="11" stroke-linecap="round">
+        <rect x="0" y="-58" width="52" height="92" rx="26" fill="#f2ca66" stroke="none"/>
+        <path d="M16-36v48M36-36v48M26 38v46M2 84h48"/>
+    </g>
+
+    <g transform="translate(604 205) rotate(21)">
+        <rect x="-19" y="44" width="38" height="205" rx="19" fill="url(#ouroEscuro)"/>
+        <path d="M0 44v205" stroke="#fff1b0" stroke-opacity="0.38" stroke-width="5"/>
+        <circle cx="0" cy="22" r="37" fill="url(#ouro)"/>
+        <circle cx="-12" cy="10" r="5" fill="#2a1f12"/>
+        <circle cx="12" cy="10" r="5" fill="#2a1f12"/>
+        <circle cx="-15" cy="33" r="5" fill="#2a1f12"/>
+        <circle cx="15" cy="33" r="5" fill="#2a1f12"/>
+    </g>
+
+    <g transform="translate(450 201)">
+        <path fill="url(#ouro)" d="M0-72c42 38 17 78 54 114 26 26 18 72-11 98 5-45-25-57-54-84-27 27-58 44-48 91-37-30-49-76-20-116 22-31 60-42 79-103z"/>
+        <path fill="#ffffff" fill-opacity="0.16" d="M0-45c13 25 5 58 31 86 14 15 13 39 2 57-3-33-25-44-45-63-19 18-36 33-32 64-18-22-17-50 0-73 13-18 34-29 44-71z"/>
+        <path d="M0-3v79M-27 30h54" stroke="#121820" stroke-width="15" stroke-linecap="round"/>
+        <path d="M0-3v79M-27 30h54" stroke="#f8e2a0" stroke-width="7" stroke-linecap="round"/>
+    </g>
+
+    <text x="450" y="760" text-anchor="middle" font-family="Montserrat, Inter, Arial, sans-serif" font-size="86" font-weight="800" letter-spacing="8" fill="url(#ouro)">JEOVÁ NISSI</text>
+    <text x="450" y="813" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="25" font-weight="600" letter-spacing="7" fill="#f4d88a" opacity="0.85">MINISTÉRIO DE LOUVOR</text>
+</svg>
