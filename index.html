@@ -3,6 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Área do Ministério de Louvor Jeová Nissi para acompanhar repertórios, membros e escalas.">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Jeová Nissi - Ministério de Louvor">
+    <meta property="og:description" content="Acompanhe repertórios, membros e escalas do Ministério de Louvor Jeová Nissi.">
+    <meta property="og:image" content="./assets/logo-jeova-nissi.jpeg">
+    <meta property="og:url" content="https://jeovanissi.vercel.app/">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Jeová Nissi - Ministério de Louvor">
+    <meta name="twitter:description" content="Acompanhe repertórios, membros e escalas do Ministério de Louvor Jeová Nissi.">
+    <meta name="twitter:image" content="./assets/logo-jeova-nissi.jpeg">
     <title>Login - Jeová Nissi</title>
     <link rel="stylesheet" href="./style.css">
     <link rel="icon" href="./assets/favicon-jeova-nissi.png" type="image/png">
@@ -19,7 +29,7 @@
 
         <section class="login-container">
             <h2>Acesse sua área com o seu login</h2>
-            <p>Entre para acompanhar repertórios, membros e escalas do ministério.</p>
+            <p>Acompanhe repertórios, membros e escalas do ministério.</p>
 
             <input type="text" placeholder="Coloque aqui seu acesso" aria-label="Usuário de acesso" autocomplete="username">
 
@@ -32,8 +42,21 @@
                 <button id="login-btn" type="button">Entrar</button>
                 <button id="visitante-btn" type="button">Entrar como visitante</button>
             </div>
+            <p id="login-status" class="login-status" role="status" aria-live="polite"></p>
         </section>
     </main>
+
+    <div id="login-loading-modal" class="login-loading-modal" role="dialog" aria-live="polite" aria-modal="true" aria-labelledby="login-loading-title" hidden>
+        <div class="login-loading-card">
+            <div class="login-loading-brand">
+                <img src="./assets/logo-jeova-nissi-profissional.svg" alt="">
+            </div>
+            <div class="login-loading-ring" aria-hidden="true"></div>
+            <h2 id="login-loading-title">Validando seu acesso</h2>
+            <p id="login-loading-detail">Estamos conferindo suas credenciais com seguranca.</p>
+            <div class="login-loading-progress" aria-hidden="true"><span></span></div>
+        </div>
+    </div>
 
     <footer>
         <p>&copy; 2026 Ministério de Louvor Jeová Nissi. Todos os direitos reservados.</p>

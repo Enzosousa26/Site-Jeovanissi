@@ -1,6 +1,8 @@
 {
   "version": 2,
+  "regions": ["gru1"],
   "routes": [
+    { "src": "/api/auth", "dest": "/api/auth.js" },
     { "src": "/api/membros", "dest": "/api/membros.js" },
     { "src": "/api/repertorio", "dest": "/api/repertorio.js" },
     { "src": "/api/escalas", "dest": "/api/escalas.js" }

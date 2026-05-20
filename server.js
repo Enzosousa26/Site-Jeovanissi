@@ -1,6 +1,10 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
+const authHandler = require('./api/auth');
+const membrosHandler = require('./api/membros');
+const repertorioHandler = require('./api/repertorio');
+const escalasHandler = require('./api/escalas');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -62,41 +66,10 @@ app.use((req, res, next) => {
   next();
 });
 
-app.get('/api/membros', (req, res) => {
-  const db = lerBanco();
-  res.json(db.membros || DEFAULT_DB.membros);
-});
-
-app.put('/api/membros', (req, res) => {
-  const db = lerBanco();
-  db.membros = req.body || [];
-  salvarBanco(db);
-  res.json(db.membros);
-});
-
-app.get('/api/repertorio', (req, res) => {
-  const db = lerBanco();
-  res.json(db.repertorio || {});
-});
-
-app.put('/api/repertorio', (req, res) => {
-  const db = lerBanco();
-  db.repertorio = req.body || {};
-  salvarBanco(db);
-  res.json(db.repertorio);
-});
-
-app.get('/api/escalas', (req, res) => {
-  const db = lerBanco();
-  res.json(db.escalas || {});
-});
-
-app.put('/api/escalas', (req, res) => {
-  const db = lerBanco();
-  db.escalas = req.body || {};
-  salvarBanco(db);
-  res.json(db.escalas);
-});
+app.all('/api/auth', authHandler);
+app.all('/api/membros', membrosHandler);
+app.all('/api/repertorio', repertorioHandler);
+app.all('/api/escalas', escalasHandler);
 
 app.listen(PORT, () => {
   console.log(`Servidor rodando em http://localhost:${PORT}`);

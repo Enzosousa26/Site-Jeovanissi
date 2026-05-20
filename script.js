@@ -4,15 +4,37 @@
 // ============================================================
 // SISTEMA DE USUÁRIOS
 // ============================================================
-// Guardo esse nome para salvar o usuário da sessão sem repetir texto.
-const CHAVE_USUARIO_LOGIN = 'usuarioLogin';
-// Esse é o nome usado para guardar o token que vem do Supabase.
-const CHAVE_TOKEN_LOGIN = 'tokenLogin';
- 
 // Pego o botão de login. Se ele existir, eu estou na tela de entrada.
 const loginBtn = document.getElementById('login-btn');
 // Botão para visitantes entrarem sem precisar de usuário e senha.
 const visitanteBtn = document.getElementById('visitante-btn');
+const loginStatus = document.getElementById('login-status');
+const loginLoadingModal = document.getElementById('login-loading-modal');
+const loginLoadingTitle = document.getElementById('login-loading-title');
+const loginLoadingDetail = document.getElementById('login-loading-detail');
+const CHAVE_LOGIN_LOCAL_DESENVOLVIMENTO = 'loginLocalDesenvolvimento';
+const CHAVE_POPUP_VISITANTE_VISTO = 'popupVisitanteVisto';
+const TEMPO_MINIMO_LOADING_LOGIN = 2000;
+const USUARIOS_LOCAIS_DESENVOLVIMENTO = {
+    'aminadabe.santos': { perfil: 'admin', nome: 'Aminadabe' },
+    'patrick.prudente': { perfil: 'admin', nome: 'Patrick' },
+    'moises.souza': { perfil: 'admin', nome: 'Moises' },
+    'enzo.santos': { perfil: 'membro', nome: 'Enzo' },
+    'alesio.ribeiro': { perfil: 'membro', nome: 'Alesio' },
+    'douglas.batista': { perfil: 'membro', nome: 'Douglas' },
+    'davi.ricardo': { perfil: 'membro', nome: 'Davi' },
+    'edilane.santos': { perfil: 'membro', nome: 'Edilane' },
+    'joao.pinheiro': { perfil: 'membro', nome: 'Joao' },
+    'larrisa.brenda': { perfil: 'membro', nome: 'Larrisa' },
+    'miguel.pinheiro': { perfil: 'membro', nome: 'Miguel' },
+    'nicole.cruz': { perfil: 'membro', nome: 'Nicole' },
+    'vanessa.rodrigues': { perfil: 'membro', nome: 'Vanessa' },
+    'vitoria.moreira': { perfil: 'membro', nome: 'Vitoria' },
+    'wagao.barcelos': { perfil: 'membro', nome: 'Wagao' },
+    'eliane.oliveira': { perfil: 'membro', nome: 'Eliane' },
+    'erika.gonçalves': { perfil: 'membro', nome: 'Erika' },
+};
+let tempoFecharModalLogin = null;
  
 function exibirTextoDeUsuarioAdm(tag, texto){
     // Escreve um texto em uma tag quando o usuário é administrador.
@@ -24,17 +46,101 @@ function exibirTextoDeUsuarioMembro(tag, texto){
     let campoUm = document.querySelector(tag);
     if (campoUm) campoUm.textContent = texto;
 }
+
+function alternarModalLoginCarregando(ativo, titulo = 'Validando seu acesso', detalhe = 'Estamos conferindo suas credenciais com seguranca.') {
+    if (!loginLoadingModal) return;
+
+    clearTimeout(tempoFecharModalLogin);
+
+    if (loginLoadingTitle && titulo) loginLoadingTitle.textContent = titulo;
+    if (loginLoadingDetail && detalhe) loginLoadingDetail.textContent = detalhe;
+
+    if (ativo) {
+        loginLoadingModal.hidden = false;
+        document.body.classList.add('login-modal-aberto');
+        requestAnimationFrame(() => loginLoadingModal.classList.add('ativo'));
+        return;
+    }
+
+    loginLoadingModal.classList.remove('ativo');
+    document.body.classList.remove('login-modal-aberto');
+    tempoFecharModalLogin = setTimeout(() => {
+        if (!loginLoadingModal.classList.contains('ativo')) {
+            loginLoadingModal.hidden = true;
+        }
+    }, 240);
+}
+
+function definirEstadoLoginCarregando(ativo, mensagem = '', detalhe = '') {
+    // Mostra retorno visual enquanto a API confirma o acesso.
+    if (!loginBtn) return;
+
+    if (!loginBtn.dataset.textoOriginal) {
+        loginBtn.dataset.textoOriginal = loginBtn.textContent;
+    }
+
+    loginBtn.disabled = ativo;
+    loginBtn.setAttribute('aria-busy', ativo ? 'true' : 'false');
+    loginBtn.textContent = loginBtn.dataset.textoOriginal;
+
+    if (visitanteBtn) visitanteBtn.disabled = ativo;
+    if (loginStatus) loginStatus.textContent = '';
+
+    alternarModalLoginCarregando(
+        ativo,
+        mensagem || 'Validando seu acesso',
+        detalhe || 'Estamos conferindo suas credenciais com seguranca.'
+    );
+}
+
+function estaNoAmbienteLocalDesenvolvimento() {
+    return window.location.protocol === 'file:' || ['127.0.0.1', 'localhost'].includes(window.location.hostname);
+}
+
+function autenticarUsuarioLocalDesenvolvimento(usuario, senha) {
+    // O Live Server não roda /api; este fallback serve só para testar a tela localmente.
+    if (!estaNoAmbienteLocalDesenvolvimento() || !senha) return null;
+
+    const usuarioLocal = USUARIOS_LOCAIS_DESENVOLVIMENTO[usuario.toLowerCase()];
+    if (!usuarioLocal) return null;
+
+    sessionStorage.setItem(CHAVE_LOGIN_LOCAL_DESENVOLVIMENTO, 'true');
+    return usuarioLocal;
+}
+
+function usandoLoginLocalDesenvolvimento() {
+    return estaNoAmbienteLocalDesenvolvimento() && sessionStorage.getItem(CHAVE_LOGIN_LOCAL_DESENVOLVIMENTO) === 'true';
+}
+
+function redirecionarDepoisDoLoading(destino, inicioLoading) {
+    const tempoPassado = Date.now() - inicioLoading;
+    const espera = Math.max(0, TEMPO_MINIMO_LOADING_LOGIN - tempoPassado);
+
+    setTimeout(() => {
+        document.body.style.animation = 'fadeOutDown 0.5s ease forwards';
+        setTimeout(() => {
+            window.location.href = destino;
+        }, 500);
+    }, espera);
+}
  
 if (loginBtn) {
     // Só ativa o login quando o botão existe na página atual.
     loginBtn.addEventListener('click', async () => {
+        if (loginBtn.disabled) return;
+        const inicioLoading = Date.now();
+
         // Lê os inputs no momento do clique
-        let usuario = document.querySelector('input[type="text"]').value;
+        let usuario = document.querySelector('input[type="text"]').value.trim();
         let senha = document.getElementById('senha-input').value;
+
+        if (!usuario || !senha) {
+            alert('Informe seu usuario e sua senha para entrar.');
+            return;
+        }
  
         // Desativo para a pessoa não clicar várias vezes enquanto o login carrega.
-        loginBtn.disabled = true;
-        if (visitanteBtn) visitanteBtn.disabled = true;
+        definirEstadoLoginCarregando(true, 'Validando seu acesso', 'Estamos conferindo suas credenciais com seguranca.');
 
         try {
             // Valida o usuário no Supabase, sem expor a lista de senhas no JavaScript.
@@ -44,27 +150,19 @@ if (loginBtn) {
                 // Salva o perfil e nome no localStorage para usar nas outras páginas.
                 localStorage.setItem('perfilUsuario', encontrado.perfil);
                 localStorage.setItem('nomeUsuario', encontrado.nome);
-                // O usuário e o token ficam na sessão da aba, porque uso isso para salvar no Supabase.
-                sessionStorage.setItem(CHAVE_USUARIO_LOGIN, usuario);
-                sessionStorage.setItem(CHAVE_TOKEN_LOGIN, encontrado.token);
+                definirEstadoLoginCarregando(true, 'Acesso liberado', 'Preparando a area do ministerio para voce.');
     
-                // Espera a animação terminar antes de redirecionar.
-                document.body.style.animation = 'fadeOutDown 0.5s ease forwards';
-                setTimeout(() => {
-                    window.location.href = './movimenta%C3%A7%C3%B5es/home.html';
-                }, 500);
+                redirecionarDepoisDoLoading('./movimenta%C3%A7%C3%B5es/home.html', inicioLoading);
             } else {
                 // Avisa quando o usuário ou a senha não foram encontrados.
                 alert('Acesso não encontrado. Confira seu usuário e sua senha e tente novamente.');
-                loginBtn.disabled = false;
-                if (visitanteBtn) visitanteBtn.disabled = false;
+                definirEstadoLoginCarregando(false);
             }
         } catch (erro) {
             // Se cair aqui, normalmente é internet, Supabase fora ou alguma configuração errada.
             console.warn('Erro ao fazer login:', erro);
             alert('Não conseguimos entrar agora. Verifique sua conexão e tente novamente em alguns instantes.');
-            loginBtn.disabled = false;
-            if (visitanteBtn) visitanteBtn.disabled = false;
+            definirEstadoLoginCarregando(false);
         }
     });
 
@@ -79,19 +177,18 @@ if (loginBtn) {
 
 if (visitanteBtn) {
     visitanteBtn.addEventListener('click', () => {
-        // Visitante entra sem credenciais e sem token de edição.
+        const inicioLoading = Date.now();
+        // Visitante entra sem credenciais de edição.
+        definirEstadoLoginCarregando(true, 'Entrando como visitante', 'Preparando uma visualizacao simples do ministerio.');
         localStorage.setItem('perfilUsuario', 'visitante');
         localStorage.setItem('nomeUsuario', 'Visitante');
-        sessionStorage.removeItem(CHAVE_USUARIO_LOGIN);
-        sessionStorage.removeItem(CHAVE_TOKEN_LOGIN);
+        sessionStorage.removeItem(CHAVE_LOGIN_LOCAL_DESENVOLVIMENTO);
+        sessionStorage.removeItem(CHAVE_POPUP_VISITANTE_VISTO);
 
         visitanteBtn.disabled = true;
         if (loginBtn) loginBtn.disabled = true;
 
-        document.body.style.animation = 'fadeOutDown 0.5s ease forwards';
-        setTimeout(() => {
-            window.location.href = './movimenta%C3%A7%C3%B5es/home.html';
-        }, 500);
+        redirecionarDepoisDoLoading('./movimenta%C3%A7%C3%B5es/home.html', inicioLoading);
     });
 }
  
@@ -142,7 +239,7 @@ if (tagPerfil && perfilUsuario) {
 }
 
 // Link do Instagram usado quando o perfil for visitante.
-const INSTAGRAM_VISITANTE = 'https://instagram.com/jeovanissi'; // Atualize com o perfil real quando quiser.
+const INSTAGRAM_VISITANTE = 'https://www.instagram.com/banda_jeovanissi?igsh=MWVicnp2eGIwOGZ6eA=='; // Atualize com o perfil real quando quiser.
 
 function isVisitante() {
     // Fiz essa função só para não repetir essa comparação toda hora.
@@ -190,7 +287,7 @@ function adicionarMenuVisitante() {
         { href: '#sobre-nos', text: 'Sobre Nós', onclick: 'mostrarSobreNos()' },
         { href: '#eventos', text: 'Eventos', onclick: 'mostrarEventos()' },
         { href: '#contato', text: 'Contato', onclick: 'mostrarContato()' },
-        { href: INSTAGRAM_VISITANTE, text: 'Instagram', target: '_blank' }
+        //{ href: INSTAGRAM_VISITANTE, text: 'Instagram', target: '_blank' }
     ];
 
     links.forEach(linkData => {
@@ -210,11 +307,21 @@ function mostrarConteudoVisitante() {
     if (!main) return;
 
     const jaExiste = document.querySelector('.visitante-card');
-    if (jaExiste) return;
+    if (jaExiste) {
+        abrirPopupVisitante();
+        return;
+    }
 
     const section = document.createElement('section');
     section.className = 'visitante-card somente-visitante';
-    section.innerHTML = `
+    section.innerHTML = obterMensagemVisitanteHtml();
+
+    main.prepend(section);
+    abrirPopupVisitante();
+}
+
+function obterMensagemVisitanteHtml() {
+    return `
         <div class="visitante-card-conteudo">
             <h3>Bem-vindo, visitante!</h3>
             <p>Estas são informações especiais pensadas para quem está conhecendo nosso ministério.</p>
@@ -225,8 +332,50 @@ function mostrarConteudoVisitante() {
             </ul>
         </div>
     `;
+}
 
-    main.prepend(section);
+function abrirPopupVisitante() {
+    if (!isVisitante() || sessionStorage.getItem(CHAVE_POPUP_VISITANTE_VISTO) === 'true') return;
+
+    let popup = document.getElementById('popup-visitante');
+    if (!popup) {
+        popup = document.createElement('div');
+        popup.id = 'popup-visitante';
+        popup.className = 'popup-visitante';
+        popup.setAttribute('role', 'dialog');
+        popup.setAttribute('aria-modal', 'true');
+        popup.setAttribute('aria-label', 'Boas-vindas para visitante');
+        popup.innerHTML = `
+            <div class="popup-visitante-conteudo">
+                <button type="button" class="popup-visitante-fechar" aria-label="Fechar aviso" onclick="fecharPopupVisitante()">×</button>
+                <div class="popup-visitante-marca">
+                    <img src="../assets/logo-jeova-nissi-profissional.svg" alt="">
+                </div>
+                <span class="popup-visitante-etiqueta">Acesso de visitante</span>
+                <div class="popup-visitante-mensagem">
+                    ${obterMensagemVisitanteHtml()}
+                </div>
+                <button type="button" class="popup-visitante-acao" onclick="fecharPopupVisitante()">Continuar</button>
+            </div>
+        `;
+        document.body.appendChild(popup);
+    }
+
+    popup.style.display = 'flex';
+    document.body.classList.add('popup-visitante-aberto');
+    setTimeout(() => popup.classList.add('ativo'), 10);
+}
+
+function fecharPopupVisitante() {
+    const popup = document.getElementById('popup-visitante');
+    if (!popup) return;
+
+    sessionStorage.setItem(CHAVE_POPUP_VISITANTE_VISTO, 'true');
+    popup.classList.remove('ativo');
+    document.body.classList.remove('popup-visitante-aberto');
+    setTimeout(() => {
+        popup.style.display = 'none';
+    }, 260);
 }
 
 function mostrarSobreNos() {
@@ -360,26 +509,9 @@ function salvarDadosLocais(chave, dados) {
 }
 
 // ============================================================
-// INTEGRAÇÃO SUPABASE — substitui as chamadas /api/...
+// INTEGRAÇÃO REMOTA VIA API DO SITE
 // ============================================================
-// URL do projeto no Supabase que está sendo usado pelo site publicado.
-const SUPABASE_URL = 'https://brlmggncnoyngukztxhi.supabase.co';
-// Chave pública anon. Ela pode ficar no front porque as regras/RLS limitam o acesso.
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJybG1nZ25jbm95bmd1a3p0eGhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1ODg5NjQsImV4cCI6MjA5NDE2NDk2NH0.Oh4GaM9XgMn6AiIosc3p3BSfe1I2jO9Wr61amSPCqx0';
-
-// Cada tabela usa uma única linha com id 1 para guardar o JSON.
-const TABELAS_ID = {
-    membros: 1,
-    repertorio: 1,
-    escalas: 1,
-};
-
-// Cabeçalhos que o Supabase exige em toda requisição REST/RPC.
-const SUPABASE_HEADERS = {
-    'apikey': SUPABASE_ANON_KEY,
-    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-    'Content-Type': 'application/json',
-};
+// O navegador chama só as rotas /api. A chave e a sessão ficam no servidor.
 
 async function fetchComTimeout(url, options = {}, tempoLimite = 8000) {
     // Coloquei timeout para a tela não ficar esperando para sempre se a internet travar.
@@ -396,8 +528,8 @@ async function fetchComTimeout(url, options = {}, tempoLimite = 8000) {
     }
 }
 
-async function montarErroSupabase(response, acao, tabela) {
-    // Tento pegar o texto do erro do Supabase para facilitar quando der problema.
+async function montarErroApi(response, acao, recurso) {
+    // Tento pegar o texto do erro da API para facilitar quando der problema.
     let detalhe = '';
 
     try {
@@ -406,11 +538,11 @@ async function montarErroSupabase(response, acao, tabela) {
         detalhe = '';
     }
 
-    return new Error(`Falha ao ${acao} ${tabela}: ${response.status}${detalhe ? ` - ${detalhe}` : ''}`);
+    return new Error(`Falha ao ${acao} ${recurso}: ${response.status}${detalhe ? ` - ${detalhe}` : ''}`);
 }
 
 function avisarSupabaseIndisponivel(erro) {
-    // Só aviso admin, porque visitante/membro não precisa ver alerta técnico.
+    // Só aparece quando uma falha real chegar até a interface; no modo local eu nem chamo a API.
     if (_avisoSupabaseExibido || perfilUsuario !== 'admin') return;
 
     _avisoSupabaseExibido = true;
@@ -427,83 +559,111 @@ function avisarFalhaSalvamentoRemoto(erro) {
     alert('Não foi possível salvar no Supabase. Entre novamente como admin e tente de novo. Se outro admin alterou os dados ao mesmo tempo, recarregue a página antes de salvar.');
 }
 
-function obterCredenciaisSessao() {
-    // Pego o usuário e o token criados no login para confirmar salvamentos.
-    return {
-        usuario: sessionStorage.getItem(CHAVE_USUARIO_LOGIN),
-        token: sessionStorage.getItem(CHAVE_TOKEN_LOGIN),
-    };
-}
+async function autenticarUsuario(usuario, senha) {
+    // Login passa pela API do site, que cria um cookie HttpOnly seguro.
+    let response;
 
-async function chamarRpcSupabase(nomeFuncao, parametros) {
-    // Chama uma função SQL do Supabase, tipo login ou salvar dados.
-    const response = await fetchComTimeout(
-        `${SUPABASE_URL}/rest/v1/rpc/${nomeFuncao}`,
-        {
+    try {
+        response = await fetchComTimeout('/api/auth', {
             method: 'POST',
-            headers: SUPABASE_HEADERS,
-            body: JSON.stringify(parametros),
-        }
-    );
-
-    if (!response.ok) {
-        throw await montarErroSupabase(response, 'executar', nomeFuncao);
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ usuario, senha }),
+        });
+    } catch (erro) {
+        const usuarioLocal = autenticarUsuarioLocalDesenvolvimento(usuario, senha);
+        if (usuarioLocal) return usuarioLocal;
+        throw erro;
     }
 
-    if (response.status === 204) return null;
-    return response.json();
-}
+    if ((response.status === 404 || response.status >= 500) && estaNoAmbienteLocalDesenvolvimento()) {
+        const usuarioLocal = autenticarUsuarioLocalDesenvolvimento(usuario, senha);
+        return usuarioLocal || null;
+    }
 
-async function autenticarUsuario(usuario, senha) {
-    // Login de verdade fica no Supabase, assim não deixo senha solta no JavaScript.
-    const resultado = await chamarRpcSupabase('autenticar_usuario_site', {
-        p_usuario: usuario,
-        p_senha: senha,
-    });
-
-    if (!resultado || !resultado.perfil || !resultado.nome || !resultado.token) {
+    if (response.status === 401) {
         return null;
     }
+
+    if (!response.ok) {
+        throw await montarErroApi(response, 'entrar', 'auth');
+    }
+
+    const resultado = await response.json();
+    if (!resultado || !resultado.perfil || !resultado.nome) return null;
 
     return resultado;
 }
 
-async function buscarDadosRemotos(tabela) {
-    // Busca o JSON salvo na tabela certa do Supabase.
-    const response = await fetchComTimeout(
-        `${SUPABASE_URL}/rest/v1/${tabela}?id=eq.${TABELAS_ID[tabela]}&select=dados,atualizado_em`,
-        {
-            headers: SUPABASE_HEADERS,
-            cache: 'no-store',
-        }
-    );
+async function validarSessaoInterna() {
+    // Visitante não tem sessão de edição no servidor.
+    if (!perfilUsuario || perfilUsuario === 'visitante') return true;
+    if (usandoLoginLocalDesenvolvimento()) return true;
+
+    const response = await fetchComTimeout('/api/auth', {
+        credentials: 'include',
+        cache: 'no-store',
+    });
 
     if (!response.ok) {
-        throw await montarErroSupabase(response, 'buscar', tabela);
+        localStorage.removeItem('perfilUsuario');
+        localStorage.removeItem('nomeUsuario');
+        window.location.href = '../index.html';
+        return false;
     }
 
-    const rows = await response.json();
-    if (!rows || rows.length === 0) return null;
-    VERSAO_DADOS[tabela] = rows[0].atualizado_em ?? null;
-    return rows[0].dados;
+    const sessao = await response.json();
+    if (!sessao?.autenticado || !sessao.perfil || !sessao.nome) {
+        localStorage.removeItem('perfilUsuario');
+        localStorage.removeItem('nomeUsuario');
+        window.location.href = '../index.html';
+        return false;
+    }
+
+    if (sessao.perfil !== perfilUsuario || sessao.nome !== nomeUsuario) {
+        localStorage.setItem('perfilUsuario', sessao.perfil);
+        localStorage.setItem('nomeUsuario', sessao.nome);
+        window.location.reload();
+        return false;
+    }
+
+    return true;
+}
+
+async function buscarDadosRemotos(tabela) {
+    // Busca o JSON pela API do site, sem expor a chave do Supabase.
+    const response = await fetchComTimeout(`/api/${tabela}`, {
+        credentials: 'include',
+        cache: 'no-store',
+    });
+
+    if (!response.ok) {
+        throw await montarErroApi(response, 'buscar', tabela);
+    }
+
+    const resultado = await response.json();
+    if (!resultado || resultado.dados === null || resultado.dados === undefined) return null;
+    VERSAO_DADOS[tabela] = resultado.atualizado_em ?? null;
+    return resultado.dados;
 }
 
 async function enviarDadosRemotos(tabela, dados) {
-    // Antes de salvar, preciso ter usuário e token da sessão atual.
-    const credenciais = obterCredenciaisSessao();
-
-    if (!credenciais.usuario || !credenciais.token) {
-        throw new Error('Sessão de admin expirada. Entre novamente para salvar no Supabase.');
-    }
-
-    const resultado = await chamarRpcSupabase('salvar_dados_site', {
-        p_tabela: tabela,
-        p_dados: dados,
-        p_usuario: credenciais.usuario,
-        p_token: credenciais.token,
-        p_atualizado_em: VERSAO_DADOS[tabela],
+    // O servidor valida o cookie HttpOnly antes de permitir escrita.
+    const response = await fetchComTimeout(`/api/${tabela}`, {
+        method: 'PUT',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            dados,
+            atualizado_em: VERSAO_DADOS[tabela],
+        }),
     });
 
+    if (!response.ok) {
+        throw await montarErroApi(response, 'salvar', tabela);
+    }
+
+    const resultado = await response.json();
     if (resultado?.atualizado_em) {
         VERSAO_DADOS[tabela] = resultado.atualizado_em;
     }
@@ -513,6 +673,20 @@ async function enviarDadosRemotos(tabela, dados) {
 
 async function sincronizarDadosRemotos() {
     // Essa função tenta deixar localStorage, cache e Supabase falando a mesma coisa.
+    if (usandoLoginLocalDesenvolvimento()) {
+        API_DISPONIVEL = false;
+        if (CACHE_DADOS.membros === null) {
+            CACHE_DADOS.membros = ordenarMembros(carregarDadosLocais(CHAVE_MEMBROS, [...MEMBROS_PADRAO]));
+        }
+        if (CACHE_DADOS.repertorio === null) {
+            CACHE_DADOS.repertorio = carregarDadosLocais(CHAVE_REPERTORIO, {});
+        }
+        if (CACHE_DADOS.escalas === null) {
+            CACHE_DADOS.escalas = carregarDadosLocais(CHAVE_ESCALAS, {});
+        }
+        return;
+    }
+
     try {
         API_DISPONIVEL = true;
 
@@ -578,6 +752,8 @@ async function sincronizarDadosRemotos() {
 }
 
 function iniciarAtualizacaoAutomatica() {
+    if (document.hidden) return;
+
     // Evita criar mais de um intervalo ao mesmo tempo.
     if (_intervaloAtualizacao) return;
 
@@ -592,6 +768,32 @@ function iniciarAtualizacaoAutomatica() {
             console.warn('Falha na atualização automática:', erro);
         }
     }, 10000);
+}
+
+function pararAtualizacaoAutomatica() {
+    if (!_intervaloAtualizacao) return;
+
+    clearInterval(_intervaloAtualizacao);
+    _intervaloAtualizacao = null;
+}
+
+function configurarAtualizacaoPorVisibilidade() {
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            pararAtualizacaoAutomatica();
+            return;
+        }
+
+        sincronizarDadosRemotos().then(() => {
+            renderizarMembros();
+            renderizarRepertorio();
+            renderizarEscalas();
+        }).catch((erro) => {
+            console.warn('Falha ao atualizar ao voltar para a aba:', erro);
+        }).finally(() => {
+            iniciarAtualizacaoAutomatica();
+        });
+    });
 }
 
 const MEMBROS_PADRAO = [
@@ -1344,11 +1546,17 @@ function logout() {
     // Limpa os dados salvos da sessão do usuário.
     localStorage.removeItem('perfilUsuario');
     localStorage.removeItem('nomeUsuario');
-    sessionStorage.removeItem(CHAVE_USUARIO_LOGIN);
-    sessionStorage.removeItem(CHAVE_TOKEN_LOGIN);
+    sessionStorage.removeItem(CHAVE_LOGIN_LOCAL_DESENVOLVIMENTO);
 
-    // Volta para a tela inicial de login.
-    window.location.href = '../index.html';
+    fetch('/api/auth', {
+        method: 'DELETE',
+        credentials: 'include',
+    }).catch((erro) => {
+        console.warn('Não foi possível encerrar a sessão no servidor:', erro);
+    }).finally(() => {
+        // Volta para a tela inicial de login.
+        window.location.href = '../index.html';
+    });
 }
  
 // ============================================================
@@ -2096,6 +2304,15 @@ window.addEventListener('pointerdown', function(event) {
 
     const modalEscala = document.getElementById('modal-escala');
     if (modalEscala && event.target === modalEscala) fecharModalEscala();
+
+    const popupVisitante = document.getElementById('popup-visitante');
+    if (popupVisitante && event.target === popupVisitante) fecharPopupVisitante();
+});
+
+window.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        fecharPopupVisitante();
+    }
 });
  
 function inicializarInterface() {
@@ -2117,9 +2334,18 @@ function inicializarInterface() {
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    if (loginBtn) return;
+
+    const sessaoValida = await validarSessaoInterna().catch((erro) => {
+        console.warn('Não foi possível validar a sessão:', erro);
+        return false;
+    });
+    if (!sessaoValida) return;
+
     // Primeiro eu carrego o que já tem localmente para a tela aparecer rápido.
     inicializarInterface();
+    configurarAtualizacaoPorVisibilidade();
 
     sincronizarDadosRemotos().then(() => {
         // Depois que o Supabase responde, redesenho com os dados mais novos.

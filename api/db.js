@@ -1,8 +1,9 @@
 const fs = require('fs');
 const path = require('path');
 
-const REPO_DB_FILE = path.join(__dirname, '..', 'db.json');
+const REPO_DB_FILE = path.join(__dirname, '..', 'data', 'db.json');
 const TMP_DB_FILE = '/tmp/vercel-db.json';
+const DB_FILE = process.env.VERCEL ? TMP_DB_FILE : REPO_DB_FILE;
 
 const DEFAULT_DB = {
   membros: [
@@ -30,12 +31,8 @@ const DEFAULT_DB = {
 
 function carregarBanco() {
   try {
-    if (fs.existsSync(TMP_DB_FILE)) {
-      return JSON.parse(fs.readFileSync(TMP_DB_FILE, 'utf8'));
-    }
-
-    if (fs.existsSync(REPO_DB_FILE)) {
-      return JSON.parse(fs.readFileSync(REPO_DB_FILE, 'utf8'));
+    if (fs.existsSync(DB_FILE)) {
+      return JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
     }
   } catch (erro) {
     console.warn('Erro ao carregar banco de dados:', erro);
@@ -46,7 +43,8 @@ function carregarBanco() {
 
 function salvarBanco(banco) {
   try {
-    fs.writeFileSync(TMP_DB_FILE, JSON.stringify(banco, null, 2), 'utf8');
+    fs.mkdirSync(path.dirname(DB_FILE), { recursive: true });
+    fs.writeFileSync(DB_FILE, JSON.stringify(banco, null, 2), 'utf8');
   } catch (erro) {
     console.warn('Erro ao salvar banco de dados:', erro);
   }
