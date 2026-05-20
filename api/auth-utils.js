@@ -5,7 +5,7 @@ const SESSION_MAX_AGE_SECONDS = 8 * 60 * 60;
 const SESSION_SECRET =
   process.env.SESSION_SECRET ||
   process.env.AUTH_SECRET ||
-  (process.env.NODE_ENV === 'production' ? '' : 'dev-only-jeovanissi-session-secret');
+  'jeovanissi-session-secret-v1';
 
 function getSessionSecret() {
   if (!SESSION_SECRET) {

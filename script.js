@@ -15,25 +15,6 @@ const loginLoadingDetail = document.getElementById('login-loading-detail');
 const CHAVE_LOGIN_LOCAL_DESENVOLVIMENTO = 'loginLocalDesenvolvimento';
 const CHAVE_POPUP_VISITANTE_VISTO = 'popupVisitanteVisto';
 const TEMPO_MINIMO_LOADING_LOGIN = 2000;
-const USUARIOS_LOCAIS_DESENVOLVIMENTO = {
-    'aminadabe.santos': { perfil: 'admin', nome: 'Aminadabe' },
-    'patrick.prudente': { perfil: 'admin', nome: 'Patrick' },
-    'moises.souza': { perfil: 'admin', nome: 'Moises' },
-    'enzo.santos': { perfil: 'membro', nome: 'Enzo' },
-    'alesio.ribeiro': { perfil: 'membro', nome: 'Alesio' },
-    'douglas.batista': { perfil: 'membro', nome: 'Douglas' },
-    'davi.ricardo': { perfil: 'membro', nome: 'Davi' },
-    'edilane.santos': { perfil: 'membro', nome: 'Edilane' },
-    'joao.pinheiro': { perfil: 'membro', nome: 'Joao' },
-    'larrisa.brenda': { perfil: 'membro', nome: 'Larrisa' },
-    'miguel.pinheiro': { perfil: 'membro', nome: 'Miguel' },
-    'nicole.cruz': { perfil: 'membro', nome: 'Nicole' },
-    'vanessa.rodrigues': { perfil: 'membro', nome: 'Vanessa' },
-    'vitoria.moreira': { perfil: 'membro', nome: 'Vitoria' },
-    'wagao.barcelos': { perfil: 'membro', nome: 'Wagao' },
-    'eliane.oliveira': { perfil: 'membro', nome: 'Eliane' },
-    'erika.gonçalves': { perfil: 'membro', nome: 'Erika' },
-};
 let tempoFecharModalLogin = null;
  
 function exibirTextoDeUsuarioAdm(tag, texto){
@@ -93,19 +74,55 @@ function definirEstadoLoginCarregando(ativo, mensagem = '', detalhe = '') {
     );
 }
 
+function exibirAvisoLogin(titulo, mensagem, tipo = 'erro') {
+    alternarModalLoginCarregando(false);
+
+    let modal = document.getElementById('login-aviso-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'login-aviso-modal';
+        modal.className = 'login-aviso-modal';
+        modal.setAttribute('role', 'dialog');
+        modal.setAttribute('aria-modal', 'true');
+        modal.setAttribute('aria-labelledby', 'login-aviso-titulo');
+        modal.innerHTML = `
+            <div class="login-aviso-card">
+                <button type="button" class="login-aviso-fechar" aria-label="Fechar aviso" onclick="fecharAvisoLogin()">×</button>
+                <div class="login-aviso-icone" aria-hidden="true">!</div>
+                <h2 id="login-aviso-titulo"></h2>
+                <p id="login-aviso-mensagem"></p>
+                <button type="button" class="login-aviso-acao" onclick="fecharAvisoLogin()">Entendi</button>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+
+    modal.dataset.tipo = tipo;
+    modal.querySelector('#login-aviso-titulo').textContent = titulo;
+    modal.querySelector('#login-aviso-mensagem').textContent = mensagem;
+    modal.style.display = 'grid';
+    document.body.classList.add('login-modal-aberto');
+    setTimeout(() => modal.classList.add('ativo'), 10);
+}
+
+function fecharAvisoLogin() {
+    const modal = document.getElementById('login-aviso-modal');
+    if (!modal) return;
+
+    modal.classList.remove('ativo');
+    document.body.classList.remove('login-modal-aberto');
+    setTimeout(() => {
+        modal.style.display = 'none';
+    }, 240);
+}
+
 function estaNoAmbienteLocalDesenvolvimento() {
     return window.location.protocol === 'file:' || ['127.0.0.1', 'localhost'].includes(window.location.hostname);
 }
 
 function autenticarUsuarioLocalDesenvolvimento(usuario, senha) {
-    // O Live Server não roda /api; este fallback serve só para testar a tela localmente.
-    if (!estaNoAmbienteLocalDesenvolvimento() || !senha) return null;
-
-    const usuarioLocal = USUARIOS_LOCAIS_DESENVOLVIMENTO[usuario.toLowerCase()];
-    if (!usuarioLocal) return null;
-
-    sessionStorage.setItem(CHAVE_LOGIN_LOCAL_DESENVOLVIMENTO, 'true');
-    return usuarioLocal;
+    // Login com usuário e senha precisa passar pelo servidor para não expor permissões no front.
+    return null;
 }
 
 function usandoLoginLocalDesenvolvimento() {
@@ -135,7 +152,7 @@ if (loginBtn) {
         let senha = document.getElementById('senha-input').value;
 
         if (!usuario || !senha) {
-            alert('Informe seu usuario e sua senha para entrar.');
+            exibirAvisoLogin('Dados incompletos', 'Informe seu usuario e sua senha para entrar.');
             return;
         }
  
@@ -155,14 +172,14 @@ if (loginBtn) {
                 redirecionarDepoisDoLoading('./movimenta%C3%A7%C3%B5es/home.html', inicioLoading);
             } else {
                 // Avisa quando o usuário ou a senha não foram encontrados.
-                alert('Acesso não encontrado. Confira seu usuário e sua senha e tente novamente.');
                 definirEstadoLoginCarregando(false);
+                exibirAvisoLogin('Acesso não encontrado', 'Confira seu usuario e sua senha e tente novamente.');
             }
         } catch (erro) {
             // Se cair aqui, normalmente é internet, Supabase fora ou alguma configuração errada.
             console.warn('Erro ao fazer login:', erro);
-            alert('Não conseguimos entrar agora. Verifique sua conexão e tente novamente em alguns instantes.');
             definirEstadoLoginCarregando(false);
+            exibirAvisoLogin('Nao conseguimos entrar agora', 'Verifique sua conexao e tente novamente em alguns instantes.');
         }
     });
 
@@ -569,7 +586,7 @@ async function autenticarUsuario(usuario, senha) {
             credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ usuario, senha }),
-        });
+        }, 15000);
     } catch (erro) {
         const usuarioLocal = autenticarUsuarioLocalDesenvolvimento(usuario, senha);
         if (usuarioLocal) return usuarioLocal;
@@ -2307,11 +2324,15 @@ window.addEventListener('pointerdown', function(event) {
 
     const popupVisitante = document.getElementById('popup-visitante');
     if (popupVisitante && event.target === popupVisitante) fecharPopupVisitante();
+
+    const avisoLogin = document.getElementById('login-aviso-modal');
+    if (avisoLogin && event.target === avisoLogin) fecharAvisoLogin();
 });
 
 window.addEventListener('keydown', function(event) {
     if (event.key === 'Escape') {
         fecharPopupVisitante();
+        fecharAvisoLogin();
     }
 });
  
