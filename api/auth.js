@@ -54,7 +54,17 @@ function autenticarUsuarioFallback(usuario, senha) {
   };
 }
 
-module.exports = async (req, res) => {
+function obterBody(req) {
+  if (!req.body || typeof req.body !== 'string') return req.body || {};
+
+  try {
+    return JSON.parse(req.body);
+  } catch (erro) {
+    return {};
+  }
+}
+
+async function handlerAuth(req, res) {
   enviarCorsSeguro(req, res);
 
   if (req.method === 'OPTIONS') {
@@ -77,8 +87,9 @@ module.exports = async (req, res) => {
       return res.status(403).json({ error: 'Origem nao permitida.' });
     }
 
-    const usuario = normalizarUsuario(req.body?.usuario);
-    const senha = String(req.body?.senha || '');
+    const body = obterBody(req);
+    const usuario = normalizarUsuario(body.usuario);
+    const senha = String(body.senha || '');
 
     if (!usuario || !senha) {
       return res.status(400).json({ error: 'Informe usuario e senha.' });
@@ -126,4 +137,14 @@ module.exports = async (req, res) => {
 
   res.setHeader('Allow', 'GET, POST, DELETE');
   return res.status(405).json({ error: 'Metodo nao permitido' });
+}
+
+module.exports = async (req, res) => {
+  try {
+    return await handlerAuth(req, res);
+  } catch (erro) {
+    console.error('Erro inesperado na rota de autenticacao:', erro);
+    enviarCorsSeguro(req, res);
+    return res.status(500).json({ error: 'Erro interno ao autenticar.' });
+  }
 };

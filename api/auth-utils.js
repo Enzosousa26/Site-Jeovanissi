@@ -16,11 +16,17 @@ function getSessionSecret() {
 }
 
 function base64UrlEncode(valor) {
-  return Buffer.from(valor).toString('base64url');
+  return Buffer.from(valor)
+    .toString('base64')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/g, '');
 }
 
 function base64UrlDecode(valor) {
-  return Buffer.from(valor, 'base64url');
+  const texto = String(valor || '').replace(/-/g, '+').replace(/_/g, '/');
+  const padding = '='.repeat((4 - (texto.length % 4)) % 4);
+  return Buffer.from(texto + padding, 'base64');
 }
 
 function obterChaveCriptografia() {
