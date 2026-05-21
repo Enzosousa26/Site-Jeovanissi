@@ -1,0 +1,8 @@
+-- Setup rapido para executar pelo painel do Supabase.
+--
+-- Ordem correta:
+-- 1. Execute o arquivo: supabase/migrations/20260520183000_initial_schema.sql
+-- 2. Depois execute o arquivo: supabase/seed.sql
+--
+-- A versao profissional fica separada nesses arquivos porque assim o banco
+-- tambem fica versionado no Git, como o codigo do site.

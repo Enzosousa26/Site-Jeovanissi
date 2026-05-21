@@ -1,4 +1,3 @@
-const { autenticarUsuario } = require('./supabase-client');
 const crypto = require('crypto');
 const {
   criarCookieSessao,
@@ -55,6 +54,14 @@ function autenticarUsuarioFallback(usuario, senha) {
 }
 
 function obterBody(req) {
+  if (Buffer.isBuffer(req.body)) {
+    try {
+      return JSON.parse(req.body.toString('utf8'));
+    } catch (erro) {
+      return {};
+    }
+  }
+
   if (!req.body || typeof req.body !== 'string') return req.body || {};
 
   try {
@@ -64,18 +71,47 @@ function obterBody(req) {
   }
 }
 
+function enviarJson(res, statusCode, body) {
+  if (typeof res.status === 'function' && typeof res.json === 'function') {
+    return res.status(statusCode).json(body);
+  }
+
+  res.statusCode = statusCode;
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  return res.end(JSON.stringify(body));
+}
+
+function encerrar(res, statusCode) {
+  if (typeof res.status === 'function') {
+    return res.status(statusCode).end();
+  }
+
+  res.statusCode = statusCode;
+  return res.end();
+}
+
+async function autenticarUsuarioRemoto(usuario, senha) {
+  const { autenticarUsuario } = require('./supabase-client');
+  return autenticarUsuario(usuario, senha);
+}
+
+function normalizarResultadoAutenticacao(resultado) {
+  if (Array.isArray(resultado)) return resultado[0] || null;
+  return resultado || null;
+}
+
 async function handlerAuth(req, res) {
   enviarCorsSeguro(req, res);
 
   if (req.method === 'OPTIONS') {
-    return res.status(200).end();
+    return encerrar(res, 200);
   }
 
   if (req.method === 'GET') {
     const sessao = obterSessao(req);
-    if (!sessao) return res.status(401).json({ autenticado: false });
+    if (!sessao) return enviarJson(res, 401, { autenticado: false });
 
-    return res.status(200).json({
+    return enviarJson(res, 200, {
       autenticado: true,
       perfil: sessao.perfil,
       nome: sessao.nome,
@@ -84,7 +120,7 @@ async function handlerAuth(req, res) {
 
   if (req.method === 'POST') {
     if (!validarOrigem(req)) {
-      return res.status(403).json({ error: 'Origem nao permitida.' });
+      return enviarJson(res, 403, { error: 'Origem nao permitida.' });
     }
 
     const body = obterBody(req);
@@ -92,13 +128,13 @@ async function handlerAuth(req, res) {
     const senha = String(body.senha || '');
 
     if (!usuario || !senha) {
-      return res.status(400).json({ error: 'Informe usuario e senha.' });
+      return enviarJson(res, 400, { error: 'Informe usuario e senha.' });
     }
 
     let encontrado;
 
     try {
-      encontrado = await autenticarUsuario(usuario, senha);
+      encontrado = normalizarResultadoAutenticacao(await autenticarUsuarioRemoto(usuario, senha));
     } catch (erro) {
       console.warn('Falha no Supabase durante login; tentando autenticacao reserva:', erro);
       encontrado = autenticarUsuarioFallback(usuario, senha);
@@ -109,7 +145,7 @@ async function handlerAuth(req, res) {
     }
 
     if (!encontrado || !encontrado.perfil || !encontrado.nome) {
-      return res.status(401).json({ error: 'Acesso nao encontrado.' });
+      return enviarJson(res, 401, { error: 'Acesso nao encontrado.' });
     }
 
     const sessao = {
@@ -124,7 +160,7 @@ async function handlerAuth(req, res) {
 
     res.setHeader('Set-Cookie', criarCookieSessao(sessao, req));
 
-    return res.status(200).json({
+    return enviarJson(res, 200, {
       perfil: encontrado.perfil,
       nome: encontrado.nome,
     });
@@ -132,11 +168,11 @@ async function handlerAuth(req, res) {
 
   if (req.method === 'DELETE') {
     res.setHeader('Set-Cookie', limparCookieSessao(req));
-    return res.status(204).end();
+    return encerrar(res, 204);
   }
 
   res.setHeader('Allow', 'GET, POST, DELETE');
-  return res.status(405).json({ error: 'Metodo nao permitido' });
+  return enviarJson(res, 405, { error: 'Metodo nao permitido' });
 }
 
 module.exports = async (req, res) => {
@@ -145,6 +181,6 @@ module.exports = async (req, res) => {
   } catch (erro) {
     console.error('Erro inesperado na rota de autenticacao:', erro);
     enviarCorsSeguro(req, res);
-    return res.status(500).json({ error: 'Erro interno ao autenticar.' });
+    return enviarJson(res, 500, { error: 'Erro interno ao autenticar.' });
   }
 };
