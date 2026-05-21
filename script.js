@@ -302,6 +302,8 @@ function adicionarMenuVisitante() {
     // Adiciona novos links interessantes para visitantes
     const links = [
         { href: '#sobre-nos', text: 'Sobre Nós', onclick: 'mostrarSobreNos()' },
+        { href: '#repertorios', text: 'Repertórios', onclick: 'mostrarRepertoriosVisitante()' },
+        { href: '#participar', text: 'Participar', onclick: 'mostrarParticipacaoVisitante()' },
         { href: '#eventos', text: 'Eventos', onclick: 'mostrarEventos()' },
         { href: '#contato', text: 'Contato', onclick: 'mostrarContato()' },
         //{ href: INSTAGRAM_VISITANTE, text: 'Instagram', target: '_blank' }
@@ -344,11 +346,144 @@ function obterMensagemVisitanteHtml() {
             <p>Estas são informações especiais pensadas para quem está conhecendo nosso ministério.</p>
             <ul>
                 <li>Veja repertórios recentes e conheça nossas músicas.</li>
-                <li>Confira as escalas e nosso próximo culto.</li>
                 <li>Saiba como participar e acompanhar nosso trabalho.</li>
             </ul>
         </div>
     `;
+}
+
+function ordenarDatasRepertorioVisitante(datas) {
+    return datas.sort((a, b) => {
+        const [diaA, mesA] = String(a).split('/').map(Number);
+        const [diaB, mesB] = String(b).split('/').map(Number);
+        const ano = new Date().getFullYear();
+        const dataA = new Date(ano, (mesA || 1) - 1, diaA || 1).getTime();
+        const dataB = new Date(ano, (mesB || 1) - 1, diaB || 1).getTime();
+        return dataB - dataA;
+    });
+}
+
+function obterRepertoriosRecentesVisitante(limite = 4) {
+    const repertorio = carregarRepertorio();
+
+    return ordenarDatasRepertorioVisitante(Object.keys(repertorio))
+        .slice(0, limite)
+        .map((data) => ({
+            data,
+            musicas: Array.isArray(repertorio[data]) ? repertorio[data] : [],
+        }));
+}
+
+function montarListaRepertoriosVisitante() {
+    const repertorios = obterRepertoriosRecentesVisitante();
+
+    if (repertorios.length === 0) {
+        return '<p class="visitante-vazio">Os repertórios serão exibidos aqui assim que forem cadastrados pelo ministério.</p>';
+    }
+
+    return repertorios.map(({ data, musicas }) => {
+        const itens = musicas.length > 0
+            ? musicas.slice(0, 5).map((musica) => {
+                const nome = escaparHtml(musica.nome || 'Música sem nome');
+                const link = normalizarLinkSeguro(musica.link);
+                if (!link) return `<li>${nome}</li>`;
+                return `<li><a href="${escaparHtml(link)}" target="_blank" rel="noopener">${nome}</a></li>`;
+            }).join('')
+            : '<li>Lista em preparação.</li>';
+
+        return `
+            <article class="visitante-repertorio-card">
+                <span>Repertório recente</span>
+                <h4>Domingo ${escaparHtml(data)}</h4>
+                <ul>${itens}</ul>
+            </article>
+        `;
+    }).join('');
+}
+
+function montarPainelRepertoriosVisitante() {
+    return `
+        <article class="visitante-painel visitante-painel-repertorios" id="repertorios">
+            <div class="visitante-painel-topo">
+                <span>Repertórios</span>
+                <h4>Músicas recentes</h4>
+                <p>Veja os 4 repertórios mais recentes cadastrados pelo ministério.</p>
+            </div>
+            <div class="visitante-repertorios-lista">
+                ${montarListaRepertoriosVisitante()}
+            </div>
+            <a class="visitante-link-acao" href="musicas.html">Ver página de repertórios</a>
+        </article>
+    `;
+}
+
+function montarPainelParticipacaoVisitante() {
+    return `
+        <article class="visitante-painel" id="participar">
+            <div class="visitante-painel-topo">
+                <span>Participação</span>
+                <h4>Como acompanhar nosso trabalho</h4>
+            </div>
+            <ul class="visitante-passos">
+                <li>Acompanhe os repertórios para conhecer as músicas que fazem parte da nossa rotina.</li>
+                <li>Siga nosso Instagram para ver avisos, bastidores e momentos de louvor.</li>
+                <li>Fale conosco se deseja conhecer melhor o ministério ou participar futuramente.</li>
+            </ul>
+            <a class="visitante-link-acao" href="${INSTAGRAM_VISITANTE}" target="_blank" rel="noopener">Abrir Instagram</a>
+        </article>
+    `;
+}
+
+function removerConteudosVisitanteAbertos() {
+    document.querySelectorAll('.visitante-conteudo, .visitante-implantacoes').forEach(el => el.remove());
+}
+
+function obterImplantacaoVisitanteAtiva() {
+    return document.querySelector('.visitante-implantacoes')?.dataset.tipo || '';
+}
+
+function renderizarImplantacoesVisitante(tipo = obterImplantacaoVisitanteAtiva()) {
+    if (!isVisitante()) return;
+    if (!tipo) return;
+
+    const main = document.querySelector('main');
+    if (!main) return;
+
+    document.querySelectorAll('.visitante-implantacoes').forEach(el => el.remove());
+
+    const somenteRepertorios = tipo === 'repertorios';
+    const somenteParticipacao = tipo === 'participar';
+    const titulo = somenteRepertorios ? 'Repertórios recentes' : 'Como participar e acompanhar';
+    const texto = somenteRepertorios
+        ? 'Conheça as músicas que fazem parte da nossa rotina de louvor.'
+        : 'Veja os melhores caminhos para acompanhar o Jeová Nissi e falar com o ministério.';
+    const paineis = [
+        somenteRepertorios ? montarPainelRepertoriosVisitante() : '',
+        somenteParticipacao ? montarPainelParticipacaoVisitante() : '',
+    ].join('');
+
+    const section = document.createElement('section');
+    section.className = 'visitante-implantacoes somente-visitante';
+    section.dataset.tipo = tipo;
+    section.innerHTML = `
+        <div class="visitante-implantacoes-cabecalho">
+            <span>Para visitantes</span>
+            <h3>${titulo}</h3>
+            <p>${texto}</p>
+        </div>
+        <div class="visitante-implantacoes-grid visitante-implantacoes-grid-unico">
+            ${paineis}
+        </div>
+    `;
+
+    const cardVisitante = document.querySelector('.visitante-card');
+    if (cardVisitante?.nextSibling) {
+        cardVisitante.parentNode.insertBefore(section, cardVisitante.nextSibling);
+    } else {
+        main.prepend(section);
+    }
+
+    section.style.display = 'block';
 }
 
 function abrirPopupVisitante() {
@@ -401,7 +536,7 @@ function mostrarSobreNos() {
     if (!main) return;
 
     // Remove conteúdo anterior de visitante se existir
-    document.querySelectorAll('.visitante-conteudo').forEach(el => el.remove());
+    removerConteudosVisitanteAbertos();
 
     const section = document.createElement('section');
     section.className = 'visitante-conteudo';
@@ -419,12 +554,24 @@ function mostrarSobreNos() {
     section.scrollIntoView({ behavior: 'smooth' });
 }
 
+function mostrarRepertoriosVisitante() {
+    removerConteudosVisitanteAbertos();
+    renderizarImplantacoesVisitante('repertorios');
+    document.getElementById('repertorios')?.scrollIntoView({ behavior: 'smooth' });
+}
+
+function mostrarParticipacaoVisitante() {
+    removerConteudosVisitanteAbertos();
+    renderizarImplantacoesVisitante('participar');
+    document.getElementById('participar')?.scrollIntoView({ behavior: 'smooth' });
+}
+
 function mostrarEventos() {
     // Mostra uma parte simples com os eventos principais.
     const main = document.querySelector('main');
     if (!main) return;
 
-    document.querySelectorAll('.visitante-conteudo').forEach(el => el.remove());
+    removerConteudosVisitanteAbertos();
 
     const section = document.createElement('section');
     section.className = 'visitante-conteudo';
@@ -458,7 +605,7 @@ function mostrarContato() {
     const main = document.querySelector('main');
     if (!main) return;
 
-    document.querySelectorAll('.visitante-conteudo').forEach(el => el.remove());
+    removerConteudosVisitanteAbertos();
 
     const section = document.createElement('section');
     section.className = 'visitante-conteudo';
@@ -1831,7 +1978,13 @@ function renderizarRepertorio() {
  
     container.innerHTML = '';
  
-    const datas = Object.keys(repertorio);
+    const datas = isVisitante()
+        ? ordenarDatasRepertorioVisitante(Object.keys(repertorio)).slice(0, 4)
+        : Object.keys(repertorio);
+    const repertorioVisivel = datas.reduce((dados, data) => {
+        dados[data] = repertorio[data];
+        return dados;
+    }, {});
  
     if (datas.length === 0) {
         // Mensagem simples quando ainda não tem lista cadastrada.
@@ -1839,7 +1992,7 @@ function renderizarRepertorio() {
         return;
     }
 
-    const grupos = agruparRepertorioPorAnoMes(repertorio);
+    const grupos = agruparRepertorioPorAnoMes(repertorioVisivel);
 
     // Itera pelos anos em ordem crescente
     Object.keys(grupos).sort().forEach((ano) => {
@@ -1869,7 +2022,7 @@ function renderizarRepertorio() {
             // Itera pelas datas desse mês em ordem crescente de dia
             grupos[ano][mes].sort((a, b) => parseInt(a) - parseInt(b)).forEach((data) => {
                 // Dentro do mês, mostro cada domingo.
-                const musicas = repertorio[data];
+                const musicas = repertorioVisivel[data];
 
                 const bloco = document.createElement('div');
                 bloco.className = 'bloco-data';
@@ -2375,6 +2528,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         preencherSeletoresEscala();
         renderizarRepertorio();
         renderizarEscalas();
+        renderizarImplantacoesVisitante();
     }).finally(() => {
         // No final, deixo a atualização automática ligada.
         iniciarAtualizacaoAutomatica();
@@ -2397,6 +2551,7 @@ window.addEventListener('storage', (event) => {
         // Recarrega repertório quando outra aba alterar.
         CACHE_DADOS.repertorio = null;
         renderizarRepertorio();
+        renderizarImplantacoesVisitante();
     }
 
     if (event.key === CHAVE_ESCALAS) {
