@@ -3889,3 +3889,11 @@ footer {
         padding-inline: 7px;
     }
 }
+
+@view-transition{
+    navigation: auto
+}
+
+::view-transition-group(:root){
+    animation-duration: 1s;
+}

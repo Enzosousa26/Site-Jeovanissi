@@ -412,7 +412,6 @@ function montarPainelRepertoriosVisitante() {
             <div class="visitante-repertorios-lista">
                 ${montarListaRepertoriosVisitante()}
             </div>
-            <a class="visitante-link-acao" href="musicas.html">Ver página de repertórios</a>
         </article>
     `;
 }
