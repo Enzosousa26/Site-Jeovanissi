@@ -3907,14 +3907,14 @@ footer {
     }
 }
 
-::view-transition-group(:root){
+::view-transition-group(root){
     animation-duration: 1s;
 }
 
-::view-transition-old(:root){
+::view-transition-old(root){
     animation-name: saindo;
 }
 
-::view-transition-new(:root){
+::view-transition-new(root){
     animation-name: entrando;
 }
