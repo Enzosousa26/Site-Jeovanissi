@@ -3890,6 +3890,10 @@ footer {
     }
 }
 
+@view-transition{
+    navigation: auto
+}
+
 @keyframes saindo{
     to{
         transform: translateY(100%); 
@@ -3901,10 +3905,6 @@ footer {
     from{
         transform: translateY(100%); 
     }
-}
-
-@view-transition{
-    navigation: auto
 }
 
 ::view-transition-group(:root){
