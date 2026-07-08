@@ -14,7 +14,7 @@ const loginLoadingTitle = document.getElementById('login-loading-title');
 const loginLoadingDetail = document.getElementById('login-loading-detail');
 const CHAVE_LOGIN_LOCAL_DESENVOLVIMENTO = 'loginLocalDesenvolvimento';
 const CHAVE_POPUP_VISITANTE_VISTO = 'popupVisitanteVisto';
-const TEMPO_MINIMO_LOADING_LOGIN = 2000;
+const TEMPO_MINIMO_LOADING_LOGIN = 700;
 let tempoFecharModalLogin = null;
  
 function exibirTextoDeUsuarioAdm(tag, texto){
@@ -134,10 +134,7 @@ function redirecionarDepoisDoLoading(destino, inicioLoading) {
     const espera = Math.max(0, TEMPO_MINIMO_LOADING_LOGIN - tempoPassado);
 
     setTimeout(() => {
-        document.body.style.animation = 'fadeOutDown 0.5s ease forwards';
-        setTimeout(() => {
-            window.location.href = destino;
-        }, 500);
+        window.location.href = destino;
     }, espera);
 }
  

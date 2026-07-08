@@ -3890,3 +3890,62 @@ footer {
     }
 }
 
+@view-transition {
+    navigation: auto;
+}
+
+@keyframes saindo {
+    to {
+        transform: translate3d(0, 100%, 0);
+    }
+}
+
+@keyframes entrando {
+    from {
+        transform: translate3d(0, 100%, 0);
+    }
+}
+
+::view-transition-group(root),
+::view-transition-old(root),
+::view-transition-new(root) {
+    animation-duration: 420ms;
+    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+    animation-fill-mode: both;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+    backface-visibility: hidden;
+    mix-blend-mode: normal;
+    will-change: transform;
+}
+
+::view-transition-old(root) {
+    animation-name: saindo;
+}
+
+::view-transition-new(root) {
+    animation-name: entrando;
+}
+
+html:active-view-transition body {
+    animation: none;
+}
+
+@media (max-width: 700px) {
+    ::view-transition-group(root),
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+        animation-duration: 320ms;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    ::view-transition-group(root),
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+        animation-duration: 1ms;
+    }
+}
+
