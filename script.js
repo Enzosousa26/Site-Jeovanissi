@@ -301,11 +301,11 @@ function adicionarMenuVisitante() {
 
     // Adiciona novos links interessantes para visitantes
     const links = [
-        { href: '#sobre-nos', text: 'Sobre Nós', onclick: 'mostrarSobreNos()' },
-        { href: '#repertorios', text: 'Repertórios', onclick: 'mostrarRepertoriosVisitante()' },
-        { href: '#participar', text: 'Participar', onclick: 'mostrarParticipacaoVisitante()' },
-        { href: '#eventos', text: 'Eventos', onclick: 'mostrarEventos()' },
-        { href: '#contato', text: 'Contato', onclick: 'mostrarContato()' },
+        { href: '#sobre-nos', text: 'Sobre Nós', acao: mostrarSobreNos },
+        { href: '#repertorios', text: 'Repertórios', acao: mostrarRepertoriosVisitante },
+        { href: '#participar', text: 'Participar', acao: mostrarParticipacaoVisitante },
+        { href: '#eventos', text: 'Eventos', acao: mostrarEventos },
+        { href: '#contato', text: 'Contato', acao: mostrarContato },
         //{ href: INSTAGRAM_VISITANTE, text: 'Instagram', target: '_blank' }
     ];
 
@@ -314,7 +314,12 @@ function adicionarMenuVisitante() {
         const link = document.createElement('a');
         link.href = linkData.href;
         link.textContent = linkData.text;
-        if (linkData.onclick) link.setAttribute('onclick', linkData.onclick);
+        if (linkData.acao) {
+            link.addEventListener('click', (event) => {
+                event.preventDefault();
+                linkData.acao();
+            });
+        }
         if (linkData.target) link.target = linkData.target;
         topnav.appendChild(link);
     });
@@ -475,12 +480,7 @@ function renderizarImplantacoesVisitante(tipo = obterImplantacaoVisitanteAtiva()
         </div>
     `;
 
-    const cardVisitante = document.querySelector('.visitante-card');
-    if (cardVisitante?.nextSibling) {
-        cardVisitante.parentNode.insertBefore(section, cardVisitante.nextSibling);
-    } else {
-        main.prepend(section);
-    }
+    main.appendChild(section);
 
     section.style.display = 'block';
 }
@@ -641,6 +641,8 @@ let API_DISPONIVEL = false;
 let _avisoSupabaseExibido = false;
 let _avisoSalvamentoExibido = false;
 let _intervaloAtualizacao = null;
+let _sincronizacaoAutomaticaEmAndamento = false;
+const INTERVALO_ATUALIZACAO_AUTOMATICA = 60000;
 // Cache em memória para não precisar ler tudo de novo a cada função.
 const CACHE_DADOS = {
     membros: null,
@@ -859,7 +861,24 @@ async function sincronizarDadosRemotos() {
             DADOS_PENDENTES.membros = false;
         }
 
-        const membrosRemotos = await buscarDadosRemotos('membros');
+        if (DADOS_PENDENTES.repertorio && CACHE_DADOS.repertorio) {
+            // Mesma ideia dos membros, mas para o repertório.
+            await enviarDadosRemotos('repertorio', CACHE_DADOS.repertorio);
+            DADOS_PENDENTES.repertorio = false;
+        }
+
+        if (DADOS_PENDENTES.escalas && CACHE_DADOS.escalas) {
+            // Mesma ideia, mas para as escalas.
+            await enviarDadosRemotos('escalas', CACHE_DADOS.escalas);
+            DADOS_PENDENTES.escalas = false;
+        }
+
+        const [membrosRemotos, repertorioRemoto, escalasRemotas] = await Promise.all([
+            buscarDadosRemotos('membros'),
+            buscarDadosRemotos('repertorio'),
+            buscarDadosRemotos('escalas'),
+        ]);
+
         if (membrosRemotos === null) {
             // Se a tabela estiver vazia, começo com os dados locais/padrão.
             CACHE_DADOS.membros = ordenarMembros(carregarDadosLocais(CHAVE_MEMBROS, [...MEMBROS_PADRAO]));
@@ -868,12 +887,6 @@ async function sincronizarDadosRemotos() {
             CACHE_DADOS.membros = ordenarMembros(Array.isArray(membrosRemotos) ? membrosRemotos : [...MEMBROS_PADRAO]);
         }
 
-        if (DADOS_PENDENTES.repertorio && CACHE_DADOS.repertorio) {
-            // Mesma ideia dos membros, mas para o repertório.
-            await enviarDadosRemotos('repertorio', CACHE_DADOS.repertorio);
-            DADOS_PENDENTES.repertorio = false;
-        }
-        const repertorioRemoto = await buscarDadosRemotos('repertorio');
         if (repertorioRemoto === null) {
             CACHE_DADOS.repertorio = carregarDadosLocais(CHAVE_REPERTORIO, {});
             await enviarDadosRemotos('repertorio', CACHE_DADOS.repertorio);
@@ -881,12 +894,6 @@ async function sincronizarDadosRemotos() {
             CACHE_DADOS.repertorio = repertorioRemoto ?? {};
         }
 
-        if (DADOS_PENDENTES.escalas && CACHE_DADOS.escalas) {
-            // Mesma ideia, mas para as escalas.
-            await enviarDadosRemotos('escalas', CACHE_DADOS.escalas);
-            DADOS_PENDENTES.escalas = false;
-        }
-        const escalasRemotas = await buscarDadosRemotos('escalas');
         if (escalasRemotas === null) {
             CACHE_DADOS.escalas = carregarDadosLocais(CHAVE_ESCALAS, {});
             await enviarDadosRemotos('escalas', CACHE_DADOS.escalas);
@@ -920,8 +927,11 @@ function iniciarAtualizacaoAutomatica() {
     // Evita criar mais de um intervalo ao mesmo tempo.
     if (_intervaloAtualizacao) return;
 
-    // A cada 10 segundos tento buscar alterações feitas por outro admin.
+    // Atualiza em uma cadência mais leve para não deixar a navegação pesada.
     _intervaloAtualizacao = setInterval(async () => {
+        if (_sincronizacaoAutomaticaEmAndamento) return;
+
+        _sincronizacaoAutomaticaEmAndamento = true;
         try {
             await sincronizarDadosRemotos();
             renderizarMembros();
@@ -929,8 +939,10 @@ function iniciarAtualizacaoAutomatica() {
             renderizarEscalas();
         } catch (erro) {
             console.warn('Falha na atualização automática:', erro);
+        } finally {
+            _sincronizacaoAutomaticaEmAndamento = false;
         }
-    }, 10000);
+    }, INTERVALO_ATUALIZACAO_AUTOMATICA);
 }
 
 function pararAtualizacaoAutomatica() {
