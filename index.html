@@ -31,18 +31,22 @@
             <h2>Acesse sua área com o seu login</h2>
             <p>Acompanhe repertórios, membros e escalas do ministério.</p>
 
-            <input type="text" placeholder="Coloque aqui seu acesso" aria-label="Usuário de acesso" autocomplete="username">
+            <form id="login-form" class="login-form">
+                <label class="sr-only" for="usuario-input">Usuario de acesso</label>
+                <input type="text" id="usuario-input" placeholder="Coloque aqui seu acesso" autocomplete="username" required>
 
-            <div class="campo-senha">
-                <input type="password" id="senha-input" placeholder="Digite sua senha" aria-label="Senha" autocomplete="current-password">
-                <button type="button" onclick="toggleSenha()" class="exibir-senha" aria-label="Exibir ou ocultar senha">Exibir</button>
-            </div>
+                <label class="sr-only" for="senha-input">Senha</label>
+                <div class="campo-senha">
+                    <input type="password" id="senha-input" placeholder="Digite sua senha" autocomplete="current-password" required>
+                    <button type="button" onclick="toggleSenha()" class="exibir-senha" aria-label="Exibir ou ocultar senha">Exibir</button>
+                </div>
 
-            <div class="login-actions">
-                <button id="login-btn" type="button">Entrar</button>
-                <button id="visitante-btn" type="button">Entrar como visitante</button>
-            </div>
-            <p id="login-status" class="login-status" role="status" aria-live="polite"></p>
+                <div class="login-actions">
+                    <button id="login-btn" type="submit">Entrar</button>
+                    <button id="visitante-btn" type="button">Entrar como visitante</button>
+                </div>
+                <p id="login-status" class="login-status" role="status" aria-live="polite"></p>
+            </form>
         </section>
     </main>
 

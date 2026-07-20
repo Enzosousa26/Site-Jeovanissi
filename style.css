@@ -3890,9 +3890,24 @@ footer {
     }
 }
 
-@view-transition {
-    navigation: auto;
+.login-form {
+    width: 100%;
+    display: grid;
+    gap: 12px;
 }
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
 
 @keyframes saindo {
     to {

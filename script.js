@@ -6,13 +6,13 @@
 // ============================================================
 // Pego o botão de login. Se ele existir, eu estou na tela de entrada.
 const loginBtn = document.getElementById('login-btn');
+const loginForm = document.getElementById('login-form');
 // Botão para visitantes entrarem sem precisar de usuário e senha.
 const visitanteBtn = document.getElementById('visitante-btn');
 const loginStatus = document.getElementById('login-status');
 const loginLoadingModal = document.getElementById('login-loading-modal');
 const loginLoadingTitle = document.getElementById('login-loading-title');
 const loginLoadingDetail = document.getElementById('login-loading-detail');
-const CHAVE_LOGIN_LOCAL_DESENVOLVIMENTO = 'loginLocalDesenvolvimento';
 const CHAVE_POPUP_VISITANTE_VISTO = 'popupVisitanteVisto';
 const TEMPO_MINIMO_LOADING_LOGIN = 700;
 let tempoFecharModalLogin = null;
@@ -116,19 +116,6 @@ function fecharAvisoLogin() {
     }, 240);
 }
 
-function estaNoAmbienteLocalDesenvolvimento() {
-    return window.location.protocol === 'file:' || ['127.0.0.1', 'localhost'].includes(window.location.hostname);
-}
-
-function autenticarUsuarioLocalDesenvolvimento(usuario, senha) {
-    // Login com usuário e senha precisa passar pelo servidor para não expor permissões no front.
-    return null;
-}
-
-function usandoLoginLocalDesenvolvimento() {
-    return estaNoAmbienteLocalDesenvolvimento() && sessionStorage.getItem(CHAVE_LOGIN_LOCAL_DESENVOLVIMENTO) === 'true';
-}
-
 function redirecionarDepoisDoLoading(destino, inicioLoading) {
     const tempoPassado = Date.now() - inicioLoading;
     const espera = Math.max(0, TEMPO_MINIMO_LOADING_LOGIN - tempoPassado);
@@ -138,14 +125,15 @@ function redirecionarDepoisDoLoading(destino, inicioLoading) {
     }, espera);
 }
  
-if (loginBtn) {
-    // Só ativa o login quando o botão existe na página atual.
-    loginBtn.addEventListener('click', async () => {
+if (loginForm && loginBtn) {
+    // O envio do formulario tambem cobre a tecla Enter de forma semantica.
+    loginForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
         if (loginBtn.disabled) return;
         const inicioLoading = Date.now();
 
         // Lê os inputs no momento do clique
-        let usuario = document.querySelector('input[type="text"]').value.trim();
+        let usuario = document.getElementById('usuario-input').value.trim();
         let senha = document.getElementById('senha-input').value;
 
         if (!usuario || !senha) {
@@ -179,14 +167,6 @@ if (loginBtn) {
             exibirAvisoLogin('Nao conseguimos entrar agora', 'Verifique sua conexao e tente novamente em alguns instantes.');
         }
     });
-
-    // Também deixei o Enter funcionando para facilitar o login.
-    document.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter') {
-            event.preventDefault();
-            loginBtn.click();
-        }
-    });
 }
 
 if (visitanteBtn) {
@@ -196,7 +176,6 @@ if (visitanteBtn) {
         definirEstadoLoginCarregando(true, 'Entrando como visitante', 'Preparando uma visualizacao simples do ministerio.');
         localStorage.setItem('perfilUsuario', 'visitante');
         localStorage.setItem('nomeUsuario', 'Visitante');
-        sessionStorage.removeItem(CHAVE_LOGIN_LOCAL_DESENVOLVIMENTO);
         sessionStorage.removeItem(CHAVE_POPUP_VISITANTE_VISTO);
 
         visitanteBtn.disabled = true;
@@ -733,14 +712,7 @@ async function autenticarUsuario(usuario, senha) {
             body: JSON.stringify({ usuario, senha }),
         }, 15000);
     } catch (erro) {
-        const usuarioLocal = autenticarUsuarioLocalDesenvolvimento(usuario, senha);
-        if (usuarioLocal) return usuarioLocal;
         throw erro;
-    }
-
-    if ((response.status === 404 || response.status >= 500) && estaNoAmbienteLocalDesenvolvimento()) {
-        const usuarioLocal = autenticarUsuarioLocalDesenvolvimento(usuario, senha);
-        return usuarioLocal || null;
     }
 
     if (response.status === 401) {
@@ -760,8 +732,6 @@ async function autenticarUsuario(usuario, senha) {
 async function validarSessaoInterna() {
     // Visitante não tem sessão de edição no servidor.
     if (!perfilUsuario || perfilUsuario === 'visitante') return true;
-    if (usandoLoginLocalDesenvolvimento()) return true;
-
     const response = await fetchComTimeout('/api/auth', {
         credentials: 'include',
         cache: 'no-store',
@@ -835,20 +805,6 @@ async function enviarDadosRemotos(tabela, dados) {
 
 async function sincronizarDadosRemotos() {
     // Essa função tenta deixar localStorage, cache e Supabase falando a mesma coisa.
-    if (usandoLoginLocalDesenvolvimento()) {
-        API_DISPONIVEL = false;
-        if (CACHE_DADOS.membros === null) {
-            CACHE_DADOS.membros = ordenarMembros(carregarDadosLocais(CHAVE_MEMBROS, [...MEMBROS_PADRAO]));
-        }
-        if (CACHE_DADOS.repertorio === null) {
-            CACHE_DADOS.repertorio = carregarDadosLocais(CHAVE_REPERTORIO, {});
-        }
-        if (CACHE_DADOS.escalas === null) {
-            CACHE_DADOS.escalas = carregarDadosLocais(CHAVE_ESCALAS, {});
-        }
-        return;
-    }
-
     try {
         API_DISPONIVEL = true;
 
@@ -1718,8 +1674,6 @@ function logout() {
     // Limpa os dados salvos da sessão do usuário.
     localStorage.removeItem('perfilUsuario');
     localStorage.removeItem('nomeUsuario');
-    sessionStorage.removeItem(CHAVE_LOGIN_LOCAL_DESENVOLVIMENTO);
-
     fetch('/api/auth', {
         method: 'DELETE',
         credentials: 'include',

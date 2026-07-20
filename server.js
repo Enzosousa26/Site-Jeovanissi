@@ -11,6 +11,8 @@ const PORT = process.env.PORT || 3000;
 const DATA_DIR = path.join(__dirname, 'data');
 const DB_FILE = path.join(DATA_DIR, 'db.json');
 
+app.disable('x-powered-by');
+
 const DEFAULT_DB = {
   membros: [
     { nome: 'Aminadabe / Binho', cargo: 'Líder Geral', categoria: 'lider' },
@@ -56,15 +58,15 @@ function salvarBanco(dados) {
   fs.writeFileSync(DB_FILE, JSON.stringify(dados, null, 2), 'utf8');
 }
 
-app.use(express.json());
-app.use(express.static(path.join(__dirname)));
+app.use(express.json({ limit: '1mb' }));
+app.use((erro, req, res, next) => {
+  if (erro instanceof SyntaxError && erro.status === 400 && 'body' in erro) {
+    return res.status(400).json({ error: 'JSON invalido.' });
+  }
 
-app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  next();
+  return next(erro);
 });
+app.use(express.static(path.join(__dirname)));
 
 app.all('/api/auth', authHandler);
 app.all('/api/membros', membrosHandler);

@@ -1,3 +1,3 @@
-# Site estudo/Jeova nissi
-Criei esse site para testar algumas coisas que estava aprendendo, mas mudei para um site do ministerio de louvor JEOVA NISSI
+# Site Jeova Nissi
 
+Esse site foi criado com o intuito de ajudar e divulgar o ministerio de louvor JEOVA NISSI.

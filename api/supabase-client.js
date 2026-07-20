@@ -1,21 +1,33 @@
-const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const SUPABASE_URL = String(process.env.SUPABASE_URL || '').trim();
+const SUPABASE_SERVER_KEY = String(
+  process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || ''
+).trim();
+const AMBIENTE_PRODUCAO = process.env.NODE_ENV === 'production' || Boolean(process.env.VERCEL);
+const BANCO_LOCAL_SOLICITADO = process.env.LOCAL_DB_FALLBACK === 'true';
 
 const RECURSOS_PERMITIDOS = new Set(['membros', 'repertorio', 'escalas']);
 
 function validarConfigSupabase() {
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-    throw new Error('Configure SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY nas variáveis de ambiente.');
+  if (!possuiConfigSupabase()) {
+    throw new Error('Configure SUPABASE_URL e SUPABASE_SECRET_KEY nas variaveis de ambiente.');
   }
+}
+
+function possuiConfigSupabase() {
+  return Boolean(SUPABASE_URL && SUPABASE_SERVER_KEY);
+}
+
+function deveUsarBancoLocal() {
+  if (AMBIENTE_PRODUCAO) return false;
+  return BANCO_LOCAL_SOLICITADO || (!SUPABASE_URL && !SUPABASE_SERVER_KEY);
 }
 
 function headersSupabase() {
   validarConfigSupabase();
 
   return {
-    apikey: SUPABASE_ANON_KEY || SUPABASE_SERVICE_ROLE_KEY,
-    Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+    apikey: SUPABASE_SERVER_KEY,
+    Authorization: `Bearer ${SUPABASE_SERVER_KEY}`,
     'Content-Type': 'application/json',
   };
 }
@@ -112,5 +124,7 @@ async function salvarTabelaSemToken(tabela, dados) {
 module.exports = {
   autenticarUsuario,
   buscarTabela,
+  deveUsarBancoLocal,
+  possuiConfigSupabase,
   salvarTabela,
 };

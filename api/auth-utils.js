@@ -2,16 +2,26 @@ const crypto = require('crypto');
 
 const COOKIE_NAME = 'jeovanissi_session';
 const SESSION_MAX_AGE_SECONDS = 8 * 60 * 60;
-const SESSION_SECRET =
-  process.env.SESSION_SECRET ||
-  process.env.AUTH_SECRET ||
-  'jeovanissi-session-secret-v1';
+const AMBIENTE_PRODUCAO = process.env.NODE_ENV === 'production' || Boolean(process.env.VERCEL);
+const SESSION_SECRET_CONFIGURADO = String(
+  process.env.SESSION_SECRET || process.env.AUTH_SECRET || ''
+).trim();
+
+if (AMBIENTE_PRODUCAO && !SESSION_SECRET_CONFIGURADO) {
+  throw new Error('Configure SESSION_SECRET nas variaveis de ambiente de producao.');
+}
+
+if (SESSION_SECRET_CONFIGURADO && Buffer.byteLength(SESSION_SECRET_CONFIGURADO, 'utf8') < 32) {
+  throw new Error('SESSION_SECRET deve ter pelo menos 32 bytes.');
+}
+
+const SESSION_SECRET = SESSION_SECRET_CONFIGURADO || crypto.randomBytes(48).toString('base64url');
+
+if (!SESSION_SECRET_CONFIGURADO) {
+  console.warn('SESSION_SECRET nao configurado; usando segredo efemero apenas para desenvolvimento local.');
+}
 
 function getSessionSecret() {
-  if (!SESSION_SECRET) {
-    throw new Error('Configure SESSION_SECRET nas variáveis de ambiente.');
-  }
-
   return SESSION_SECRET;
 }
 
