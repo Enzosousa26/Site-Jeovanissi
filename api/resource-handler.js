@@ -1,6 +1,7 @@
 const { buscarTabela, deveUsarBancoLocal, salvarTabela } = require('./supabase-client');
 const { carregarBanco, salvarBanco } = require('./db');
 const { enviarCorsSeguro, obterSessao, validarOrigem } = require('./auth-utils');
+const { dadosIguais } = require('../lib/sync-utils');
 
 function buscarTabelaLocal(tabela) {
   const banco = carregarBanco();
@@ -32,6 +33,29 @@ function responderFalhaSupabase(res, erro, acao, tabela) {
     503: 'Servico de dados temporariamente indisponivel.',
   };
   return res.status(status).json({ error: mensagens[status] });
+}
+
+async function responderConflitoIdempotente(
+  res,
+  erro,
+  tabela,
+  dadosEnviados,
+  buscarDadosAtuais = buscarTabela
+) {
+  if (erro.status !== 409) return false;
+
+  try {
+    const resultadoAtual = await buscarDadosAtuais(tabela);
+    if (!dadosIguais(resultadoAtual.dados, dadosEnviados)) return false;
+
+    // O salvamento anterior terminou, mas o navegador mudou de pagina antes
+    // de guardar a nova versao. Confirmo o estado atual sem sobrescrever dados.
+    res.status(200).json(resultadoAtual);
+    return true;
+  } catch (erroReconciliacao) {
+    console.error(`Falha ao reconciliar conflito de ${tabela}:`, erroReconciliacao.message);
+    return false;
+  }
 }
 
 async function responderRecurso(req, res, tabela) {
@@ -77,6 +101,9 @@ async function responderRecurso(req, res, tabela) {
       );
       return res.status(200).json(resultado);
     } catch (erro) {
+      if (await responderConflitoIdempotente(res, erro, tabela, req.body?.dados)) {
+        return;
+      }
       return responderFalhaSupabase(res, erro, 'salvar', tabela);
     }
   }
@@ -86,5 +113,6 @@ async function responderRecurso(req, res, tabela) {
 }
 
 module.exports = {
+  responderConflitoIdempotente,
   responderRecurso,
 };

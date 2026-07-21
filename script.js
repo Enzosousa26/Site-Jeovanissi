@@ -615,6 +615,7 @@ let API_DISPONIVEL = false;
 // Esses avisos evitam ficar abrindo alert repetido para o admin.
 let _avisoSupabaseExibido = false;
 let _avisoSalvamentoExibido = false;
+let _avisoConflitoExibido = false;
 let _intervaloAtualizacao = null;
 let _sincronizacaoAutomaticaEmAndamento = false;
 const INTERVALO_ATUALIZACAO_AUTOMATICA = 60000;
@@ -776,7 +777,9 @@ async function montarErroApi(response, acao, recurso) {
         detalhe = '';
     }
 
-    return new Error(`Falha ao ${acao} ${recurso}: ${response.status}${detalhe ? ` - ${detalhe}` : ''}`);
+    const erroApi = new Error(`Falha ao ${acao} ${recurso}: ${response.status}${detalhe ? ` - ${detalhe}` : ''}`);
+    erroApi.status = response.status;
+    return erroApi;
 }
 
 function avisarSupabaseIndisponivel(erro) {
@@ -804,6 +807,24 @@ function avisarFalhaSalvamentoRemoto(erro) {
     _avisoSalvamentoExibido = true;
     console.warn('Não foi possível salvar no Supabase:', erro);
     alert('Não foi possível salvar no Supabase. Entre novamente como admin e tente de novo. Se outro admin alterou os dados ao mesmo tempo, recarregue a página antes de salvar.');
+}
+
+function avisarConflitoSincronizacao(erro) {
+    let aviso = document.getElementById('status-sincronizacao');
+    if (!aviso) {
+        aviso = document.createElement('div');
+        aviso.id = 'status-sincronizacao';
+        aviso.className = 'status-sincronizacao';
+        aviso.setAttribute('role', 'status');
+        document.body.prepend(aviso);
+    }
+    aviso.textContent = 'Há alterações mais recentes no servidor. Recarregue a página antes de salvar novamente.';
+
+    if (_avisoConflitoExibido || perfilUsuario !== 'admin') return;
+
+    _avisoConflitoExibido = true;
+    console.warn('Conflito de sincronização com dados mais recentes:', erro);
+    alert('Outro administrador alterou estes dados. Suas mudanças continuam salvas neste navegador. Recarregue a página e confira os dados antes de tentar novamente.');
 }
 
 async function autenticarUsuario(usuario, senha) {
@@ -975,9 +996,15 @@ async function sincronizarDadosRemotos() {
         salvarDadosLocais(CHAVE_ESCALAS, CACHE_DADOS.escalas ?? {});
         limparAvisoSupabaseIndisponivel();
     } catch (erro) {
-        // Se o Supabase não responder, o site continua usando os dados do navegador.
-        avisarSupabaseIndisponivel(erro);
-        API_DISPONIVEL = false;
+        if (erro.status === 409) {
+            // O servidor respondeu: mantenho a API ativa e separo conflito de indisponibilidade.
+            avisarConflitoSincronizacao(erro);
+            API_DISPONIVEL = true;
+        } else {
+            // Se o Supabase não responder, o site continua usando os dados do navegador.
+            avisarSupabaseIndisponivel(erro);
+            API_DISPONIVEL = false;
+        }
 
         if (CACHE_DADOS.membros === null) {
             CACHE_DADOS.membros = ordenarMembros(carregarDadosLocais(CHAVE_MEMBROS, [...MEMBROS_PADRAO]));
@@ -1018,6 +1045,7 @@ function iniciarAtualizacaoAutomatica() {
 function limparAvisoSupabaseIndisponivel() {
     document.getElementById('status-sincronizacao')?.remove();
     _avisoSupabaseExibido = false;
+    _avisoConflitoExibido = false;
 }
 
 function pararAtualizacaoAutomatica() {
@@ -1237,7 +1265,8 @@ function salvarMembros(membros) {
             definirDadoPendente('membros', false);
         }).catch((erro) => {
             console.warn('Não foi possível sincronizar membros com o Supabase:', erro);
-            avisarFalhaSalvamentoRemoto(erro);
+            if (erro.status === 409) avisarConflitoSincronizacao(erro);
+            else avisarFalhaSalvamentoRemoto(erro);
             definirDadoPendente('membros', true);
         });
     }
@@ -1979,7 +2008,8 @@ function salvarRepertorio(repertorio) {
             definirDadoPendente('repertorio', false);
         }).catch((erro) => {
             console.warn('Não foi possível sincronizar repertório com o Supabase:', erro);
-            avisarFalhaSalvamentoRemoto(erro);
+            if (erro.status === 409) avisarConflitoSincronizacao(erro);
+            else avisarFalhaSalvamentoRemoto(erro);
             definirDadoPendente('repertorio', true);
         });
     }
@@ -2007,7 +2037,8 @@ function salvarEscalas(escalas) {
             definirDadoPendente('escalas', false);
         }).catch((erro) => {
             console.warn('Não foi possível sincronizar escalas com o Supabase:', erro);
-            avisarFalhaSalvamentoRemoto(erro);
+            if (erro.status === 409) avisarConflitoSincronizacao(erro);
+            else avisarFalhaSalvamentoRemoto(erro);
             definirDadoPendente('escalas', true);
         });
     }
