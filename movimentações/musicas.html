@@ -11,6 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <!-- Puxa a mesma fonte Inter do Google -->
     <link rel="stylesheet" href="../style.css">
+    <link rel="canonical" href="https://jeova-nissi.vercel.app/movimenta%C3%A7%C3%B5es/musicas.html">
     <!-- Usa o mesmo arquivo CSS da página inicial -->
     <link rel="icon" href="../assets/favicon-jeova-nissi.png" type="image/png">
     <link rel="apple-touch-icon" href="../assets/logo-jeova-nissi.jpeg">
@@ -64,7 +65,7 @@
     </main>
  
     <!-- Modal para adicionar/editar música -->
-    <div class="modal-edicao" id="modal-edicao">
+    <div class="modal-edicao" id="modal-edicao" role="dialog" aria-modal="true" aria-labelledby="modal-titulo" aria-hidden="true">
         <div class="conteudo-edicao">
             <button type="button" class="fechar-edicao" onclick="fecharModalEdicao()" aria-label="Fechar modal">✕</button>
             <h3 id="modal-titulo">Adicionar música</h3>
@@ -75,10 +76,10 @@
     </div>
  
     <!-- Modal para nova data -->
-    <div class="modal-edicao" id="modal-nova-data">
+    <div class="modal-edicao" id="modal-nova-data" role="dialog" aria-modal="true" aria-labelledby="modal-nova-data-titulo" aria-hidden="true">
         <div class="conteudo-edicao">
             <button type="button" class="fechar-edicao" onclick="fecharModalNovaData()" aria-label="Fechar modal">✕</button>
-            <h3>Nova data do repertório</h3>
+            <h3 id="modal-nova-data-titulo">Nova data do repertório</h3>
             <input type="text" id="input-nova-data" placeholder="Ex: 05/02" maxlength="5" inputmode="numeric" aria-label="Data do repertório">
             <button type="button" onclick="salvarNovaData()">Criar lista</button>
         </div>
@@ -102,6 +103,7 @@
     <button id="back-to-top" aria-label="Voltar ao topo">↑</button>
     <!-- Botão usado para voltar ao topo da página -->
  
+    <script src="../lib/validators.js"></script>
     <script src="../script.js"></script>
     <!-- Puxa o JavaScript para dar interatividade à página -->
 </body>

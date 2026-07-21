@@ -1,4 +1,10 @@
-const SUPABASE_URL = String(process.env.SUPABASE_URL || '').trim();
+function normalizarSupabaseUrl(valor) {
+  const url = String(valor || '').trim().replace(/\/$/, '');
+  if (/^[a-z0-9]{20}$/.test(url)) return `https://${url}.supabase.co`;
+  return url;
+}
+
+const SUPABASE_URL = normalizarSupabaseUrl(process.env.SUPABASE_URL);
 const SUPABASE_SERVER_KEY = String(
   process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || ''
 ).trim();
@@ -39,15 +45,20 @@ function validarRecurso(tabela) {
 }
 
 async function montarErroSupabase(response, acao) {
-  let detalhe = '';
+  let corpo = null;
 
   try {
-    detalhe = await response.text();
+    corpo = await response.json();
   } catch (erro) {
-    detalhe = '';
+    corpo = null;
   }
 
-  return new Error(`Falha ao ${acao}: ${response.status}${detalhe ? ` - ${detalhe}` : ''}`);
+  const detalhe = corpo?.message || corpo?.error || '';
+  const erro = new Error(`Falha ao ${acao}: ${response.status}${detalhe ? ` - ${detalhe}` : ''}`);
+  erro.status = response.status;
+  erro.code = corpo?.code || null;
+  erro.details = corpo?.details || null;
+  return erro;
 }
 
 async function chamarRpc(nomeFuncao, parametros) {
@@ -72,10 +83,25 @@ function primeiraLinha(resultado) {
   return resultado || null;
 }
 
-async function autenticarUsuario(usuario, senha) {
+async function autenticarUsuario(usuario, senha, identificadorTentativa) {
   return chamarRpc('autenticar_usuario_site', {
     p_usuario: usuario,
     p_senha: senha,
+    p_identificador: identificadorTentativa,
+  });
+}
+
+async function validarSessao(usuario, token) {
+  return primeiraLinha(await chamarRpc('validar_sessao_site', {
+    p_usuario: usuario,
+    p_token: token,
+  }));
+}
+
+async function encerrarSessao(usuario, token) {
+  return chamarRpc('encerrar_sessao_site', {
+    p_usuario: usuario,
+    p_token: token,
   });
 }
 
@@ -125,6 +151,9 @@ module.exports = {
   autenticarUsuario,
   buscarTabela,
   deveUsarBancoLocal,
+  encerrarSessao,
+  normalizarSupabaseUrl,
   possuiConfigSupabase,
   salvarTabela,
+  validarSessao,
 };

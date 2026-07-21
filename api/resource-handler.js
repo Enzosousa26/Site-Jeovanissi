@@ -23,9 +23,15 @@ function salvarTabelaLocal(tabela, dados) {
 
 function responderFalhaSupabase(res, erro, acao, tabela) {
   console.error(`Falha no Supabase ao ${acao} ${tabela}:`, erro.message);
-  return res.status(503).json({
-    error: 'Servico de dados temporariamente indisponivel.',
-  });
+  const status = [400, 401, 403, 409].includes(erro.status) ? erro.status : 503;
+  const mensagens = {
+    400: 'Os dados enviados sao invalidos.',
+    401: 'Sua sessao expirou. Entre novamente como admin.',
+    403: 'Voce nao tem permissao para esta operacao.',
+    409: 'Os dados foram alterados por outro administrador. Recarregue a pagina.',
+    503: 'Servico de dados temporariamente indisponivel.',
+  };
+  return res.status(status).json({ error: mensagens[status] });
 }
 
 async function responderRecurso(req, res, tabela) {

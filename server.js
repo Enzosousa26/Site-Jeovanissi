@@ -13,6 +13,19 @@ const DB_FILE = path.join(DATA_DIR, 'db.json');
 
 app.disable('x-powered-by');
 
+const SECURITY_HEADERS = {
+  'Content-Security-Policy': "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self'; upgrade-insecure-requests",
+  'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+  'Referrer-Policy': 'strict-origin-when-cross-origin',
+  'X-Content-Type-Options': 'nosniff',
+  'X-Frame-Options': 'DENY',
+};
+
+app.use((req, res, next) => {
+  Object.entries(SECURITY_HEADERS).forEach(([nome, valor]) => res.setHeader(nome, valor));
+  next();
+});
+
 const DEFAULT_DB = {
   membros: [
     { nome: 'Aminadabe / Binho', cargo: 'Líder Geral', categoria: 'lider' },

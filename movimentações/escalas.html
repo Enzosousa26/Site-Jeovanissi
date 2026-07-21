@@ -9,6 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../style.css">
+    <link rel="canonical" href="https://jeova-nissi.vercel.app/movimenta%C3%A7%C3%B5es/escalas.html">
     <link rel="icon" href="../assets/favicon-jeova-nissi.png" type="image/png">
     <link rel="apple-touch-icon" href="../assets/logo-jeova-nissi.jpeg">
 </head>
@@ -57,11 +58,11 @@
         </button>
     </main>
 
-    <div class="modal-edicao" id="modal-escala">
+    <div class="modal-edicao" id="modal-escala" role="dialog" aria-modal="true" aria-labelledby="modal-escala-titulo" aria-hidden="true">
         <div class="conteudo-edicao conteudo-escala">
             <button type="button" class="fechar-edicao" onclick="fecharModalEscala()" aria-label="Fechar modal">&times;</button>
             <h3 id="modal-escala-titulo">Adicionar escala</h3>
-            <input type="text" id="input-data-escala" placeholder="Data do repertório. Ex: 10/05" aria-label="Data da escala">
+            <input type="text" id="input-data-escala" placeholder="Data do repertório. Ex: 10/05" maxlength="5" inputmode="numeric" aria-label="Data da escala">
 
             <label class="campo-escala-multipla" for="input-vocal-escala">
                 Vocalistas
@@ -104,6 +105,7 @@
 
     <button id="back-to-top" aria-label="Voltar ao topo">↑</button>
 
+    <script src="../lib/validators.js"></script>
     <script src="../script.js"></script>
 </body>
 </html>

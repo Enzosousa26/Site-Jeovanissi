@@ -606,6 +606,7 @@ function mostrarContato() {
 const CHAVE_MEMBROS = 'membrosBanda';
 const CHAVE_REPERTORIO = 'repertorio';
 const CHAVE_ESCALAS = 'escalasLouvor';
+const CHAVE_ESTADO_SINCRONIZACAO = 'estadoSincronizacaoJeovaNissi';
 
 // Variáveis de controle dos modais e do modo de edição.
 let _indexMembroAtual = null;
@@ -637,6 +638,104 @@ const DADOS_PENDENTES = {
     repertorio: false,
     escalas: false,
 };
+
+function persistirEstadoSincronizacao() {
+    localStorage.setItem(CHAVE_ESTADO_SINCRONIZACAO, JSON.stringify({
+        versoes: VERSAO_DADOS,
+        pendentes: DADOS_PENDENTES,
+    }));
+}
+
+function restaurarEstadoSincronizacao() {
+    try {
+        const estado = JSON.parse(localStorage.getItem(CHAVE_ESTADO_SINCRONIZACAO) || '{}');
+        Object.assign(VERSAO_DADOS, estado.versoes || {});
+        Object.assign(DADOS_PENDENTES, estado.pendentes || {});
+    } catch (erro) {
+        localStorage.removeItem(CHAVE_ESTADO_SINCRONIZACAO);
+    }
+}
+
+function definirDadoPendente(tabela, pendente) {
+    DADOS_PENDENTES[tabela] = pendente;
+    persistirEstadoSincronizacao();
+}
+
+restaurarEstadoSincronizacao();
+
+const PILHA_MODAIS = [];
+
+function elementosFocaveis(modal) {
+    return [...modal.querySelectorAll(
+        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    )].filter((elemento) => elemento.offsetParent !== null);
+}
+
+function abrirModalAcessivel(modal, focoInicial = null) {
+    if (!modal || PILHA_MODAIS.some((item) => item.modal === modal)) return;
+
+    const anterior = PILHA_MODAIS[PILHA_MODAIS.length - 1]?.modal;
+    if (anterior) {
+        anterior.inert = true;
+        anterior.setAttribute('aria-hidden', 'true');
+        anterior.dataset.papelModal = anterior.getAttribute('role') || '';
+        anterior.setAttribute('role', 'none');
+        anterior.setAttribute('aria-modal', 'false');
+    }
+
+    modal.removeAttribute('aria-hidden');
+    modal.inert = false;
+    modal.style.display = 'flex';
+    PILHA_MODAIS.push({ modal, retorno: document.activeElement });
+
+    setTimeout(() => {
+        modal.classList.add('ativo');
+        const alvo = focoInicial || elementosFocaveis(modal)[0] || modal;
+        if (alvo === modal && !modal.hasAttribute('tabindex')) modal.tabIndex = -1;
+        alvo.focus();
+    }, 10);
+}
+
+function fecharModalAcessivel(modal) {
+    const indice = PILHA_MODAIS.findIndex((item) => item.modal === modal);
+    if (indice === -1) return;
+
+    const [{ retorno }] = PILHA_MODAIS.splice(indice, 1);
+    const anterior = PILHA_MODAIS[PILHA_MODAIS.length - 1]?.modal;
+    if (anterior) {
+        anterior.inert = false;
+        anterior.removeAttribute('aria-hidden');
+        if (anterior.dataset.papelModal) {
+            anterior.setAttribute('role', anterior.dataset.papelModal);
+        } else {
+            anterior.removeAttribute('role');
+        }
+        delete anterior.dataset.papelModal;
+        anterior.setAttribute('aria-modal', 'true');
+    }
+
+    setTimeout(() => {
+        modal.style.display = 'none';
+        modal.setAttribute('aria-hidden', 'true');
+        if (retorno?.isConnected) retorno.focus();
+    }, 300);
+}
+
+function fecharModalDoTopo() {
+    const modal = PILHA_MODAIS[PILHA_MODAIS.length - 1]?.modal;
+    if (!modal) return false;
+
+    const fechamentos = {
+        membros: fecharExibirMembros,
+        'modal-editar-membro': fecharModalEditarMembro,
+        'modal-saiba-membro': fecharSaibaMaisMembro,
+        'modal-edicao': fecharModalEdicao,
+        'modal-nova-data': fecharModalNovaData,
+        'modal-escala': fecharModalEscala,
+    };
+    fechamentos[modal.id]?.();
+    return true;
+}
 
 function carregarDadosLocais(chave, valorPadrao) {
     // Busca no localStorage e usa um valor padrão se não tiver nada salvo.
@@ -683,7 +782,16 @@ async function montarErroApi(response, acao, recurso) {
 }
 
 function avisarSupabaseIndisponivel(erro) {
-    // Só aparece quando uma falha real chegar até a interface; no modo local eu nem chamo a API.
+    let aviso = document.getElementById('status-sincronizacao');
+    if (!aviso) {
+        aviso = document.createElement('div');
+        aviso.id = 'status-sincronizacao';
+        aviso.className = 'status-sincronizacao';
+        aviso.setAttribute('role', 'status');
+        document.body.prepend(aviso);
+    }
+    aviso.textContent = 'Dados remotos indisponíveis. Exibindo a cópia salva neste navegador.';
+
     if (_avisoSupabaseExibido || perfilUsuario !== 'admin') return;
 
     _avisoSupabaseExibido = true;
@@ -776,6 +884,7 @@ async function buscarDadosRemotos(tabela) {
     const resultado = await response.json();
     if (!resultado || resultado.dados === null || resultado.dados === undefined) return null;
     VERSAO_DADOS[tabela] = resultado.atualizado_em ?? null;
+    persistirEstadoSincronizacao();
     return resultado.dados;
 }
 
@@ -796,9 +905,8 @@ async function enviarDadosRemotos(tabela, dados) {
     }
 
     const resultado = await response.json();
-    if (resultado?.atualizado_em) {
-        VERSAO_DADOS[tabela] = resultado.atualizado_em;
-    }
+    VERSAO_DADOS[tabela] = resultado?.atualizado_em ?? VERSAO_DADOS[tabela];
+    persistirEstadoSincronizacao();
 
     return dados;
 }
@@ -808,22 +916,32 @@ async function sincronizarDadosRemotos() {
     try {
         API_DISPONIVEL = true;
 
+        if (DADOS_PENDENTES.membros && CACHE_DADOS.membros === null) {
+            CACHE_DADOS.membros = ordenarMembros(carregarDadosLocais(CHAVE_MEMBROS, [...MEMBROS_PADRAO]));
+        }
+        if (DADOS_PENDENTES.repertorio && CACHE_DADOS.repertorio === null) {
+            CACHE_DADOS.repertorio = carregarDadosLocais(CHAVE_REPERTORIO, {});
+        }
+        if (DADOS_PENDENTES.escalas && CACHE_DADOS.escalas === null) {
+            CACHE_DADOS.escalas = carregarDadosLocais(CHAVE_ESCALAS, {});
+        }
+
         if (DADOS_PENDENTES.membros && CACHE_DADOS.membros) {
             // Se tinha membro pendente, tento mandar antes de buscar de novo.
             await enviarDadosRemotos('membros', CACHE_DADOS.membros);
-            DADOS_PENDENTES.membros = false;
+            definirDadoPendente('membros', false);
         }
 
         if (DADOS_PENDENTES.repertorio && CACHE_DADOS.repertorio) {
             // Mesma ideia dos membros, mas para o repertório.
             await enviarDadosRemotos('repertorio', CACHE_DADOS.repertorio);
-            DADOS_PENDENTES.repertorio = false;
+            definirDadoPendente('repertorio', false);
         }
 
         if (DADOS_PENDENTES.escalas && CACHE_DADOS.escalas) {
             // Mesma ideia, mas para as escalas.
             await enviarDadosRemotos('escalas', CACHE_DADOS.escalas);
-            DADOS_PENDENTES.escalas = false;
+            definirDadoPendente('escalas', false);
         }
 
         const [membrosRemotos, repertorioRemoto, escalasRemotas] = await Promise.all([
@@ -857,6 +975,7 @@ async function sincronizarDadosRemotos() {
         salvarDadosLocais(CHAVE_MEMBROS, CACHE_DADOS.membros);
         salvarDadosLocais(CHAVE_REPERTORIO, CACHE_DADOS.repertorio ?? {});
         salvarDadosLocais(CHAVE_ESCALAS, CACHE_DADOS.escalas ?? {});
+        limparAvisoSupabaseIndisponivel();
     } catch (erro) {
         // Se o Supabase não responder, o site continua usando os dados do navegador.
         avisarSupabaseIndisponivel(erro);
@@ -896,6 +1015,11 @@ function iniciarAtualizacaoAutomatica() {
             _sincronizacaoAutomaticaEmAndamento = false;
         }
     }, INTERVALO_ATUALIZACAO_AUTOMATICA);
+}
+
+function limparAvisoSupabaseIndisponivel() {
+    document.getElementById('status-sincronizacao')?.remove();
+    _avisoSupabaseExibido = false;
 }
 
 function pararAtualizacaoAutomatica() {
@@ -1107,23 +1231,22 @@ function salvarMembros(membros) {
     const membrosOrdenados = ordenarMembros(membros);
     CACHE_DADOS.membros = membrosOrdenados;
     salvarDadosLocais(CHAVE_MEMBROS, membrosOrdenados);
+    definirDadoPendente('membros', true);
 
     if (API_DISPONIVEL) {
         // Salvo no Supabase em segundo plano.
-        enviarDadosRemotos('membros', membrosOrdenados).catch((erro) => {
+        enviarDadosRemotos('membros', membrosOrdenados).then(() => {
+            definirDadoPendente('membros', false);
+        }).catch((erro) => {
             console.warn('Não foi possível sincronizar membros com o Supabase:', erro);
             avisarFalhaSalvamentoRemoto(erro);
-            DADOS_PENDENTES.membros = true;
+            definirDadoPendente('membros', true);
         });
-    } else {
-        // Se estiver offline, marco como pendente para tentar depois.
-        DADOS_PENDENTES.membros = true;
     }
 }
 
 function dataRepertorioValida(data) {
-    // Aceito somente data no formato dd/mm.
-    return /^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])$/.test(data);
+    return Boolean(window.ValidadoresJeovaNissi?.dataDiaMesValida(data));
 }
 
 function responsaveisPertencemArea(nome, area) {
@@ -1519,8 +1642,7 @@ function abrirSaibaMaisMembro(index) {
     titulo.textContent = `Saiba mais sobre ${membro.nome}`;
     descricao.textContent = detalhes.sobre;
 
-    modal.style.display = 'flex';
-    setTimeout(() => modal.classList.add('ativo'), 10);
+    abrirModalAcessivel(modal, modal.querySelector('.fechar-edicao'));
 }
 
 function fecharSaibaMaisMembro() {
@@ -1528,9 +1650,7 @@ function fecharSaibaMaisMembro() {
     if (!modal) return;
 
     modal.classList.remove('ativo');
-    setTimeout(() => {
-        modal.style.display = 'none';
-    }, 300);
+    fecharModalAcessivel(modal);
 }
 
 function editarMembro(index) {
@@ -1557,9 +1677,7 @@ function editarMembro(index) {
 
     if (erro) erro.textContent = '';
 
-    modal.style.display = 'flex';
-    setTimeout(() => modal.classList.add('ativo'), 10);
-    inputNome.focus();
+    abrirModalAcessivel(modal, inputNome);
 }
 
 function abrirModalAdicionarMembro() {
@@ -1583,9 +1701,7 @@ function abrirModalAdicionarMembro() {
     if (inputSobre) inputSobre.value = '';
     if (erro) erro.textContent = '';
 
-    modal.style.display = 'flex';
-    setTimeout(() => modal.classList.add('ativo'), 10);
-    inputNome.focus();
+    abrirModalAcessivel(modal, inputNome);
 }
 
 function fecharModalEditarMembro() {
@@ -1600,9 +1716,7 @@ function fecharModalEditarMembro() {
     _indexMembroAtual = null;
     _modoModalMembro = null;
 
-    setTimeout(() => {
-        modal.style.display = 'none';
-    }, 300);
+    fecharModalAcessivel(modal);
 }
 
 function salvarEdicaoMembro() {
@@ -1716,10 +1830,7 @@ function exibirMembros() {
     _gerenciandoMembros = false;
     renderizarMembros();
     alternarBotaoAdicionarMembro();
-    modalMembros.style.display = 'flex';
-    setTimeout(() => {
-        modalMembros.classList.add('ativo');
-    }, 10);
+    abrirModalAcessivel(modalMembros, modalMembros.querySelector('.fecharMembros'));
 }
 
 function gerenciarMembros() {
@@ -1731,10 +1842,7 @@ function gerenciarMembros() {
     renderizarMembros();
     alternarBotaoAdicionarMembro();
 
-    modalMembros.style.display = 'flex';
-    setTimeout(() => {
-        modalMembros.classList.add('ativo');
-    }, 10);
+    abrirModalAcessivel(modalMembros, modalMembros.querySelector('.fecharMembros'));
 }
 
 function alternarBotaoAdicionarMembro() {
@@ -1752,9 +1860,7 @@ function fecharExibirMembros() {
     if (!modalFecharMembros) return;
     modalFecharMembros.classList.remove('ativo');
     _gerenciandoMembros = false;
-    setTimeout(() => {
-        modalFecharMembros.style.display = 'none';
-    }, 300);
+    fecharModalAcessivel(modalFecharMembros);
 }
  
 window.addEventListener('pointerdown', function(event) {
@@ -1859,16 +1965,17 @@ function salvarRepertorio(repertorio) {
     // Salva localmente primeiro para a tela responder rápido.
     CACHE_DADOS.repertorio = repertorio;
     salvarDadosLocais(CHAVE_REPERTORIO, repertorio);
+    definirDadoPendente('repertorio', true);
 
     if (API_DISPONIVEL) {
         // Depois tenta mandar para o Supabase.
-        enviarDadosRemotos('repertorio', repertorio).catch((erro) => {
+        enviarDadosRemotos('repertorio', repertorio).then(() => {
+            definirDadoPendente('repertorio', false);
+        }).catch((erro) => {
             console.warn('Não foi possível sincronizar repertório com o Supabase:', erro);
             avisarFalhaSalvamentoRemoto(erro);
-            DADOS_PENDENTES.repertorio = true;
+            definirDadoPendente('repertorio', true);
         });
-    } else {
-        DADOS_PENDENTES.repertorio = true;
     }
 }
 
@@ -1887,15 +1994,16 @@ function salvarEscalas(escalas) {
     // Salva escalas localmente e depois tenta sincronizar.
     CACHE_DADOS.escalas = escalas;
     salvarDadosLocais(CHAVE_ESCALAS, escalas);
+    definirDadoPendente('escalas', true);
 
     if (API_DISPONIVEL) {
-        enviarDadosRemotos('escalas', escalas).catch((erro) => {
+        enviarDadosRemotos('escalas', escalas).then(() => {
+            definirDadoPendente('escalas', false);
+        }).catch((erro) => {
             console.warn('Não foi possível sincronizar escalas com o Supabase:', erro);
             avisarFalhaSalvamentoRemoto(erro);
-            DADOS_PENDENTES.escalas = true;
+            definirDadoPendente('escalas', true);
         });
-    } else {
-        DADOS_PENDENTES.escalas = true;
     }
 }
 
@@ -2097,8 +2205,7 @@ function abrirModalEdicao(data, index) {
         inputLink.value = '';
     }
  
-    modal.style.display = 'flex';
-    setTimeout(() => modal.classList.add('ativo'), 10);
+    abrirModalAcessivel(modal, inputNome);
 }
  
 function fecharModalEdicao() {
@@ -2106,7 +2213,7 @@ function fecharModalEdicao() {
     const modal = document.getElementById('modal-edicao');
     if (!modal) return;
     modal.classList.remove('ativo');
-    setTimeout(() => { modal.style.display = 'none'; }, 300);
+    fecharModalAcessivel(modal);
 }
  
 function salvarMusica() {
@@ -2165,8 +2272,7 @@ function abrirModalNovaData() {
     const modal = document.getElementById('modal-nova-data');
     if (!modal) return;
     document.getElementById('input-nova-data').value = '';
-    modal.style.display = 'flex';
-    setTimeout(() => modal.classList.add('ativo'), 10);
+    abrirModalAcessivel(modal, document.getElementById('input-nova-data'));
 }
  
 function fecharModalNovaData() {
@@ -2174,7 +2280,7 @@ function fecharModalNovaData() {
     const modal = document.getElementById('modal-nova-data');
     if (!modal) return;
     modal.classList.remove('ativo');
-    setTimeout(() => { modal.style.display = 'none'; }, 300);
+    fecharModalAcessivel(modal);
 }
  
 function salvarNovaData() {
@@ -2340,9 +2446,7 @@ function abrirModalEscala(data = null) {
         inputObservacoes.value = '';
     }
 
-    modal.style.display = 'flex';
-    setTimeout(() => modal.classList.add('ativo'), 10);
-    inputData.focus();
+    abrirModalAcessivel(modal, inputData);
 }
 
 function fecharModalEscala() {
@@ -2352,10 +2456,7 @@ function fecharModalEscala() {
 
     modal.classList.remove('ativo');
     _dataEscalaAtual = null;
-
-    setTimeout(() => {
-        modal.style.display = 'none';
-    }, 300);
+    fecharModalAcessivel(modal);
 }
 
 function salvarEscala() {
@@ -2370,6 +2471,11 @@ function salvarEscala() {
     if (!data) {
         // Não salvo escala sem data.
         alert('Digite a data da escala.');
+        return;
+    }
+
+    if (!dataRepertorioValida(data)) {
+        alert('Digite uma data válida no padrão dd/mm. Ex: 10/05.');
         return;
     }
 
@@ -2446,8 +2552,32 @@ window.addEventListener('pointerdown', function(event) {
 
 window.addEventListener('keydown', function(event) {
     if (event.key === 'Escape') {
+        if (fecharModalDoTopo()) {
+            event.preventDefault();
+            return;
+        }
         fecharPopupVisitante();
         fecharAvisoLogin();
+    }
+
+    if (event.key === 'Tab' && PILHA_MODAIS.length > 0) {
+        const modal = PILHA_MODAIS[PILHA_MODAIS.length - 1].modal;
+        const focaveis = elementosFocaveis(modal);
+        if (focaveis.length === 0) {
+            event.preventDefault();
+            modal.focus();
+            return;
+        }
+
+        const primeiro = focaveis[0];
+        const ultimo = focaveis[focaveis.length - 1];
+        if (event.shiftKey && document.activeElement === primeiro) {
+            event.preventDefault();
+            ultimo.focus();
+        } else if (!event.shiftKey && document.activeElement === ultimo) {
+            event.preventDefault();
+            primeiro.focus();
+        }
     }
 });
  
@@ -2467,6 +2597,11 @@ function inicializarInterface() {
     if (inputNovaData) {
         // Ativa a máscara automática dd/mm no campo de nova data.
         inputNovaData.addEventListener('input', formatarDataAutomaticamente);
+    }
+
+    const inputDataEscala = document.getElementById('input-data-escala');
+    if (inputDataEscala) {
+        inputDataEscala.addEventListener('input', formatarDataAutomaticamente);
     }
 }
 

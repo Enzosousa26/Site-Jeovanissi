@@ -5,6 +5,7 @@ const {
   enviarCorsSeguro,
   validarOrigem,
 } = require('./auth-utils');
+const { obterIdentificadorTentativa } = require('./request-security');
 
 function normalizarUsuario(usuario) {
   return String(usuario || '')
@@ -51,14 +52,14 @@ function encerrar(res, statusCode) {
   return res.end();
 }
 
-async function autenticarUsuarioRemoto(usuario, senha) {
+async function autenticarUsuarioRemoto(usuario, senha, identificadorTentativa) {
   const { autenticarUsuario, possuiConfigSupabase } = require('./supabase-client');
 
   if (!possuiConfigSupabase()) {
     throw new Error('Autenticacao indisponivel: Supabase nao configurado.');
   }
 
-  return autenticarUsuario(usuario, senha);
+  return autenticarUsuario(usuario, senha, identificadorTentativa);
 }
 
 function normalizarResultadoAutenticacao(resultado) {
@@ -76,6 +77,18 @@ async function handlerAuth(req, res) {
   if (req.method === 'GET') {
     const sessao = obterSessao(req);
     if (!sessao) return enviarJson(res, 401, { autenticado: false });
+
+    try {
+      const { validarSessao } = require('./supabase-client');
+      const sessaoRemota = await validarSessao(sessao.usuario, sessao.token);
+      if (!sessaoRemota || sessaoRemota.perfil !== sessao.perfil) {
+        res.setHeader('Set-Cookie', limparCookieSessao(req));
+        return enviarJson(res, 401, { autenticado: false });
+      }
+    } catch (erro) {
+      console.error('Falha ao validar sessao remota:', erro.message);
+      return enviarJson(res, 503, { error: 'Servico de autenticacao temporariamente indisponivel.' });
+    }
 
     return enviarJson(res, 200, {
       autenticado: true,
@@ -100,13 +113,22 @@ async function handlerAuth(req, res) {
     let encontrado;
 
     try {
-      encontrado = normalizarResultadoAutenticacao(await autenticarUsuarioRemoto(usuario, senha));
+      encontrado = normalizarResultadoAutenticacao(await autenticarUsuarioRemoto(
+        usuario,
+        senha,
+        obterIdentificadorTentativa(req, usuario)
+      ));
     } catch (erro) {
       console.error('Falha no servico de autenticacao:', erro.message);
       return enviarJson(res, 503, { error: 'Servico de autenticacao temporariamente indisponivel.' });
     }
 
-    if (!encontrado || !encontrado.perfil || !encontrado.nome) {
+    if (encontrado?.bloqueado) {
+      res.setHeader('Retry-After', '900');
+      return enviarJson(res, 429, { error: 'Muitas tentativas. Aguarde alguns minutos.' });
+    }
+
+    if (!encontrado || !encontrado.perfil || !encontrado.nome || !encontrado.token) {
       return enviarJson(res, 401, { error: 'Acesso nao encontrado.' });
     }
 
@@ -129,6 +151,20 @@ async function handlerAuth(req, res) {
   }
 
   if (req.method === 'DELETE') {
+    if (!validarOrigem(req)) {
+      return enviarJson(res, 403, { error: 'Origem nao permitida.' });
+    }
+
+    const sessao = obterSessao(req);
+    if (sessao?.usuario && sessao?.token) {
+      try {
+        const { encerrarSessao } = require('./supabase-client');
+        await encerrarSessao(sessao.usuario, sessao.token);
+      } catch (erro) {
+        console.error('Falha ao encerrar sessao remota:', erro.message);
+      }
+    }
+
     res.setHeader('Set-Cookie', limparCookieSessao(req));
     return encerrar(res, 204);
   }

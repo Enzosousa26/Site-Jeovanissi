@@ -8,7 +8,9 @@
     "node": ">=18"
   },
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "test": "node tests/run-tests.js",
+    "check": "node --check script.js && node --check server.js && node tests/run-tests.js"
   },
   "dependencies": {
     "express": "^4.18.2"
