@@ -335,11 +335,9 @@ function obterMensagemVisitanteHtml() {
 
 function ordenarDatasRepertorioVisitante(datas) {
     return datas.sort((a, b) => {
-        const [diaA, mesA] = String(a).split('/').map(Number);
-        const [diaB, mesB] = String(b).split('/').map(Number);
-        const ano = new Date().getFullYear();
-        const dataA = new Date(ano, (mesA || 1) - 1, diaA || 1).getTime();
-        const dataB = new Date(ano, (mesB || 1) - 1, diaB || 1).getTime();
+        const ano = obterAnoRepertorioReferencia();
+        const dataA = window.ValidadoresJeovaNissi?.criarDataDiaMes(a, ano)?.getTime() || 0;
+        const dataB = window.ValidadoresJeovaNissi?.criarDataDiaMes(b, ano)?.getTime() || 0;
         return dataB - dataA;
     });
 }
@@ -375,7 +373,7 @@ function montarListaRepertoriosVisitante() {
         return `
             <article class="visitante-repertorio-card">
                 <span>Repertório recente</span>
-                <h4>Domingo ${escaparHtml(data)}</h4>
+                <h4>${escaparHtml(formatarDataRepertorio(data))}</h4>
                 <ul>${itens}</ul>
             </article>
         `;
@@ -1246,7 +1244,15 @@ function salvarMembros(membros) {
 }
 
 function dataRepertorioValida(data) {
-    return Boolean(window.ValidadoresJeovaNissi?.dataDiaMesValida(data));
+    return Boolean(window.ValidadoresJeovaNissi?.dataDiaMesValida(data, obterAnoRepertorioReferencia()));
+}
+
+function obterAnoRepertorioReferencia() {
+    return new Date().getFullYear();
+}
+
+function formatarDataRepertorio(data, ano = obterAnoRepertorioReferencia()) {
+    return window.ValidadoresJeovaNissi?.formatarDataComDiaSemana(data, ano) || data;
 }
 
 function responsaveisPertencemArea(nome, area) {
@@ -2011,14 +2017,14 @@ function salvarEscalas(escalas) {
 // Cada chave é dd/mm; o ano é inferido como o ano atual
 function agruparRepertorioPorAnoMes(repertorio) {
     // Como salvo só dd/mm, uso o ano atual para agrupar na tela.
-    const anoAtual = new Date().getFullYear();
+    const anoAtual = obterAnoRepertorioReferencia();
     const grupos = {};
 
     Object.keys(repertorio).forEach((data) => {
-        const partes = data.split('/');
-        if (partes.length !== 2) return;
+        const dataReal = window.ValidadoresJeovaNissi?.criarDataDiaMes(data, anoAtual);
+        if (!dataReal) return;
 
-        const mes = parseInt(partes[1], 10);
+        const mes = dataReal.getMonth() + 1;
         const ano = anoAtual;
         const chaveAno = String(ano);
         const chaveMes = String(mes);
@@ -2091,7 +2097,7 @@ function renderizarRepertorio() {
 
             // Itera pelas datas desse mês em ordem crescente de dia
             grupos[ano][mes].sort((a, b) => parseInt(a) - parseInt(b)).forEach((data) => {
-                // Dentro do mês, mostro cada domingo.
+                // Dentro do mês, mostro cada data com o dia da semana correto.
                 const musicas = repertorioVisivel[data];
 
                 const bloco = document.createElement('div');
@@ -2100,7 +2106,7 @@ function renderizarRepertorio() {
                 const cabecalho = document.createElement('div');
                 cabecalho.className = 'cabecalho-data';
                 const tituloData = document.createElement('h5');
-                tituloData.textContent = `Domingo ${data}`;
+                tituloData.textContent = formatarDataRepertorio(data, Number(ano));
                 cabecalho.appendChild(tituloData);
 
                 if (ehAdmin) {
@@ -2259,8 +2265,8 @@ function excluirMusica(data, index) {
 }
  
 function excluirData(data) {
-    // Remove a lista completa daquele domingo.
-    if (!confirm(`Excluir a lista do domingo ${data}?`)) return;
+    // Remove a lista completa daquela data.
+    if (!confirm(`Excluir a lista de ${formatarDataRepertorio(data).toLowerCase()}?`)) return;
     const repertorio = carregarRepertorio();
     delete repertorio[data];
     salvarRepertorio(repertorio);
@@ -2268,7 +2274,7 @@ function excluirData(data) {
 }
  
 function abrirModalNovaData() {
-    // Abre o modal para cadastrar um novo domingo no repertório.
+    // Abre o modal para cadastrar uma nova data no repertório.
     const modal = document.getElementById('modal-nova-data');
     if (!modal) return;
     document.getElementById('input-nova-data').value = '';
@@ -2288,7 +2294,7 @@ function salvarNovaData() {
     const data = document.getElementById('input-nova-data').value.trim();
  
     if (!data) {
-        alert('Digite a data do domingo.');
+        alert('Digite a data do repertório.');
         return;
     }
 
@@ -2356,7 +2362,7 @@ function renderizarEscalas() {
     }
 
     datas.forEach((data) => {
-        // Crio um card para cada domingo cadastrado.
+        // Crio um card para cada data cadastrada.
         const escala = escalas[data];
         const card = document.createElement('article');
         card.className = 'card-escala';
@@ -2364,7 +2370,7 @@ function renderizarEscalas() {
 
         card.innerHTML = `
             <div class="cabecalho-escala">
-                <h3>Domingo ${escaparHtml(data)}</h3>
+                <h3>${escaparHtml(formatarDataRepertorio(data))}</h3>
             </div>
             <dl>
                 <div>
@@ -2506,7 +2512,7 @@ function salvarEscala() {
 
 function excluirEscala(data) {
     // Exclui a escala inteira de uma data.
-    if (!confirm(`Excluir a escala do domingo ${data}?`)) return;
+    if (!confirm(`Excluir a escala de ${formatarDataRepertorio(data).toLowerCase()}?`)) return;
 
     const escalas = carregarEscalas();
     delete escalas[data];
