@@ -5,12 +5,12 @@
   "description": "Servidor local para sincronização remota do site Jeova Nissi",
   "main": "server.js",
   "engines": {
-    "node": ">=18"
+    "node": "24.x"
   },
   "scripts": {
     "start": "node server.js",
-    "test": "node tests/run-tests.js",
-    "check": "node --check script.js && node --check server.js && node tests/run-tests.js"
+    "check": "node --check script.js && node --check server.js && node --check lib/validators.js && node --check lib/sync-utils.js && node --check \"api/[resource].js\" && node --check api/auth.js && node --check api/auth-utils.js && node --check api/db.js && node --check api/escalas.js && node --check api/health.js && node --check api/membros.js && node --check api/repertorio.js && node --check api/request-security.js && node --check api/resource-handler.js && node --check api/supabase-client.js",
+    "audit": "npm audit --omit=dev --audit-level=high"
   },
   "dependencies": {
     "express": "^4.18.2"

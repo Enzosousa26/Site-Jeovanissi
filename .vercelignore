@@ -1,1 +1,11 @@
 RODAR_NO_SUPABASE.sql
+.github/
+.playwright-cli/
+output/
+tests/
+data/
+supabase/
+supabase-setup.sql
+.env.example
+README.md
+MANUTENCAO.md

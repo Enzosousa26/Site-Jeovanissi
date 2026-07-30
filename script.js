@@ -1097,8 +1097,8 @@ const MEMBROS_PADRAO = [
 
 // Para trocar depois, edite cada membro e preencha os campos "foto" e "sobre".
 // Exemplo no JSON do membro: { nome: 'Enzo', cargo: 'Baterista', foto: '../assets/fotos/enzo.jpg', sobre: 'Texto sobre o Enzo.' }
-const FOTO_MEMBRO_PADRAO = '../assets/membro-teste.svg';
-const TEXTO_MEMBRO_PADRAO = 'Texto teste sobre este membro do Ministério de Louvor Jeová Nissi. Substitua este conteúdo pelo resumo, testemunho, função ou apresentação que você quiser mostrar aqui.';
+const FOTO_MEMBRO_PADRAO = '../assets/membro-padrao.svg';
+const TEXTO_MEMBRO_PADRAO = 'Conheça um pouco mais sobre este membro do Ministério de Louvor Jeová Nissi. O administrador pode completar este espaço com um resumo, testemunho, função ou apresentação.';
 
 function prioridadeLider(cargo) {
     // Uso isso para deixar os líderes aparecendo primeiro na lista.

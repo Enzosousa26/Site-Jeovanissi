@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" role="img" aria-labelledby="title desc">
-    <title id="title">Imagem teste de membro</title>
-    <desc id="desc">Foto temporária para o perfil de um membro do ministério.</desc>
+    <title id="title">Imagem padrão de membro</title>
+    <desc id="desc">Imagem padrão para o perfil de um membro do ministério.</desc>
     <defs>
         <linearGradient id="fundo" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0" stop-color="#15110c"/>

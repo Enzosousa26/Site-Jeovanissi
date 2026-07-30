@@ -1,0 +1,51 @@
+name: Monitor de producao
+
+on:
+  schedule:
+    - cron: '23 */6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: monitor-producao
+  cancel-in-progress: true
+
+jobs:
+  verificar:
+    name: Site e banco
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Verificar pagina principal
+        run: >-
+          curl
+          --fail
+          --silent
+          --show-error
+          --retry 2
+          --retry-all-errors
+          --connect-timeout 10
+          --max-time 30
+          --output /dev/null
+          https://jeova-nissi.vercel.app/
+
+      - name: Verificar API e Supabase
+        shell: bash
+        run: |
+          resposta="$(curl \
+            --fail \
+            --silent \
+            --show-error \
+            --retry 2 \
+            --retry-all-errors \
+            --connect-timeout 10 \
+            --max-time 30 \
+            https://jeova-nissi.vercel.app/api/health)"
+          echo "$resposta"
+          HEALTH_RESPONSE="$resposta" node -e "
+            const resposta = JSON.parse(process.env.HEALTH_RESPONSE);
+            if (resposta.status !== 'ok' || resposta.banco !== 'ok') process.exit(1);
+          "
