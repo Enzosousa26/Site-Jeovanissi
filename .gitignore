@@ -1,5 +1,6 @@
 RODAR_NO_SUPABASE.sql
 node_modules/
+.vercel/
 .playwright-cli/
 output/playwright/
 .env
