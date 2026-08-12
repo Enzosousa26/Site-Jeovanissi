@@ -12,40 +12,26 @@ concurrency:
   group: monitor-producao
   cancel-in-progress: true
 
+env:
+  SITE_URL: https://jeova-nissi.vercel.app
+  SUPABASE_PROJECT_REF: brlmggncnoyngukztxhi
+
 jobs:
   verificar:
     name: Site e banco
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 20
 
     steps:
-      - name: Verificar pagina principal
-        run: >-
-          curl
-          --fail
-          --silent
-          --show-error
-          --retry 2
-          --retry-all-errors
-          --connect-timeout 10
-          --max-time 30
-          --output /dev/null
-          https://jeova-nissi.vercel.app/
+      - name: Baixar o codigo
+        uses: actions/checkout@v6
 
-      - name: Verificar API e Supabase
-        shell: bash
-        run: |
-          resposta="$(curl \
-            --fail \
-            --silent \
-            --show-error \
-            --retry 2 \
-            --retry-all-errors \
-            --connect-timeout 10 \
-            --max-time 30 \
-            https://jeova-nissi.vercel.app/api/health)"
-          echo "$resposta"
-          HEALTH_RESPONSE="$resposta" node -e "
-            const resposta = JSON.parse(process.env.HEALTH_RESPONSE);
-            if (resposta.status !== 'ok' || resposta.banco !== 'ok') process.exit(1);
-          "
+      - name: Configurar Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24.x'
+
+      - name: Verificar producao e recuperar Supabase inativo
+        env:
+          SUPABASE_MANAGEMENT_API_TOKEN: ${{ secrets.SUPABASE_MANAGEMENT_API_TOKEN }}
+        run: node scripts/monitor-production.mjs

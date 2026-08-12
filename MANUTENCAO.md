@@ -7,7 +7,8 @@ Este documento é o procedimento de operação do Site Jeova Nissi.
 - `.github/workflows/maintenance.yml`: valida sintaxe e dependências em cada
   push, pull request e uma vez por semana.
 - `.github/workflows/health-monitor.yml`: verifica a página, a API e o banco a
-  cada seis horas.
+  cada seis horas. Se o banco estiver indisponível e o projeto Supabase estiver
+  realmente `INACTIVE`, solicita a restauração e aguarda a saúde da aplicação.
 - `.github/dependabot.yml`: propõe atualizações mensais de dependências. A
   migração principal do Express 4 para o 5 fica bloqueada até ser avaliada
   separadamente.
@@ -15,6 +16,31 @@ Este documento é o procedimento de operação do Site Jeova Nissi.
 
 Os agendamentos do GitHub podem atrasar. Para alertas com intervalo curto,
 configure também um monitor externo apontando para `/api/health`.
+
+## Recuperação automática do Supabase
+
+O monitor precisa de um token da Management API guardado como secret do
+repositório. Sem ele, a verificação continua funcionando, mas uma queda do
+banco não pode ser recuperada automaticamente.
+
+1. No Supabase, abra **Account > Access Tokens** e crie um token dedicado para
+   a automação. Use o menor escopo disponível que permita consultar e restaurar
+   o projeto `Site-Jeovanissi`.
+2. No GitHub, abra **Settings > Secrets and variables > Actions > New repository
+   secret**.
+3. Crie o secret com o nome exato `SUPABASE_MANAGEMENT_API_TOKEN` e cole o
+   token. Nunca coloque esse valor no workflow, no código ou nos logs.
+4. Abra **Actions > Monitor de producao > Run workflow** e acompanhe o resumo
+   da execução.
+
+A automação só envia `POST /v1/projects/{ref}/restore` quando a Management API
+confirma o estado `INACTIVE`. Estados transitórios, como `RESTORING`, são apenas
+acompanhados. Se o Supabase estiver `ACTIVE_HEALTHY` e `/api/health` falhar, o
+workflow termina com erro para que problemas de Vercel, configuração ou código
+não sejam mascarados por uma restauração indevida.
+
+Se o token for revogado ou rotacionado, atualize o secret do GitHub. Revise esse
+acesso periodicamente e mantenha autenticação em dois fatores nas duas contas.
 
 ## Antes de publicar
 
